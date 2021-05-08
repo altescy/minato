@@ -21,6 +21,10 @@ class SidePocket:
 
         self._cache = Cache(cache_directory, sqlite_database, expire_days)
 
+    @property
+    def cache(self) -> Cache:
+        return self._cache
+
     @contextmanager
     def open(
         self,
@@ -48,12 +52,12 @@ class SidePocket:
             return filename
 
         url = str(url_or_filename)
-        cached_file = self.cache(url)
+        cached_file = self.download(url)
         local_path = cached_file.local_path
 
         return local_path
 
-    def cache(self, url: str, update: bool = False) -> CachedFile:
+    def download(self, url: str, update: bool = False) -> CachedFile:
         if url in self._cache:
             cached_file = self._cache.by_url(url)
         else:
