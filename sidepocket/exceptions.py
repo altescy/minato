@@ -5,5 +5,6 @@ class SidepocketException(Exception):
 class ConfigurationError(SidepocketException):
     """ConfigurationError"""
 
+
 class CacheNotFoundError(SidepocketException):
     """CacheNotFoundError"""
