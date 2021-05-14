@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "sidepocket"
+name = "minato"
 version = "0.1.0"
 description = "Cache and file system for online resources"
 authors = ["Yasuhiro Yamaguchi <altescy@fastmail.com>"]

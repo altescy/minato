@@ -9,7 +9,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Iterator, List, Optional, Tuple, Union
 
-from sidepocket.exceptions import CacheNotFoundError, ConfigurationError
+from minato.exceptions import CacheNotFoundError, ConfigurationError
 
 
 @dataclasses.dataclass

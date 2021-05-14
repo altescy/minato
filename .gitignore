@@ -1,6 +1,6 @@
 # build artifacts
 .eggs/
-sidepocket.egg-info/
+minato.egg-info/
 build/
 dist/
 pip-wheel-metadata/

@@ -4,12 +4,12 @@ from typing import Optional
 
 
 class Config:
-    ROOT_CONFIG_FILENAME = Path.home() / ".sidepocket" / "config.ini"
-    LOCAL_CONFIG_FILENAME = Path.cwd() / "sidepocket.ini"
+    ROOT_CONFIG_FILENAME = Path.home() / ".minato" / "config.ini"
+    LOCAL_CONFIG_FILENAME = Path.cwd() / "minato.ini"
     DEFAULT_CONFIG = {
         "DEFAULT": {
-            "cache_directory": Path.home() / ".sidepocket" / "cache",
-            "sqlite_database": Path.home() / ".sidepocket" / "sidepocket.db",
+            "cache_directory": Path.home() / ".minato" / "cache",
+            "sqlite_database": Path.home() / ".minato" / "minato.db",
             "expire_days": 30,
         }
     }

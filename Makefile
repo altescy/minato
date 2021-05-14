@@ -1,5 +1,5 @@
 PWD        := $(shell pwd)
-MODULE     := sidepocket
+MODULE     := minato
 POETRY     := poetry
 PYTHON     := $(POETRY) run python
 PYTEST     := $(POETRY) run pytest

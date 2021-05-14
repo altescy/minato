@@ -1,13 +1,13 @@
-import sidepocket
-from sidepocket.config import Config
+import minato
+from minato.config import Config
 
 
 def test_version() -> None:
-    assert sidepocket.__version__ == "0.1.0"
+    assert minato.__version__ == "0.1.0"
 
 
 def test_open() -> None:
-    with sidepocket.open(
+    with minato.open(
         "https://raw.githubusercontent.com/altescy/xsklearn/main/README.md"
     ) as fp:
         text = fp.readline().strip()
@@ -16,7 +16,7 @@ def test_open() -> None:
 
 
 def test_cached_path() -> None:
-    path = sidepocket.cached_path(
+    path = minato.cached_path(
         "https://raw.githubusercontent.com/altescy/xsklearn/main/README.md"
     )
 

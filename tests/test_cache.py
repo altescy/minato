@@ -1,7 +1,7 @@
 import tempfile
 from pathlib import Path
 
-from sidepocket.cache import Cache
+from minato.cache import Cache
 
 
 def test_cache_add_list_and_delete() -> None:

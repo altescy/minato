@@ -2,12 +2,12 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import IO, Any, Iterator, Optional, Union
 
-from sidepocket.cache import Cache, CachedFile
-from sidepocket.config import Config
-from sidepocket.util import extract_path, is_local, open_file
+from minato.cache import Cache, CachedFile
+from minato.config import Config
+from minato.util import extract_path, is_local, open_file
 
 
-class SidePocket:
+class Minato:
     def __init__(
         self,
         cache_directory: Optional[Path] = None,
