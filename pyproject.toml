@@ -51,7 +51,7 @@ line_length = 88
 multi_line_output = 3
 use_parentheses = true
 
-[tool.pytest]
+[tool.pytest.ini_options]
 testpaths = ["tests/"]
 log_format = "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
 log_level = "DEBUG"
