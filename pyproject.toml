@@ -16,6 +16,9 @@ pytest = "^5.2"
 python-language-server = "^0.36.2"
 pysen = {version = "^0.9.1", extras = ["lint"]}
 
+[tool.poetry.scripts]
+minato = "minato.__main__:run"
+
 [tool.pysen]
 version = "0.9"
 
