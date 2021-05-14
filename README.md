@@ -4,6 +4,16 @@ Minato
 [![Actions Status](https://github.com/altescy/minato/workflows/CI/badge.svg)](https://github.com/altescy/minato/actions/workflows/main.yml)
 [![License](https://img.shields.io/github/license/altescy/minato)](https://github.com/altescy/minato/blob/master/LICENSE)
 
+Cache & file system for online resources in Python 
+
+
+## Installation
+
+```
+$ pip install git+https://github.com/altescy/minato.git
+```
+
+## Usage
 
 ```python
 import minato
