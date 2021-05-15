@@ -1,9 +1,8 @@
 import argparse
 from pathlib import Path
 
-from minato.cache import Cache
 from minato.commands.subcommand import Subcommand
-from minato.config import Config
+from minato.minato import Minato
 
 
 @Subcommand.register(
@@ -19,8 +18,8 @@ class RemoveCommand(Subcommand):
         self.parser.add_argument("--root", type=Path, default=None)
 
     def run(self, args: argparse.Namespace) -> None:
-        config = Config(minato_root=args.root)
-        cache = Cache(config.cache_directory, config.sqlite_database)
+        minato = Minato(args.root)
+        cache = minato.cache
 
         cached_files = [cache.by_id(cache_id) for cache_id in args.id]
         num_caches = len(cached_files)

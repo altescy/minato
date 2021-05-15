@@ -1,9 +1,8 @@
 import argparse
-from typing import Dict
+from pathlib import Path
 
-from minato.cache import Cache, CachedFile
 from minato.commands.subcommand import Subcommand
-from minato.config import Config
+from minato.minato import Minato
 from minato.table import Table
 from minato.util import sizeof_fmt
 
@@ -19,10 +18,11 @@ class ListCommand(Subcommand):
         self.parser.add_argument("--desc", action="store_true")
         self.parser.add_argument("--details", action="store_true")
         self.parser.add_argument("--column-width", type=int, default=None)
+        self.parser.add_argument("--root", type=Path, default=None)
 
     def run(self, args: argparse.Namespace) -> None:
-        config = Config()
-        cache = Cache(config.cache_directory, config.sqlite_database)
+        minato = Minato(args.root)
+        cache = minato.cache
 
         columns = ["id", "url", "size"]
         if args.details:
