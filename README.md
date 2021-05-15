@@ -15,6 +15,8 @@ $ pip install git+https://github.com/altescy/minato.git
 
 ## Usage
 
+### Python
+
 ```python
 import minato
 
@@ -24,4 +26,24 @@ with minato.open("s3://your_bucket/path/to/file", "w") as f:
 
 # Cache & manage online resources in local storage
 local_filename = minato.cached_path("http://example.com/path/to/file")
+```
+
+### CLI
+
+```
+$ minato --help
+usage: minato
+
+positional arguments:
+  {add,download,list,remove,update,upload}
+    add                 add local cache file from url
+    download            download file to local
+    list                show list of cached files
+    remove              remove cached files
+    update              update cached files
+    upload              upload local file to remote
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --version             show program's version number and exit
 ```
