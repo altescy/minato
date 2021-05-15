@@ -5,7 +5,6 @@ from typing import Callable, List, Optional, Type
 
 
 class Subcommand:
-    requires_plugins: bool = True
     subcommands: List["Subcommand"] = []
 
     @classmethod
@@ -36,9 +35,7 @@ class Subcommand:
             raise RuntimeError("parser is not set")
         return self._parser
 
-    def setup(
-        self, subparsers: argparse._SubParsersAction
-    ) -> None:  # pylint: disable=protected-access
+    def setup(self, subparsers: argparse._SubParsersAction) -> None:
         self._parser = subparsers.add_parser(
             self._name,
             description=self._description,
