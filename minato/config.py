@@ -1,37 +1,48 @@
 import configparser
 from pathlib import Path
-from typing import Optional
+from typing import Any, Dict, Optional
 
-MINATO_ROOT = Path.home() / ".minato"
-ROOT_CONFIG_FILENAME = MINATO_ROOT / "config.ini"
+DEFAULT_MINATO_ROOT = Path.home() / ".minato"
+ROOT_CONFIG_FILENAME = DEFAULT_MINATO_ROOT / "config.ini"
 LOCAL_CONFIG_FILENAME = Path.cwd() / "minato.ini"
 
 
 class Config:
-    DEFAULT_CONFIG = {
-        "DEFAULT": {
-            "minato_root": MINATO_ROOT,
-            "cache_directory": MINATO_ROOT / "cache",
-            "sqlite_database": MINATO_ROOT / "minato.db",
-        }
-    }
-
-    def __init__(self, filename: Optional[Path] = None) -> None:
+    def __init__(
+        self,
+        filename: Optional[Path] = None,
+        minato_root: Optional[Path] = None,
+    ) -> None:
         self._config = configparser.ConfigParser()
+
         # Read default config
-        self._config.read_dict(Config.DEFAULT_CONFIG)
+        self._config.read_dict(self._default_config(minato_root))
+
         # Read root config file
         if ROOT_CONFIG_FILENAME.exists():
             with ROOT_CONFIG_FILENAME.open("r") as config_file:
                 self._config.read_file(config_file)
+
         # Read local config file
         if LOCAL_CONFIG_FILENAME.exists():
             with LOCAL_CONFIG_FILENAME.open("r") as config_file:
                 self._config.read_file(config_file)
+
         # Read user config file
         if filename is not None and filename.exists():
             with filename.open("r") as config_file:
                 self._config.read_file(config_file)
+
+    @staticmethod
+    def _default_config(minato_root: Optional[Path]) -> Dict[str, Any]:
+        minato_root = minato_root or DEFAULT_MINATO_ROOT
+        return {
+            "DEFAULT": {
+                "minato_root": minato_root,
+                "cache_directory": minato_root / "cache",
+                "sqlite_database": minato_root / "minato.db",
+            }
+        }
 
     @property
     def minato_root(self) -> Path:
