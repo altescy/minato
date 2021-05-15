@@ -1,14 +1,10 @@
 import hashlib
 import logging
-import os
-import tempfile
-from contextlib import contextmanager
 from pathlib import Path
-from typing import IO, Any, Iterator, Tuple, Union
+from typing import IO, Any, Tuple, Union
 from urllib.parse import urlparse
 
 import requests
-from fs import open_fs
 from requests.adapters import HTTPAdapter
 from tqdm import tqdm
 from urllib3.util.retry import Retry
@@ -38,56 +34,22 @@ def get_parent_path_and_filename(path: Union[str, Path]) -> Tuple[str, str]:
         name = str(path.name)
         return parent, name
 
+    parsed_url = urlparse(path)
+    scheme = parsed_url.scheme
+    netloc = parsed_url.netloc
+    path = parsed_url.path
+
     splitted = str(path).rsplit("/", 1)
     if len(splitted) == 2:
         parent, name = splitted
     else:
-        parent = "./"
+        parent = ""
         name = str(path)
+
+    if scheme and netloc:
+        parent = f"{scheme}://{netloc}/{parent}"
+
     return parent, name
-
-
-@contextmanager
-def open_file(
-    url_or_filename: Union[str, Path], mode: str = "r", **kwargs: Any
-) -> Iterator[IO[Any]]:
-    parsed = urlparse(str(url_or_filename))
-
-    if parsed.scheme in ("http", "https"):
-        url = str(url_or_filename)
-        with open_file_with_http(url, mode=mode) as fp:
-            yield fp
-
-    else:
-        with open_file_with_fs(url_or_filename, mode=mode, **kwargs) as fp:
-            yield fp
-
-
-@contextmanager
-def open_file_with_http(url: str, mode: str = "r", **kwargs: Any) -> Iterator[IO[Any]]:
-    if not mode.startswith("r"):
-        raise ValueError(f"invalid mode for http(s): {mode}")
-
-    temp_file = tempfile.NamedTemporaryFile(delete=False)
-    try:
-        _http_get(url, temp_file)
-        temp_file.close()
-        with open(temp_file.name, mode, **kwargs) as fp:
-            yield fp
-    finally:
-        os.remove(temp_file.name)
-
-
-@contextmanager
-def open_file_with_fs(
-    filename: Union[str, Path], *args: Any, **kwargs: Any
-) -> Iterator[IO[Any]]:
-    filename = str(filename)
-    parent, name = get_parent_path_and_filename(filename)
-
-    with open_fs(parent) as fs:
-        with fs.open(name, *args, **kwargs) as fp:
-            yield fp
 
 
 def sizeof_fmt(num: Union[int, float], suffix: str = "B") -> str:
@@ -98,16 +60,7 @@ def sizeof_fmt(num: Union[int, float], suffix: str = "B") -> str:
     return "%.1f %s%s" % (num, "Yi", suffix)
 
 
-def _session_with_backoff() -> requests.Session:
-    session = requests.Session()
-    retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
-    session.mount("http://", HTTPAdapter(max_retries=retries))
-    session.mount("https://", HTTPAdapter(max_retries=retries))
-
-    return session
-
-
-def _http_get(url: str, temp_file: IO[Any]) -> None:
+def http_get(url: str, temp_file: IO[Any]) -> None:
     with _session_with_backoff() as session:
         req = session.get(url, stream=True)
         req.raise_for_status()
@@ -119,6 +72,15 @@ def _http_get(url: str, temp_file: IO[Any]) -> None:
                 progress.update(len(chunk))
                 temp_file.write(chunk)
         progress.close()
+
+
+def _session_with_backoff() -> requests.Session:
+    session = requests.Session()
+    retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+    session.mount("http://", HTTPAdapter(max_retries=retries))
+    session.mount("https://", HTTPAdapter(max_retries=retries))
+
+    return session
 
 
 def _get_cached_filename(path: Union[str, Path]) -> str:
