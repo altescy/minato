@@ -1,3 +1,6 @@
+import tempfile
+from pathlib import Path
+
 import minato
 from minato.config import Config
 
@@ -7,18 +10,26 @@ def test_version() -> None:
 
 
 def test_open() -> None:
-    with minato.open(
-        "https://raw.githubusercontent.com/altescy/xsklearn/main/README.md"
-    ) as fp:
-        text = fp.readline().strip()
+    with tempfile.TemporaryDirectory() as tempdir:
+        minato_root = Path(tempdir)
 
-    assert text == "xsklearn"
+        with minato.open(
+            "https://raw.githubusercontent.com/altescy/xsklearn/main/README.md",
+            minato_root=minato_root,
+        ) as fp:
+            text = fp.readline().strip()
+
+        assert text == "xsklearn"
 
 
 def test_cached_path() -> None:
-    path = minato.cached_path(
-        "https://raw.githubusercontent.com/altescy/xsklearn/main/README.md"
-    )
+    with tempfile.TemporaryDirectory() as tempdir:
+        minato_root = Path(tempdir)
 
-    assert path.exists()
-    assert path.parent == Config().cache_directory
+        path = minato.cached_path(
+            "https://raw.githubusercontent.com/altescy/xsklearn/main/README.md",
+            minato_root=minato_root,
+        )
+
+        assert path.exists()
+        assert path.parent == Config(minato_root=minato_root).cache_directory

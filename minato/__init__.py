@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 from pathlib import Path
-from typing import IO, Any, Iterator, Union
+from typing import IO, Any, Iterator, Optional, Union
 
 from minato.minato import Minato
 
@@ -12,15 +12,23 @@ __all__ = ["Minato", "cached_path", "download", "open", "upload"]
 def open(
     url_or_filename: Union[str, Path],
     mode: str = "r",
+    minato_root: Optional[Path] = None,
 ) -> Iterator[IO[Any]]:
-    with Minato().open(url_or_filename, mode) as fp:
+    if minato_root is not None:
+        minato_root = Path(minato_root)
+
+    with Minato(minato_root).open(url_or_filename, mode) as fp:
         yield fp
 
 
 def cached_path(
     url_or_filename: Union[str, Path],
+    minato_root: Optional[Path] = None,
 ) -> Path:
-    return Minato().cached_path(url_or_filename)
+    if minato_root is not None:
+        minato_root = Path(minato_root)
+
+    return Minato(minato_root).cached_path(url_or_filename)
 
 
 def download(url: str, filename: Union[str, Path]) -> None:
