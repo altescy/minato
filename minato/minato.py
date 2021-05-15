@@ -5,7 +5,8 @@ from typing import IO, Any, Iterator, Optional, Union
 
 from minato.cache import Cache
 from minato.config import Config
-from minato.util import extract_path, is_local, open_file
+from minato.filesystems import open_file
+from minato.util import extract_path, is_local
 
 
 class Minato:
