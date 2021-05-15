@@ -13,7 +13,7 @@ from minato.minato import Minato
 class UpdateCommand(Subcommand):
     def set_arguments(self) -> None:
         # TODO: id or url
-        self.parser.add_argument("id", action="append", default=[])
+        self.parser.add_argument("id", nargs="+", type=int)
         self.parser.add_argument("--force", action="store_true")
         self.parser.add_argument("--root", type=Path, default=None)
 
@@ -24,10 +24,11 @@ class UpdateCommand(Subcommand):
         cached_files = [cache.by_id(cache_id) for cache_id in args.id]
         num_caches = len(cached_files)
 
+        print(f"{num_caches} files will be updated:")
+        for cached_file in cached_files:
+            print(f"  [{cached_file.id}] {cached_file.url}")
+
         if not args.force:
-            print(f"{num_caches} files will be updated:")
-            for cached_file in cached_files:
-                print(f"  [{cached_file.id}] {cached_file.url}")
             yes_or_no = input("Are you sure to update these caches? y/[n]:")
             if yes_or_no not in ("y", "Y"):
                 print("canceled")

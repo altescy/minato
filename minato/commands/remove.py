@@ -13,7 +13,7 @@ from minato.minato import Minato
 class RemoveCommand(Subcommand):
     def set_arguments(self) -> None:
         # TODO: id or url
-        self.parser.add_argument("id", action="append", type=int, default=[])
+        self.parser.add_argument("id", nargs="+", type=int)
         self.parser.add_argument("--force", action="store_true")
         self.parser.add_argument("--root", type=Path, default=None)
 
@@ -28,11 +28,11 @@ class RemoveCommand(Subcommand):
             print("No files to delete")
             return
 
-        if not args.force:
-            print(f"{num_caches} files:")
-            for cached_file in cached_files:
-                print(f"  [{cached_file.id}] {cached_file.url}")
+        print(f"{num_caches} files will be deleted:")
+        for cached_file in cached_files:
+            print(f"  [{cached_file.id}] {cached_file.url}")
 
+        if not args.force:
             yes_or_not = input("Delete these caches? y/[n]: ")
             if yes_or_not not in ("y", "Y"):
                 print("canceled")
