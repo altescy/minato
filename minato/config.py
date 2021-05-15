@@ -10,7 +10,6 @@ class Config:
         "DEFAULT": {
             "cache_directory": Path.home() / ".minato" / "cache",
             "sqlite_database": Path.home() / ".minato" / "minato.db",
-            "expire_days": 30,
         }
     }
 
@@ -38,7 +37,3 @@ class Config:
     @property
     def sqlite_database(self) -> Path:
         return Path(self._config["DEFAULT"]["sqlite_database"])
-
-    @property
-    def expire_days(self) -> int:
-        return int(self._config["DEFAULT"]["expire_days"])

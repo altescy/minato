@@ -56,7 +56,6 @@ class Cache:
         self,
         cache_directory: Path,
         sqlite_path: Path,
-        expire_days: Optional[int] = None,
     ) -> None:
         if not cache_directory.exists():
             os.makedirs(cache_directory, exist_ok=True)
@@ -68,7 +67,6 @@ class Cache:
 
         self._cache_directory = cache_directory
         self._sqlite_path = sqlite_path
-        self._expire_days = expire_days
 
         self._connection: Optional[sqlite3.Connection] = None
         self._cursor: Optional[sqlite3.Cursor] = None
@@ -177,28 +175,6 @@ class Cache:
 
         row = rows[0]
         return CachedFile(*row)
-
-    def clean(self) -> None:
-        self._check_connection()
-        assert self._connection is not None
-        assert self._cursor is not None
-
-        if self._expire_days is not None:
-            expire_seconds = self._expire_days * 86400
-            rows = self._cursor.execute(
-                """
-                SELECT * FROM cached_files
-                WHERE
-                    (
-                        strftime('%s', datetime('now', 'localtime'))
-                        - strftime('%s', updated_at)
-                    ) > ?
-                """,
-                (expire_seconds,),
-            )
-            deleted_files = [CachedFile(*row) for row in rows]
-            for item in deleted_files:
-                self.delete(item)
 
     def delete(self, item: CachedFile) -> None:
         self._check_connection()

@@ -12,14 +12,12 @@ class Minato:
         self,
         cache_directory: Optional[Path] = None,
         sqlite_database: Optional[Path] = None,
-        expire_days: Optional[int] = None,
     ) -> None:
         config = Config()
         cache_directory = cache_directory or config.cache_directory
         sqlite_database = sqlite_database or config.sqlite_database
-        expire_days = expire_days or config.expire_days
 
-        self._cache = Cache(cache_directory, sqlite_database, expire_days)
+        self._cache = Cache(cache_directory, sqlite_database)
 
     @property
     def cache(self) -> Cache:
