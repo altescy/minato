@@ -153,12 +153,13 @@ class Cache:
             UPDATE
                 cached_files
             SET
-                local_path = ?
-                updated_at = datetime('now', 'localtime')
-            WEHRE
+                url = ?
+                , local_path = ?
+                , updated_at = (datetime('now', 'localtime'))
+            WHERE
                 id = ?
             """,
-            (item.local_path, item.id),
+            (item.url, str(item.local_path), item.id),
         )
 
     def by_id(self, id_: int) -> CachedFile:
