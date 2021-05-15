@@ -5,7 +5,7 @@ from typing import IO, Any, Iterator, Union
 from minato.minato import Minato
 
 __version__ = "0.1.0"
-__all__ = ["Minato", "cached_path", "download", "open"]
+__all__ = ["Minato", "cached_path", "download", "open", "upload"]
 
 
 @contextmanager
@@ -26,3 +26,8 @@ def cached_path(
 def download(url: str, filename: Union[str, Path]) -> None:
     filename = Path(filename)
     Minato().download(url, filename)
+
+
+def upload(filename: Union[str, Path], url: str) -> None:
+    filename = Path(filename)
+    Minato().upload(filename, url)

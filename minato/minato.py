@@ -72,6 +72,12 @@ class Minato:
                 content = remote_file.read()
                 local_file.write(content)
 
+    def upload(self, filename: Path, url: str) -> None:
+        with open(filename, "rb") as local_file:
+            with open_file(url, "wb") as remote_file:
+                content = local_file.read()
+                remote_file.write(content)
+
     def remove(self, id_or_url: Union[int, str]) -> None:
         if isinstance(id_or_url, int):
             cache_id = id_or_url
