@@ -90,6 +90,14 @@ def open_file_with_fs(
             yield fp
 
 
+def sizeof_fmt(num: Union[int, float], suffix: str = "B") -> str:
+    for unit in ["", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"]:
+        if abs(num) < 1024.0:
+            return "%3.1f%s %s" % (num, unit, suffix)
+        num /= 1024.0
+    return "%.1f%s %s" % (num, "Yi", suffix)
+
+
 def _session_with_backoff() -> requests.Session:
     session = requests.Session()
     retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
