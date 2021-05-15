@@ -7,7 +7,7 @@ import sqlite3
 import uuid
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Iterator, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from minato.exceptions import CacheNotFoundError, ConfigurationError
 
@@ -49,6 +49,15 @@ class CachedFile:
             self.created_at.isoformat(),
             self.updated_at.isoformat(),
         )
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "id": str(self.id),
+            "url": str(self.url),
+            "local_path": str(self.local_path),
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
+        }
 
 
 class Cache:
