@@ -20,7 +20,7 @@ $ pip install git+https://github.com/altescy/minato.git
 ```python
 import minato
 
-# Read / write files on online storage by PyFilesystem2
+# Read / write files on online storage
 with minato.open("s3://your_bucket/path/to/file", "w") as f:
     f.write("Create a new file on AWS S3!")
 
