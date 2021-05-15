@@ -72,3 +72,13 @@ class Minato:
                 tx.update(cached_file)
 
         return cached_file
+
+    def remove(self, id_or_url: Union[int, str]) -> None:
+        if isinstance(id_or_url, int):
+            cache_id = id_or_url
+            cached_file = self._cache.by_id(cache_id)
+        else:
+            url = id_or_url
+            cached_file = self._cache.by_url(url)
+
+        self._cache.delete(cached_file)
