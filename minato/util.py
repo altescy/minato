@@ -34,13 +34,21 @@ def get_parent_path_and_filename(path: Union[str, Path]) -> Tuple[str, str]:
         name = str(path.name)
         return parent, name
 
-    path = urlparse(path).path
+    parsed_url = urlparse(path)
+    scheme = parsed_url.scheme
+    netloc = parsed_url.netloc
+    path = parsed_url.path
+
     splitted = str(path).rsplit("/", 1)
     if len(splitted) == 2:
         parent, name = splitted
     else:
         parent = ""
         name = str(path)
+
+    if scheme and netloc:
+        parent = f"{scheme}://{netloc}/{parent}"
+
     return parent, name
 
 
