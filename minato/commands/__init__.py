@@ -2,7 +2,12 @@ import argparse
 from typing import Optional
 
 from minato import __version__
+from minato.commands.add import AddCommand  # noqa: F401
+from minato.commands.download import DownloadCommand  # noqa: F401
+from minato.commands.list import ListCommand  # noqa: F401
+from minato.commands.remove import RemoveCommand  # noqa: F401
 from minato.commands.subcommand import Subcommand
+from minato.commands.update import UpdateCommand  # noqa: F401
 
 
 def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
@@ -17,14 +22,6 @@ def create_parser(prog: Optional[str] = None) -> argparse.ArgumentParser:
 
     for subcommand in Subcommand.subcommands:
         subcommand.setup(subparsers)
-        if subcommand.requires_plugins:
-            subcommand.parser.add_argument(
-                "--module",
-                type=str,
-                action="append",
-                default=[],
-                help="additional modules to include",
-            )
 
     return parser
 
