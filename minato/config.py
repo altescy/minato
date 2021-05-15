@@ -2,14 +2,17 @@ import configparser
 from pathlib import Path
 from typing import Optional
 
+MINATO_ROOT = Path.home() / ".minato"
+ROOT_CONFIG_FILENAME = MINATO_ROOT / "config.ini"
+LOCAL_CONFIG_FILENAME = Path.cwd() / "minato.ini"
+
 
 class Config:
-    ROOT_CONFIG_FILENAME = Path.home() / ".minato" / "config.ini"
-    LOCAL_CONFIG_FILENAME = Path.cwd() / "minato.ini"
     DEFAULT_CONFIG = {
         "DEFAULT": {
-            "cache_directory": Path.home() / ".minato" / "cache",
-            "sqlite_database": Path.home() / ".minato" / "minato.db",
+            "minato_root": MINATO_ROOT,
+            "cache_directory": MINATO_ROOT / "cache",
+            "sqlite_database": MINATO_ROOT / "minato.db",
         }
     }
 
@@ -18,17 +21,21 @@ class Config:
         # Read default config
         self._config.read_dict(Config.DEFAULT_CONFIG)
         # Read root config file
-        if Config.ROOT_CONFIG_FILENAME.exists():
-            with Config.ROOT_CONFIG_FILENAME.open("r") as config_file:
+        if ROOT_CONFIG_FILENAME.exists():
+            with ROOT_CONFIG_FILENAME.open("r") as config_file:
                 self._config.read_file(config_file)
         # Read local config file
-        if Config.LOCAL_CONFIG_FILENAME.exists():
-            with Config.LOCAL_CONFIG_FILENAME.open("r") as config_file:
+        if LOCAL_CONFIG_FILENAME.exists():
+            with LOCAL_CONFIG_FILENAME.open("r") as config_file:
                 self._config.read_file(config_file)
         # Read user config file
         if filename is not None and filename.exists():
             with filename.open("r") as config_file:
                 self._config.read_file(config_file)
+
+    @property
+    def minato_root(self) -> Path:
+        return Path(self._config["DEFAULT"]["minato_root"])
 
     @property
     def cache_directory(self) -> Path:
