@@ -3,8 +3,8 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 DEFAULT_MINATO_ROOT = Path.home() / ".minato"
-ROOT_CONFIG_FILENAME = DEFAULT_MINATO_ROOT / "config.ini"
-LOCAL_CONFIG_FILENAME = Path.cwd() / "minato.ini"
+ROOT_CONFIG_FILENAME = "config.ini"
+LOCAL_CONFIG_FILENAME = "minato.ini"
 
 
 class Config:
@@ -13,19 +13,23 @@ class Config:
         filename: Optional[Path] = None,
         minato_root: Optional[Path] = None,
     ) -> None:
+        minato_root = minato_root or DEFAULT_MINATO_ROOT
+
         self._config = configparser.ConfigParser()
 
         # Read default config
         self._config.read_dict(self._default_config(minato_root))
 
         # Read root config file
-        if ROOT_CONFIG_FILENAME.exists():
-            with ROOT_CONFIG_FILENAME.open("r") as config_file:
+        root_config_path = minato_root / ROOT_CONFIG_FILENAME
+        if root_config_path.exists():
+            with root_config_path.open("r") as config_file:
                 self._config.read_file(config_file)
 
         # Read local config file
-        if LOCAL_CONFIG_FILENAME.exists():
-            with LOCAL_CONFIG_FILENAME.open("r") as config_file:
+        local_config_path = Path.cwd() / LOCAL_CONFIG_FILENAME
+        if local_config_path.exists():
+            with local_config_path.open("r") as config_file:
                 self._config.read_file(config_file)
 
         # Read user config file
