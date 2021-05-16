@@ -29,6 +29,7 @@ class ListCommand(Subcommand):
             columns.append("local_path")
             columns.append("created_at")
             columns.append("updated_at")
+            columns.append("extraction_path")
 
         table = Table(
             columns=columns,
