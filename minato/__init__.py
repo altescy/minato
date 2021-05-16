@@ -48,9 +48,9 @@ def cached_path(
 
 def download(url: str, filename: Union[str, Path]) -> None:
     filename = Path(filename)
-    Minato().download(url, filename)
+    Minato.download(url, filename)
 
 
 def upload(filename: Union[str, Path], url: str) -> None:
     filename = Path(filename)
-    Minato().upload(filename, url)
+    Minato.upload(filename, url)

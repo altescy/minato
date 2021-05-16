@@ -18,8 +18,6 @@ class DownloadCommand(Subcommand):
         self.parser.add_argument("--overwrite", action="store_true")
 
     def run(self, args: argparse.Namespace) -> None:
-        minato = Minato()
-
         url = args.url
         file_path = args.path
         if file_path.is_dir():
@@ -29,4 +27,4 @@ class DownloadCommand(Subcommand):
         if file_path.exists() and not args.overwrite:
             raise FileExistsError(f"File {str(file_path)} already exists.")
 
-        minato.download(url, file_path)
+        Minato.download(url, file_path)

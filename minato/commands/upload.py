@@ -18,5 +18,4 @@ class UploadCommand(Subcommand):
 
     def run(self, args: argparse.Namespace) -> None:
         print(f"upload {args.local} to {args.remote}")
-        minato = Minato()
-        minato.upload(args.local, args.remote)
+        Minato.upload(args.local, args.remote)

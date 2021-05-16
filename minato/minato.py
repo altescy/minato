@@ -98,13 +98,15 @@ class Minato:
 
         return cached_file.local_path
 
-    def download(self, url: str, filename: Path) -> None:
+    @staticmethod
+    def download(url: str, filename: Path) -> None:
         with open(filename, "wb") as local_file:
             with open_file(url, "rb") as remote_file:
                 content = remote_file.read()
                 local_file.write(content)
 
-    def upload(self, filename: Path, url: str) -> None:
+    @staticmethod
+    def upload(filename: Path, url: str) -> None:
         with open(filename, "rb") as local_file:
             with open_file(url, "wb") as remote_file:
                 content = local_file.read()
