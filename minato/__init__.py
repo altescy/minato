@@ -12,23 +12,29 @@ __all__ = ["Minato", "cached_path", "download", "open", "upload"]
 def open(
     url_or_filename: Union[str, Path],
     mode: str = "r",
+    extract: bool = False,
     minato_root: Optional[Path] = None,
 ) -> Iterator[IO[Any]]:
     if minato_root is not None:
         minato_root = Path(minato_root)
 
-    with Minato(minato_root).open(url_or_filename, mode) as fp:
+    with Minato(minato_root).open(
+        url_or_filename,
+        mode=mode,
+        extract=extract,
+    ) as fp:
         yield fp
 
 
 def cached_path(
     url_or_filename: Union[str, Path],
+    extract: bool = False,
     minato_root: Optional[Path] = None,
 ) -> Path:
     if minato_root is not None:
         minato_root = Path(minato_root)
 
-    return Minato(minato_root).cached_path(url_or_filename)
+    return Minato(minato_root).cached_path(url_or_filename, extract=extract)
 
 
 def download(url: str, filename: Union[str, Path]) -> None:

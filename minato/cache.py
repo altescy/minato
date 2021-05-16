@@ -19,6 +19,7 @@ class CachedFile:
     local_path: Path
     created_at: datetime.datetime
     updated_at: datetime.datetime
+    extraction_path: Optional[Path]
 
     def __init__(
         self,
@@ -27,6 +28,7 @@ class CachedFile:
         local_path: Union[str, Path],
         created_at: Union[str, datetime.datetime],
         updated_at: Union[str, datetime.datetime],
+        extraction_path: Optional[Union[str, Path]] = None,
     ) -> None:
         if isinstance(local_path, str):
             local_path = Path(local_path)
@@ -34,20 +36,26 @@ class CachedFile:
             created_at = datetime.datetime.fromisoformat(created_at)
         if isinstance(updated_at, str):
             updated_at = datetime.datetime.fromisoformat(updated_at)
+        if isinstance(extraction_path, str):
+            extraction_path = Path(extraction_path)
+        if extraction_path is not None:
+            extraction_path = extraction_path.absolute()
 
         self.id = id
         self.url = url
         self.local_path = local_path.absolute()
         self.created_at = created_at
         self.updated_at = updated_at
+        self.extraction_path = extraction_path
 
-    def to_tuple(self) -> Tuple[int, str, str, str, str]:
+    def to_tuple(self) -> Tuple[int, str, str, str, str, Optional[str]]:
         return (
             self.id,
             self.url,
             str(self.local_path),
             self.created_at.isoformat(),
             self.updated_at.isoformat(),
+            str(self.extraction_path) if self.extraction_path else None,
         )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -57,6 +65,9 @@ class CachedFile:
             "local_path": str(self.local_path),
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
+            "extraction_path": str(self.extraction_path)
+            if self.extraction_path
+            else None,
         }
 
 
@@ -207,11 +218,12 @@ class Cache:
             cursor.execute(
                 """
                 CREATE TABLE IF NOT EXISTS cached_files (
-                    id INTEGER PRIMARY KEY,
-                    url TEXT NOT NULL UNIQUE,
-                    local_path TEXT NOT NULL,
-                    created_at TEXT DEFAULT (datetime('now', 'localtime')),
-                    updated_at TEXT DEFAULT (datetime('now', 'localtime'))
+                    id INTEGER PRIMARY KEY
+                    , url TEXT NOT NULL UNIQUE
+                    , local_path TEXT NOT NULL
+                    , created_at TEXT DEFAULT (datetime('now', 'localtime'))
+                    , updated_at TEXT DEFAULT (datetime('now', 'localtime'))
+                    , extraction_path TEXT
                 )
                 """
             )
