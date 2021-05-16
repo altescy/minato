@@ -39,7 +39,8 @@ def test_cached_path_with_zip_file() -> None:
     with tempfile.TemporaryDirectory() as tempdir:
         minato_root = Path(tempdir)
         path = minato.cached_path(
-            "https://github.com/altescy/minato/raw/main/tests/fixtures/archive.zip!archive/foo.txt",
+            "https://github.com/altescy/minato/raw/main"
+            "/tests/fixtures/archive.zip!archive/foo.txt",
             minato_root=minato_root,
         )
 
