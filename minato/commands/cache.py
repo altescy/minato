@@ -6,11 +6,11 @@ from minato.minato import Minato
 
 
 @Subcommand.register(
-    "add",
-    description="add local cache file from url",
-    help="add local cache file from url",
+    "cache",
+    description="cache remote file and return cached local file path",
+    help="cache remote file and return cached local file path",
 )
-class AddCommand(Subcommand):
+class CacheCommand(Subcommand):
     def set_arguments(self) -> None:
         self.parser.add_argument("url", type=str)
         self.parser.add_argument("--root", type=Path, default=None)

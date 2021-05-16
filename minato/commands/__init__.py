@@ -2,7 +2,7 @@ import argparse
 from typing import Optional
 
 from minato import __version__
-from minato.commands.add import AddCommand  # noqa: F401
+from minato.commands.cache import CacheCommand  # noqa: F401
 from minato.commands.download import DownloadCommand  # noqa: F401
 from minato.commands.list import ListCommand  # noqa: F401
 from minato.commands.remove import RemoveCommand  # noqa: F401

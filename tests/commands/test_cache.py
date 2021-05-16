@@ -2,10 +2,10 @@ import tempfile
 from pathlib import Path
 
 from minato.commands import create_parser
-from minato.commands.add import AddCommand  # noqa: F401
+from minato.commands.cache import CacheCommand  # noqa: F401
 
 
-def test_add_command() -> None:
+def test_cache_command() -> None:
     url = (
         "https://raw.githubusercontent.com/altescy/minato/main/tests/fixtures/hello.txt"
     )
@@ -14,7 +14,7 @@ def test_add_command() -> None:
         minato_root = Path(tempdir)
 
         parser = create_parser()
-        args = parser.parse_args(["add", url, "--root", str(minato_root)])
+        args = parser.parse_args(["cache", url, "--root", str(minato_root)])
 
         args.func(args)
 

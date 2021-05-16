@@ -2,7 +2,7 @@ import tempfile
 from pathlib import Path
 
 from minato.commands import create_parser
-from minato.commands.add import AddCommand  # noqa: F401
+from minato.commands.download import DownloadCommand  # noqa: F401
 
 
 def test_download_command() -> None:
