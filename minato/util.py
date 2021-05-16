@@ -1,8 +1,12 @@
 import hashlib
 import logging
+import os
+import tarfile
+import tempfile
 from pathlib import Path
 from typing import IO, Any, Tuple, Union
 from urllib.parse import urlparse
+from zipfile import ZipFile, is_zipfile
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -12,9 +16,26 @@ from urllib3.util.retry import Retry
 logger = logging.getLogger(__name__)
 
 
-def extract_path(filename: Union[str, Path]) -> Path:
+def is_archive_file(filename: Union[str, Path]) -> bool:
+    return is_zipfile(filename) or tarfile.is_tarfile(filename)
+
+
+def extract_archive_file(
+    source_path: Union[str, Path], target_path: Union[str, Path]
+) -> None:
+    with tempfile.TemporaryDirectory() as temp_dir:
+        if is_zipfile(source_path):
+            with ZipFile(source_path, "r") as zip_file:
+                zip_file.extractall(temp_dir)
+        elif tarfile.is_tarfile(source_path):
+            with tarfile.open(source_path) as tar_file:
+                tar_file.extractall(temp_dir)
+        os.replace(temp_dir, target_path)
+
+
+def extract_path(filename: Union[str, Path]) -> str:
     parsed = urlparse(str(filename))
-    return Path(parsed.path)
+    return parsed.path
 
 
 def is_local(url_or_filename: Union[str, Path]) -> bool:
