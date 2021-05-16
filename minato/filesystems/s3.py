@@ -28,10 +28,7 @@ class S3FileSystem(FileSystem):
         aws_secret_access_key = parsed_url.password or os.environ.get(
             "AWS_SECRET_ACCESS_KEY"
         )
-        endpoint_url = parsed_url.params.get(
-            "endpoint_url",
-            os.environ.get("MINATO_S3_ENDPOINT_URL"),
-        )
+        endpoint_url = parsed_url.params.get("endpoint_url")
 
         with S3FS(
             bucket_name,
