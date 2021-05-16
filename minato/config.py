@@ -13,7 +13,7 @@ class Config:
         filename: Optional[Path] = None,
         minato_root: Optional[Path] = None,
     ) -> None:
-        minato_root = minato_root or DEFAULT_MINATO_ROOT
+        self._minato_root = minato_root or DEFAULT_MINATO_ROOT
 
         self._config = configparser.ConfigParser()
 
@@ -21,7 +21,7 @@ class Config:
         self._config.read_dict(self._default_config(minato_root))
 
         # Read root config file
-        root_config_path = minato_root / ROOT_CONFIG_FILENAME
+        root_config_path = self.minato_root / ROOT_CONFIG_FILENAME
         if root_config_path.exists():
             with root_config_path.open("r") as config_file:
                 self._config.read_file(config_file)
@@ -42,7 +42,6 @@ class Config:
         minato_root = minato_root or DEFAULT_MINATO_ROOT
         return {
             "DEFAULT": {
-                "minato_root": minato_root,
                 "cache_directory": minato_root / "cache",
                 "sqlite_database": minato_root / "minato.db",
             }
@@ -50,7 +49,7 @@ class Config:
 
     @property
     def minato_root(self) -> Path:
-        return Path(self._config["DEFAULT"]["minato_root"])
+        return Path(self._minato_root)
 
     @property
     def cache_directory(self) -> Path:
