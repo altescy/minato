@@ -171,7 +171,12 @@ class Cache:
             WHERE
                 id = ?
             """,
-            (item.url, str(item.local_path), str(item.extraction_path), item.id),
+            (
+                item.url,
+                str(item.local_path),
+                str(item.extraction_path) if item.extraction_path else None,
+                item.id,
+            ),
         )
 
     def by_id(self, id_: int) -> CachedFile:
