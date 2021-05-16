@@ -13,6 +13,8 @@ def open(
     url_or_filename: Union[str, Path],
     mode: str = "r",
     extract: bool = False,
+    use_cache: bool = True,
+    update: bool = False,
     minato_root: Optional[Path] = None,
 ) -> Iterator[IO[Any]]:
     if minato_root is not None:
@@ -22,6 +24,8 @@ def open(
         url_or_filename,
         mode=mode,
         extract=extract,
+        use_cache=use_cache,
+        update=update,
     ) as fp:
         yield fp
 
@@ -29,12 +33,17 @@ def open(
 def cached_path(
     url_or_filename: Union[str, Path],
     extract: bool = False,
+    update: bool = False,
     minato_root: Optional[Path] = None,
 ) -> Path:
     if minato_root is not None:
         minato_root = Path(minato_root)
 
-    return Minato(minato_root).cached_path(url_or_filename, extract=extract)
+    return Minato(minato_root).cached_path(
+        url_or_filename,
+        extract=extract,
+        update=update,
+    )
 
 
 def download(url: str, filename: Union[str, Path]) -> None:
