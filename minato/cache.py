@@ -167,10 +167,11 @@ class Cache:
                 url = ?
                 , local_path = ?
                 , updated_at = (datetime('now', 'localtime'))
+                , extraction_path = ?
             WHERE
                 id = ?
             """,
-            (item.url, str(item.local_path), item.id),
+            (item.url, str(item.local_path), str(item.extraction_path), item.id),
         )
 
     def by_id(self, id_: int) -> CachedFile:
