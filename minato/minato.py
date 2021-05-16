@@ -77,6 +77,7 @@ class Minato:
 
         if not cached_file.local_path.exists() or update:
             self.download(cached_file.url, cached_file.local_path)
+            update = True
 
         if (
             extract
