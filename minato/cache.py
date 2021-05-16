@@ -209,7 +209,10 @@ class Cache:
         assert self._cursor is not None
 
         self._cursor.execute("DELETE FROM cached_files WHERE id = ?", (item.id,))
-        os.remove(item.local_path)
+        try:
+            os.remove(item.local_path)
+        except FileNotFoundError:
+            pass
 
     def list(self) -> List[CachedFile]:
         connection = self._get_connection()
