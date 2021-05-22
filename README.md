@@ -11,7 +11,7 @@ Cache & file system for online resources in Python
 ## Installation
 
 ```
-$ pip install git+https://github.com/altescy/minato.git
+$ pip install minato
 ```
 
 ## Usage
