@@ -3,6 +3,10 @@ name = "minato"
 version = "0.2.0"
 description = "Cache and file system for online resources"
 authors = ["Yasuhiro Yamaguchi <altescy@fastmail.com>"]
+license = "MIT License"
+readme = "README.md"
+homepage = "https://github.com/altescy/minato"
+keywords=["python", "cache", "s3", "google-cloud-storage", "ftp"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
