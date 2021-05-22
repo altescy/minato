@@ -6,7 +6,7 @@ from minato.config import Config
 
 
 def test_version() -> None:
-    assert minato.__version__ == "0.1.0"
+    assert minato.__version__ == "0.2.0"
 
 
 def test_open() -> None:
