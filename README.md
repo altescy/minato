@@ -2,8 +2,9 @@ Minato
 ======
 
 [![Actions Status](https://github.com/altescy/minato/workflows/CI/badge.svg)](https://github.com/altescy/minato/actions/workflows/main.yml)
+[![Python version](https://img.shields.io/pypi/pyversions/minato)](https://github.com/altescy/minato)
 [![License](https://img.shields.io/github/license/altescy/minato)](https://github.com/altescy/minato/blob/master/LICENSE)
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/altescy/minato)](https://github.com/altescy/minato/)
+[![pypi version](https://img.shields.io/pypi/v/minato)](https://pypi.org/project/minato/)
 
 Cache & file system for online resources in Python
 
