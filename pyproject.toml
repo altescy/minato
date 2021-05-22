@@ -10,6 +10,7 @@ requests = "^2.25.1"
 fs = "^2.4.13"
 fs-s3fs = "^1.1.1"
 tqdm = "^4.60.0"
+fs-gcsfs = "^1.4.5"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
