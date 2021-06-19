@@ -5,7 +5,13 @@ from typing import IO, Any, Iterator, Optional, Union
 from minato.cache import Cache
 from minato.config import Config
 from minato.filesystems import download, open_file
-from minato.util import extract_archive_file, extract_path, is_archive_file, is_local
+from minato.util import (
+    extract_archive_file,
+    extract_path,
+    is_archive_file,
+    is_local,
+    remove_file_or_directory,
+)
 
 
 class Minato:
@@ -14,6 +20,7 @@ class Minato:
         self._cache = Cache(
             artifact_dir=self._config.cache_artifact_dir,
             sqlite_path=self._config.cache_db_path,
+            expire_days=self._config.expire_days,
         )
 
     @property
@@ -49,7 +56,9 @@ class Minato:
 
         if "!" in url_or_filename:
             remote_archive_path, file_path = url_or_filename.rsplit("!", 1)
-            archive_path = self.cached_path(remote_archive_path, extract=True)
+            archive_path = self.cached_path(
+                remote_archive_path, extract=True, update=update
+            )
             if not archive_path.is_dir():
                 raise ValueError(
                     f"{url_or_filename} uses the ! syntax, but this is not an archive file."
@@ -76,13 +85,13 @@ class Minato:
             update = True
 
         if (
-            extract
-            and cached_file.extraction_path is None
-            and is_archive_file(cached_file.local_path)
-        ):
+            (extract and cached_file.extraction_path is None) or update
+        ) and is_archive_file(cached_file.local_path):
             cached_file.extraction_path = Path(
                 str(cached_file.local_path) + "-extracted"
             )
+            if cached_file.extraction_path.exists():
+                remove_file_or_directory(cached_file.extraction_path)
             extract_archive_file(cached_file.local_path, cached_file.extraction_path)
             update = True
 

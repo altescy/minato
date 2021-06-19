@@ -2,6 +2,7 @@ import argparse
 from pathlib import Path
 
 from minato.commands.subcommand import Subcommand
+from minato.config import Config
 from minato.minato import Minato
 from minato.table import Table
 from minato.util import is_archive_file, sizeof_fmt
@@ -19,12 +20,23 @@ class ListCommand(Subcommand):
         self.parser.add_argument("--details", action="store_true")
         self.parser.add_argument("--column-width", type=int, default=None)
         self.parser.add_argument("--root", type=Path, default=None)
+        self.parser.add_argument("--expired", action="store_true")
+        self.parser.add_argument("--expire-days", type=int, default=None)
 
     def run(self, args: argparse.Namespace) -> None:
-        minato = Minato(args.root)
+        config = Config.load(
+            cache_root=args.root,
+            expire_days=args.expire_days,
+        )
+        minato = Minato(config)
         cache = minato.cache
 
-        columns = ["id", "url", "size", "type"]
+        if args.expired or args.expire_days is not None:
+            cached_files = cache.list_expired_caches()
+        else:
+            cached_files = cache.list()
+
+        columns = ["id", "url", "size", "type", "expired"]
         if args.details:
             columns.append("local_path")
             columns.append("created_at")
@@ -35,7 +47,8 @@ class ListCommand(Subcommand):
             columns=columns,
             max_column_width=args.column_width,
         )
-        for cached_file in cache.list():
+
+        for cached_file in cached_files:
             info = cached_file.to_dict()
 
             if cached_file.local_path.exists():
@@ -44,6 +57,7 @@ class ListCommand(Subcommand):
                 info["size"] = "-"
 
             info["type"] = get_cache_type(cached_file.local_path)
+            info["expired"] = cache.is_expired(cached_file)
 
             table.add(info)
 

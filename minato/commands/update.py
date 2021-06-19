@@ -3,6 +3,7 @@ from pathlib import Path
 
 from minato.cache import CachedFile
 from minato.commands.subcommand import Subcommand
+from minato.config import Config
 from minato.minato import Minato
 
 
@@ -14,12 +15,18 @@ from minato.minato import Minato
 class UpdateCommand(Subcommand):
     def set_arguments(self) -> None:
         # TODO: id or url
-        self.parser.add_argument("url_or_id", nargs="+", type=str)
+        self.parser.add_argument("url_or_id", nargs="?", type=str, default=[])
         self.parser.add_argument("--force", action="store_true")
+        self.parser.add_argument("--expired", action="store_true")
+        self.parser.add_argument("--expire-days", type=int, default=None)
         self.parser.add_argument("--root", type=Path, default=None)
 
     def run(self, args: argparse.Namespace) -> None:
-        minato = Minato(args.root)
+        config = Config.load(
+            cache_root=args.root,
+            expire_days=args.expire_days,
+        )
+        minato = Minato(config)
         cache = minato.cache
 
         def get_cached_file(url_or_id: str) -> CachedFile:
@@ -32,7 +39,13 @@ class UpdateCommand(Subcommand):
             return cached_file
 
         cached_files = [get_cached_file(url_or_id) for url_or_id in args.url_or_id]
+        if args.expired or args.expire_days is not None:
+            cached_files += cache.list_expired_caches()
+
         num_caches = len(cached_files)
+        if num_caches == 0:
+            print("No caches to update.")
+            return
 
         print(f"{num_caches} files will be updated:")
         for cached_file in cached_files:
@@ -44,9 +57,7 @@ class UpdateCommand(Subcommand):
                 print("canceled")
                 return
 
-        with cache.tx() as tx:
-            for cached_file in cached_files:
-                minato.download(cached_file.url, cached_file.local_path)
-                tx.update(cached_file)
+        for cached_file in cached_files:
+            minato.cached_path(cached_file.url, update=True)
 
         print("Cache files were successfully updated.")

@@ -14,13 +14,20 @@ LOCAL_CONFIG_PATH = Path.cwd() / "minato.ini"
 @dataclasses.dataclass
 class Config:
     cache_root: Path = DEFAULT_CACHE_ROOT
+    expire_days: int = -1
 
     @classmethod
-    def load(cls, cache_root: Optional[Union[str, Path]] = None) -> Config:
+    def load(
+        cls,
+        cache_root: Optional[Union[str, Path]] = None,
+        expire_days: Optional[int] = None,
+    ) -> Config:
         config = cls()
         config.read_files([ROOT_CONFIG_PATH, LOCAL_CONFIG_PATH])
-        if cache_root:
+        if cache_root is not None:
             config.cache_root = Path(cache_root)
+        if expire_days is not None:
+            config.expire_days = expire_days
         return config
 
     def read_files(self, files: List[Union[str, Path]]) -> None:

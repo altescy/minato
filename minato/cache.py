@@ -77,6 +77,7 @@ class Cache:
         self,
         artifact_dir: Path,
         sqlite_path: Path,
+        expire_days: int = -1,
     ) -> None:
         if not artifact_dir.exists():
             os.makedirs(artifact_dir, exist_ok=True)
@@ -88,6 +89,7 @@ class Cache:
 
         self._artifact_dir = artifact_dir
         self._sqlite_path = sqlite_path
+        self._expire_days = expire_days
 
         self._connection: Optional[sqlite3.Connection] = None
         self._cursor: Optional[sqlite3.Cursor] = None
@@ -217,11 +219,21 @@ class Cache:
         except FileNotFoundError:
             pass
 
+    def is_expired(self, item: CachedFile) -> bool:
+        if self._expire_days < 0:
+            return False
+        now = datetime.datetime.now()
+        delta = now - item.updated_at
+        return delta.days >= self._expire_days
+
     def list(self) -> List[CachedFile]:
         connection = self._get_connection()
         rows = connection.execute("SELECT * FROM cached_files")
         cached_files = [CachedFile(*row) for row in rows]
         return cached_files
+
+    def list_expired_caches(self) -> List[CachedFile]:
+        return [x for x in self.list() if self.is_expired(x)]
 
     def migrate(self) -> None:
         connection = sqlite3.connect(self._sqlite_path)
