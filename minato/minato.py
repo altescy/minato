@@ -4,7 +4,7 @@ from typing import IO, Any, Iterator, Optional, Union
 
 from minato.cache import Cache
 from minato.config import Config
-from minato.filesystems import open_file
+from minato.filesystems import download, open_file
 from minato.util import extract_archive_file, extract_path, is_archive_file, is_local
 
 
@@ -97,10 +97,7 @@ class Minato:
 
     @staticmethod
     def download(url: str, filename: Path) -> None:
-        with open(filename, "wb") as local_file:
-            with open_file(url, "rb") as remote_file:
-                content = remote_file.read()
-                local_file.write(content)
+        download(url, filename)
 
     @staticmethod
     def upload(filename: Path, url: str) -> None:

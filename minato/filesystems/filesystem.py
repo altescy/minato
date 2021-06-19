@@ -20,6 +20,15 @@ def open_file(
         yield fp
 
 
+def download(
+    url_or_filename: Union[str, Path],
+    download_path: Union[str, Path],
+) -> None:
+    url = str(url_or_filename)
+    filesystem = FileSystem.by_url(url)
+    filesystem.download(download_path)
+
+
 class FileSystem:
     registry: Dict[str, Type["FileSystem"]] = {}
 
