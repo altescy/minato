@@ -11,10 +11,8 @@ keywords=["python", "cache", "s3", "google-cloud-storage", "ftp"]
 [tool.poetry.dependencies]
 python = "^3.8"
 requests = "^2.25.1"
-fs = "^2.4.13"
-fs-s3fs = "^1.1.1"
 tqdm = "^4.60.0"
-fs-gcsfs = "^1.4.5"
+boto3 = "^1.17.97"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

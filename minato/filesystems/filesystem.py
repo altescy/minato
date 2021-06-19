@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import IO, Any, Callable, Dict, Iterator, List, Type, Union
 from urllib.parse import urlparse
 
+from minato.url import URL
+
 
 @contextmanager
 def open_file(
@@ -43,7 +45,13 @@ class FileSystem:
         return subclass(url)
 
     def __init__(self, url_or_filename: Union[str, Path]) -> None:
-        self._url_or_filename = url_or_filename
+        self._url = URL(str(url_or_filename))
+
+    def exists(self) -> bool:
+        raise NotImplementedError
+
+    def download(self, path: Union[str, Path]) -> None:
+        raise NotImplementedError
 
     @contextmanager
     def open_file(self, mode: str = "r") -> Iterator[IO[Any]]:

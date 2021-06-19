@@ -1,42 +1,110 @@
 import os
+import re
+import tempfile
+import threading
 from contextlib import contextmanager
 from pathlib import Path
 from typing import IO, Any, Iterator, Union
 
-from fs.opener.parse import parse_fs_url
-from fs_s3fs import S3FS
+import boto3
 
 from minato.filesystems.filesystem import FileSystem
-from minato.util import get_parent_path_and_filename
 
 
 @FileSystem.register(["s3"])
 class S3FileSystem(FileSystem):
     def __init__(self, url_or_filename: Union[str, Path]) -> None:
         super().__init__(url_or_filename)
-        self._url = str(url_or_filename)
+        self._tlocal = threading.local()
+
+        self._bucket_name = self._url.hostname or ""
+        self._key = re.sub(r"^/", "", self._url.path)
+
+        self._aws_access_key_id = self._url.username or os.environ.get(
+            "AWS_ACCESS_KEY_ID"
+        )
+        self._aws_secret_access_key = self._url.password or os.environ.get(
+            "AWS_SECRET_ACCESS_KEY"
+        )
+        self._endpoint_url = self._url.get_query("endpoint_url")
+        self._region_name = self._url.get_query("region")
+
+    def _get_resource(self):  # type: ignore
+        if not hasattr(self._tlocal, "resource"):
+            self._tlocal.resource = boto3.resource(
+                "s3",
+                region_name=self._region_name,
+                aws_access_key_id=self._aws_access_key_id,
+                aws_secret_access_key=self._aws_secret_access_key,
+                endpoint_url=self._endpoint_url,
+            )
+        return self._tlocal.resource
+
+    def _get_client(self):  # type: ignore
+        if not hasattr(self._tlocal, "client"):
+            self._tlocal.client = boto3.client(
+                "s3",
+                region_name=self._region_name,
+                aws_access_key_id=self._aws_access_key_id,
+                aws_secret_access_key=self._aws_secret_access_key,
+                endpoint_url=self._endpoint_url,
+            )
+        return self._tlocal.client
+
+    def _download_fileobj(self, key: str, fp: IO[Any]) -> None:
+        client = self._get_client()  # type: ignore
+        client.download_fileobj(self._bucket_name, key, fp)
+
+    def _upload_fileobj(self, fp: IO[Any], key: str) -> None:
+        client = self._get_client()  # type: ignore
+        client.upload_fileobj(fp, self._bucket_name, key)
+
+    def exists(self) -> bool:
+        resource = self._get_resource()  # type: ignore
+        bucket = resource.Bucket(self._bucket_name)
+        objects = list(bucket.objects.filter(Prefix=self._key))
+        return len(objects) > 0
+
+    def download(self, path: Union[str, Path]) -> None:
+        if not self.exists():
+            raise FileNotFoundError(self._url.raw)
+
+        if isinstance(path, str):
+            path = Path(path)
+
+        resource = self._get_resource()  # type: ignore
+        bucket = resource.Bucket(self._bucket_name)
+        for obj in bucket.objects.filter(Prefix=self._key):
+            relpath = os.path.relpath(obj.key, self._key)
+            parent_dir = path / os.path.dirname(relpath)
+            os.makedirs(parent_dir, exist_ok=True)
+
+            file_path = path / relpath
+            bucket.download_file(obj.key, str(file_path))
 
     @contextmanager
     def open_file(
         self,
         mode: str = "r",
     ) -> Iterator[IO[Any]]:
-        parsed_url = parse_fs_url(self._url)
-        bucket_name, _, path = parsed_url.resource.partition("/")
-        dir_path, s3_filename = get_parent_path_and_filename(path)
+        if "x" in mode and self.exists():
+            raise FileExistsError(self._url.raw)
 
-        aws_access_key_id = parsed_url.username or os.environ.get("AWS_ACCESS_KEY_ID")
-        aws_secret_access_key = parsed_url.password or os.environ.get(
-            "AWS_SECRET_ACCESS_KEY"
-        )
-        endpoint_url = parsed_url.params.get("endpoint_url")
+        local_file = tempfile.NamedTemporaryFile(delete=False)
+        try:
+            if "r" in mode or "a" in mode or "+" in mode:
+                if not self.exists():
+                    raise FileNotFoundError(self._url.raw)
+                self._download_fileobj(self._key, local_file)
 
-        with S3FS(
-            bucket_name,
-            dir_path=dir_path or "/",
-            aws_access_key_id=aws_access_key_id,
-            aws_secret_access_key=aws_secret_access_key,
-            endpoint_url=endpoint_url,
-        ) as s3fs:
-            with s3fs.open(s3_filename, mode) as fp:
+            local_file.close()
+            with open(local_file.name, mode) as fp:
                 yield fp
+
+            if "w" in mode or "a" in mode or "+" in mode or "x" in mode:
+                with open(local_file.name, "rb") as fp:
+                    self._upload_fileobj(fp, self._key)
+
+        finally:
+            local_file.close()
+            os.remove(local_file.name)
