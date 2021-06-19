@@ -1,6 +1,7 @@
 import hashlib
 import logging
 import os
+import shutil
 import tarfile
 import tempfile
 from pathlib import Path
@@ -14,6 +15,14 @@ from tqdm import tqdm
 from urllib3.util.retry import Retry
 
 logger = logging.getLogger(__name__)
+
+
+def remove_file_or_directory(path: Union[str, Path]) -> None:
+    path = Path(path)
+    if path.is_dir():
+        shutil.rmtree(path)
+    else:
+        os.remove(path)
 
 
 def is_archive_file(filename: Union[str, Path]) -> bool:
