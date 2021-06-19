@@ -24,7 +24,7 @@ class ListCommand(Subcommand):
         minato = Minato(args.root)
         cache = minato.cache
 
-        columns = ["id", "url", "size"]
+        columns = ["id", "url", "size", "type"]
         if args.details:
             columns.append("local_path")
             columns.append("created_at")
@@ -42,6 +42,8 @@ class ListCommand(Subcommand):
                 info["size"] = sizeof_fmt(cached_file.local_path.stat().st_size)
             else:
                 info["size"] = "-"
+
+            info["type"] = "dir" if cached_file.local_path.is_dir() else "file"
 
             table.add(info)
 
