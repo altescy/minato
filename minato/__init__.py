@@ -2,11 +2,22 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import IO, Any, Iterator, Optional, Union
 
+from minato.cache import Cache
 from minato.config import Config
+from minato.filesystems import FileSystem
 from minato.minato import Minato
 
 __version__ = "0.2.0"
-__all__ = ["Config", "Minato", "cached_path", "download", "open", "upload"]
+__all__ = [
+    "Cache",
+    "Config",
+    "FileSystem",
+    "Minato",
+    "cached_path",
+    "download",
+    "open",
+    "upload",
+]
 
 
 @contextmanager
