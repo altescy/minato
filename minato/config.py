@@ -21,13 +21,18 @@ class Config:
         cls,
         cache_root: Optional[Union[str, Path]] = None,
         expire_days: Optional[int] = None,
+        files: Optional[List[Union[str, Path]]] = None,
     ) -> Config:
+        if files is None:
+            files = [ROOT_CONFIG_PATH, LOCAL_CONFIG_PATH]
+
         config = cls()
-        config.read_files([ROOT_CONFIG_PATH, LOCAL_CONFIG_PATH])
+        config.read_files(files)
         if cache_root is not None:
             config.cache_root = Path(cache_root)
         if expire_days is not None:
             config.expire_days = expire_days
+
         return config
 
     def read_files(self, files: List[Union[str, Path]]) -> None:
