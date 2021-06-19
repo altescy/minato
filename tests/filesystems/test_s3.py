@@ -24,6 +24,25 @@ def test_open_file() -> None:
 
 
 @mock_s3
+def test_download_file() -> None:
+    url = "s3://my_bucket/path/to/file"
+
+    conn = boto3.resource("s3", region_name="us-east-1")
+    conn.create_bucket(Bucket="my_bucket")
+
+    with S3FileSystem("s3://my_bucket/path/to/file").open_file("w") as fp:
+        fp.write("file")
+
+    with tempfile.TemporaryDirectory() as _tempdir:
+        tempdir = Path(_tempdir)
+
+        fs = S3FileSystem(url)
+        fs.download(tempdir)
+
+        assert (tempdir / "file").is_file()
+
+
+@mock_s3
 def test_download_dir() -> None:
     url = "s3://my_bucket/path/to/dir"
 
