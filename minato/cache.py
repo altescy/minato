@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from minato.exceptions import CacheNotFoundError, ConfigurationError
+from minato.util import remove_file_or_directory
 
 
 @dataclasses.dataclass
@@ -211,7 +212,9 @@ class Cache:
 
         self._cursor.execute("DELETE FROM cached_files WHERE id = ?", (item.id,))
         try:
-            shutil.rmtree(item.local_path)
+            remove_file_or_directory(item.local_path)
+            if item.extraction_path:
+                remove_file_or_directory(item.extraction_path)
         except FileNotFoundError:
             pass
 
