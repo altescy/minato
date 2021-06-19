@@ -14,12 +14,12 @@ def test_open() -> None:
         cache_root = Path(tempdir)
 
         with minato.open(
-            "https://raw.githubusercontent.com/altescy/xsklearn/main/README.md",
+            "https://raw.githubusercontent.com/altescy/minato/main/tests/fixtures/hello.txt",
             cache_root=cache_root,
         ) as fp:
             text = fp.readline().strip()
 
-        assert text == "xsklearn"
+        assert text == "Hello, world!"
 
 
 def test_cached_path() -> None:
@@ -27,7 +27,7 @@ def test_cached_path() -> None:
         cache_root = Path(tempdir)
 
         path = minato.cached_path(
-            "https://raw.githubusercontent.com/altescy/xsklearn/main/README.md",
+            "https://raw.githubusercontent.com/altescy/minato/main/tests/fixtures/hello.txt",
             cache_root=cache_root,
         )
 
