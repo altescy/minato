@@ -36,7 +36,10 @@ class Minato:
         use_cache: bool = True,
         update: bool = False,
     ) -> Iterator[IO[Any]]:
-        if mode.startswith("r") and use_cache:
+        if (
+            not ("a" in mode and "w" in mode and "x" in mode and "+" in mode)
+            and use_cache
+        ):
             url_or_filename = self.cached_path(
                 url_or_filename,
                 extract=extract,
