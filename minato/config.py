@@ -40,6 +40,8 @@ class Config:
             section = parser["cache"]
             if "root" in section:
                 self.cache_root = Path(parser["cache"]["root"])
+            if "expire_days" in section:
+                self.expire_days = int(parser["cache"]["expire_days"])
 
     @property
     def cache_db_path(self) -> Path:
