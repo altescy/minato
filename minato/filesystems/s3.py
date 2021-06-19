@@ -74,13 +74,24 @@ class S3FileSystem(FileSystem):
 
         resource = self._get_resource()  # type: ignore
         bucket = resource.Bucket(self._bucket_name)
-        for obj in bucket.objects.filter(Prefix=self._key):
-            relpath = os.path.relpath(obj.key, self._key)
-            parent_dir = path / os.path.dirname(relpath)
-            os.makedirs(parent_dir, exist_ok=True)
+        objects = list(bucket.objects.filter(Prefix=self._key))
 
-            file_path = path / relpath
+        if len(objects) == 1:  # if the given path is a file
+            obj = objects[0]
+            if path.is_dir():
+                file_path = path / os.path.basename(obj.key)
+            else:
+                file_path = path
+            os.makedirs(file_path.parent, exist_ok=True)
             bucket.download_file(obj.key, str(file_path))
+        else:  # if the given path is a directory
+            for obj in objects:
+                relpath = os.path.relpath(obj.key, self._key)
+                parent_dir = path / os.path.dirname(relpath)
+                os.makedirs(parent_dir, exist_ok=True)
+
+                file_path = path / relpath
+                bucket.download_file(obj.key, str(file_path))
 
     @contextmanager
     def open_file(
