@@ -29,8 +29,12 @@ def open(
     force_download: bool = False,
     force_extract: bool = False,
     cache_root: Optional[Union[str, Path]] = None,
+    expire_days: Optional[int] = None,
 ) -> Iterator[IO[Any]]:
-    config = Config.load(cache_root=cache_root)
+    config = Config.load(
+        cache_root=cache_root,
+        expire_days=expire_days,
+    )
 
     with Minato(config).open(
         url_or_filename,
@@ -49,8 +53,12 @@ def cached_path(
     force_download: bool = False,
     force_extract: bool = False,
     cache_root: Optional[Union[str, Path]] = None,
+    expire_days: Optional[int] = None,
 ) -> Path:
-    config = Config.load(cache_root=cache_root)
+    config = Config.load(
+        cache_root=cache_root,
+        expire_days=expire_days,
+    )
 
     return Minato(config).cached_path(
         url_or_filename,
