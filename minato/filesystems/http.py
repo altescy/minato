@@ -18,6 +18,9 @@ class HttpFileSystem(FileSystem):
         return status_code == 200
 
     def download(self, path: Union[str, Path]) -> None:
+        if not self.exists():
+            raise FileNotFoundError(self._url.raw)
+
         with open(path, "w+b") as fp:
             http_get(self._url.raw, fp)
 
