@@ -54,6 +54,7 @@ class Minato:
         url_or_filename: Union[str, Path],
         update: bool = False,
         extract: bool = False,
+        force_extract: bool = False,
     ) -> Path:
         url_or_filename = str(url_or_filename)
 
@@ -88,7 +89,9 @@ class Minato:
             update = True
 
         if (
-            (extract and cached_file.extraction_path is None) or update
+            (extract and cached_file.extraction_path is None)
+            or (update and cached_file.extraction_path is not None)
+            or force_extract
         ) and is_archive_file(cached_file.local_path):
             cached_file.extraction_path = Path(
                 str(cached_file.local_path) + "-extracted"
@@ -102,7 +105,7 @@ class Minato:
             with self._cache.tx() as tx:
                 tx.update(cached_file)
 
-        if extract and cached_file.extraction_path:
+        if (extract or force_extract) and cached_file.extraction_path:
             return cached_file.extraction_path
 
         return cached_file.local_path
