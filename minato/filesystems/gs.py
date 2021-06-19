@@ -12,15 +12,16 @@ from minato.util import get_parent_path_and_filename
 
 @FileSystem.register(["gs"])
 class GoogleCloudStorageFileSystem(FileSystem):
+    def __init__(self, url_or_filename: Union[str, Path]) -> None:
+        super().__init__(url_or_filename)
+        self._url = str(url_or_filename)
+
     @contextmanager
     def open(
         self,
-        filename: Union[str, Path],
         mode: str = "r",
     ) -> Iterator[IO[Any]]:
-        url = str(filename)
-
-        parsed_url = parse_fs_url(url)
+        parsed_url = parse_fs_url(self._url)
         bucket_name, _, path = parsed_url.resource.partition("/")
         dir_path, gs_filename = get_parent_path_and_filename(path)
 

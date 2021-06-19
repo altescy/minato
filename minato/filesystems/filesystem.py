@@ -13,8 +13,8 @@ def open_file(
 ) -> Iterator[IO[Any]]:
 
     url = str(url_or_filename)
-    filesystem = FileSystem.by_url(url)()
-    with filesystem.open(url_or_filename, mode) as fp:
+    filesystem = FileSystem.by_url(url)
+    with filesystem.open_file(mode) as fp:
         yield fp
 
 
@@ -33,25 +33,18 @@ class FileSystem:
         return decorator
 
     @classmethod
-    def by_scheme(cls, scheme: str) -> Type[FileSystem]:
+    def by_url(cls, url: str) -> FileSystem:
+        parsed_url = urlparse(url)
+        scheme = parsed_url.scheme
         if scheme not in FileSystem.registry:
             schemes = ", ".join(FileSystem.registry.keys())
             raise KeyError(f"Invalid scheme: {scheme} (not in {schemes})")
-        return FileSystem.registry[scheme]
+        subclass = FileSystem.registry[scheme]
+        return subclass(url)
 
-    @classmethod
-    def by_url(cls, url: str) -> Type[FileSystem]:
-        parsed_url = urlparse(url)
-        scheme = parsed_url.scheme
-        return FileSystem.by_scheme(scheme)
-
-    def __init__(self) -> None:
-        pass
+    def __init__(self, url_or_filename: Union[str, Path]) -> None:
+        self._url_or_filename = url_or_filename
 
     @contextmanager
-    def open(
-        self,
-        filename: Union[str, Path],
-        mode: str = "r",
-    ) -> Iterator[IO[Any]]:
+    def open_file(self, mode: str = "r") -> Iterator[IO[Any]]:
         raise NotImplementedError

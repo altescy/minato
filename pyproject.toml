@@ -20,6 +20,7 @@ fs-gcsfs = "^1.4.5"
 pytest = "^5.2"
 python-language-server = "^0.36.2"
 pysen = {version = "^0.9.1", extras = ["lint"]}
+moto = {version = "^2.0.9", extras = ["s3"]}
 
 [tool.poetry.scripts]
 minato = "minato.__main__:run"

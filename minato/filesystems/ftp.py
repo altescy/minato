@@ -12,15 +12,16 @@ from minato.util import get_parent_path_and_filename
 
 @FileSystem.register(["ftp"])
 class FTPFileSystem(FileSystem):
+    def __init__(self, url_or_filename: Union[str, Path]) -> None:
+        super().__init__(url_or_filename)
+        self._url = str(url_or_filename)
+
     @contextmanager
-    def open(
+    def open_file(
         self,
-        filename: Union[str, Path],
         mode: str = "r",
     ) -> Iterator[IO[Any]]:
-        url = str(filename)
-
-        parsed_url = parse_fs_url(url)
+        parsed_url = parse_fs_url(self._url)
         ftp_host, _, ftp_path = parsed_url.resource.partition("/")
         ftp_host, _, ftp_port = ftp_host.partition(":")
         dir_path, ftp_filename = get_parent_path_and_filename(ftp_path)
