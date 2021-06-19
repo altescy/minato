@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
 
+from minato.cache import CachedFile
 from minato.commands.subcommand import Subcommand
 from minato.minato import Minato
 
@@ -12,8 +13,7 @@ from minato.minato import Minato
 )
 class RemoveCommand(Subcommand):
     def set_arguments(self) -> None:
-        # TODO: id or url
-        self.parser.add_argument("id", nargs="+", type=int)
+        self.parser.add_argument("url_or_id", nargs="+", type=str)
         self.parser.add_argument("--force", action="store_true")
         self.parser.add_argument("--root", type=Path, default=None)
 
@@ -21,7 +21,16 @@ class RemoveCommand(Subcommand):
         minato = Minato(args.root)
         cache = minato.cache
 
-        cached_files = [cache.by_id(cache_id) for cache_id in args.id]
+        def get_cached_file(url_or_id: str) -> CachedFile:
+            try:
+                cache_id = int(url_or_id)
+                cached_file = cache.by_id(cache_id)
+            except ValueError:
+                url = url_or_id
+                cached_file = cache.by_url(url)
+            return cached_file
+
+        cached_files = [get_cached_file(url_or_id) for url_or_id in args.url_or_id]
         num_caches = len(cached_files)
 
         if not cached_files:
