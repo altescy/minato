@@ -4,7 +4,7 @@ from pathlib import Path
 from minato.commands.subcommand import Subcommand
 from minato.minato import Minato
 from minato.table import Table
-from minato.util import sizeof_fmt
+from minato.util import is_archive_file, sizeof_fmt
 
 
 @Subcommand.register(
@@ -43,10 +43,18 @@ class ListCommand(Subcommand):
             else:
                 info["size"] = "-"
 
-            info["type"] = "dir" if cached_file.local_path.is_dir() else "file"
+            info["type"] = get_cache_type(cached_file.local_path)
 
             table.add(info)
 
         table.sort(args.sort, args.desc)
 
         table.print()
+
+
+def get_cache_type(path: Path) -> str:
+    if path.is_dir():
+        return "dir"
+    if is_archive_file(path):
+        return "archive"
+    return "file"
