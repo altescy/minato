@@ -2,6 +2,7 @@ import argparse
 from pathlib import Path
 
 from minato.commands.subcommand import Subcommand
+from minato.config import Config
 from minato.minato import Minato
 
 
@@ -16,6 +17,8 @@ class CacheCommand(Subcommand):
         self.parser.add_argument("--root", type=Path, default=None)
 
     def run(self, args: argparse.Namespace) -> None:
-        minato = Minato(args.root)
+        config = Config.load(cache_root=args.root)
+
+        minato = Minato(config)
         local_path = minato.cached_path(args.url)
         print(local_path)

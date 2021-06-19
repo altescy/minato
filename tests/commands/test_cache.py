@@ -3,6 +3,7 @@ from pathlib import Path
 
 from minato.commands import create_parser
 from minato.commands.cache import CacheCommand  # noqa: F401
+from minato.config import Config
 
 
 def test_cache_command() -> None:
@@ -11,14 +12,14 @@ def test_cache_command() -> None:
     )
 
     with tempfile.TemporaryDirectory() as tempdir:
-        minato_root = Path(tempdir)
+        config = Config(cache_root=Path(tempdir))
 
         parser = create_parser()
-        args = parser.parse_args(["cache", url, "--root", str(minato_root)])
+        args = parser.parse_args(["cache", url, "--root", str(config.cache_root)])
 
         args.func(args)
 
-        cached_files = list(minato_root.glob("cache/*"))
+        cached_files = list(config.cache_artifact_dir.glob("*"))
         assert len(cached_files) == 1
 
         filepath = cached_files[0]

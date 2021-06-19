@@ -7,7 +7,7 @@ from minato.cache import Cache
 def test_cache_add_list_and_delete() -> None:
     with tempfile.TemporaryDirectory() as _tempdir:
         tempdir = Path(_tempdir)
-        cache = Cache(tempdir / "cache", tempdir / "sqlite.db")
+        cache = Cache(tempdir / "artifacts", tempdir / "sqlite.db")
 
         with cache.tx() as tx:
             cached_file = tx.add("https://example.com/path/to/file_1")
@@ -29,7 +29,7 @@ def test_cache_add_list_and_delete() -> None:
 def test_cache_contains() -> None:
     with tempfile.TemporaryDirectory() as _tempdir:
         tempdir = Path(_tempdir)
-        cache = Cache(tempdir / "cache", tempdir / "sqlite.db")
+        cache = Cache(tempdir / "artifacts", tempdir / "sqlite.db")
 
         url = "https://example.com/path/to/file"
         with cache.tx() as tx:

@@ -74,18 +74,18 @@ class CachedFile:
 class Cache:
     def __init__(
         self,
-        cache_directory: Path,
+        artifact_dir: Path,
         sqlite_path: Path,
     ) -> None:
-        if not cache_directory.exists():
-            os.makedirs(cache_directory, exist_ok=True)
+        if not artifact_dir.exists():
+            os.makedirs(artifact_dir, exist_ok=True)
 
-        if not cache_directory.is_dir():
+        if not artifact_dir.is_dir():
             raise ConfigurationError(
-                f"Given cache_directory path is not a directory: {cache_directory}"
+                f"Given cache_directory path is not a directory: {artifact_dir}"
             )
 
-        self._cache_directory = cache_directory
+        self._artifact_dir = artifact_dir
         self._sqlite_path = sqlite_path
 
         self._connection: Optional[sqlite3.Connection] = None
@@ -138,7 +138,7 @@ class Cache:
 
     def _generate_unique_filename(self) -> Path:
         name = uuid.uuid4().hex
-        return self._cache_directory / name
+        return self._artifact_dir / name
 
     def add(self, url: str) -> CachedFile:
         self._check_connection()

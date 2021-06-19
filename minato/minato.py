@@ -1,4 +1,3 @@
-import os
 from contextlib import contextmanager
 from pathlib import Path
 from typing import IO, Any, Iterator, Optional, Union
@@ -10,15 +9,12 @@ from minato.util import extract_archive_file, extract_path, is_archive_file, is_
 
 
 class Minato:
-    def __init__(
-        self,
-        root: Optional[Path] = None,
-    ) -> None:
-        if root is not None and not root.exists():
-            os.makedirs(root, exist_ok=True)
-
-        config = Config(minato_root=root)
-        self._cache = Cache(config.cache_directory, config.sqlite_database)
+    def __init__(self, config: Optional[Config] = None) -> None:
+        self._config = config or Config.load()
+        self._cache = Cache(
+            artifact_dir=self._config.cache_artifact_dir,
+            sqlite_path=self._config.cache_db_path,
+        )
 
     @property
     def cache(self) -> Cache:

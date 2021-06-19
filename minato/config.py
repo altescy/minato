@@ -1,60 +1,43 @@
-import configparser
+from __future__ import annotations
+
+import dataclasses
+from configparser import ConfigParser
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import List, Optional, Union
 
-DEFAULT_MINATO_ROOT = Path.home() / ".minato"
-ROOT_CONFIG_FILENAME = "config.ini"
-LOCAL_CONFIG_FILENAME = "minato.ini"
+MINATO_ROOT = Path.home() / ".minato"
+DEFAULT_CACHE_ROOT = MINATO_ROOT / "cache"
+ROOT_CONFIG_PATH = MINATO_ROOT / "config.ini"
+LOCAL_CONFIG_PATH = Path.cwd() / "minato.ini"
 
 
+@dataclasses.dataclass
 class Config:
-    def __init__(
-        self,
-        filename: Optional[Path] = None,
-        minato_root: Optional[Path] = None,
-    ) -> None:
-        self._minato_root = minato_root or DEFAULT_MINATO_ROOT
+    cache_root: Path = DEFAULT_CACHE_ROOT
 
-        self._config = configparser.ConfigParser()
+    @classmethod
+    def load(cls, cache_root: Optional[Union[str, Path]] = None) -> Config:
+        config = cls()
+        config.read_files([ROOT_CONFIG_PATH, LOCAL_CONFIG_PATH])
+        if cache_root:
+            config.cache_root = Path(cache_root)
+        return config
 
-        # Read default config
-        self._config.read_dict(self._default_config(minato_root))
+    def read_files(self, files: List[Union[str, Path]]) -> None:
+        parser = ConfigParser()
+        parser.read([str(path) for path in files])
+        self._update_from_configparser(parser)
 
-        # Read root config file
-        root_config_path = self.minato_root / ROOT_CONFIG_FILENAME
-        if root_config_path.exists():
-            with root_config_path.open("r") as config_file:
-                self._config.read_file(config_file)
-
-        # Read local config file
-        local_config_path = Path.cwd() / LOCAL_CONFIG_FILENAME
-        if local_config_path.exists():
-            with local_config_path.open("r") as config_file:
-                self._config.read_file(config_file)
-
-        # Read user config file
-        if filename is not None and filename.exists():
-            with filename.open("r") as config_file:
-                self._config.read_file(config_file)
-
-    @staticmethod
-    def _default_config(minato_root: Optional[Path]) -> Dict[str, Any]:
-        minato_root = minato_root or DEFAULT_MINATO_ROOT
-        return {
-            "DEFAULT": {
-                "cache_directory": minato_root / "cache",
-                "sqlite_database": minato_root / "minato.db",
-            }
-        }
+    def _update_from_configparser(self, parser: ConfigParser) -> None:
+        if parser.has_section("cache"):
+            section = parser["cache"]
+            if "root" in section:
+                self.cache_root = Path(parser["cache"]["root"])
 
     @property
-    def minato_root(self) -> Path:
-        return Path(self._minato_root)
+    def cache_db_path(self) -> Path:
+        return self.cache_root / "cache.db"
 
     @property
-    def cache_directory(self) -> Path:
-        return Path(self._config["DEFAULT"]["cache_directory"])
-
-    @property
-    def sqlite_database(self) -> Path:
-        return Path(self._config["DEFAULT"]["sqlite_database"])
+    def cache_artifact_dir(self) -> Path:
+        return self.cache_root / "artifacts"
