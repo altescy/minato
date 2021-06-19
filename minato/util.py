@@ -17,6 +17,8 @@ logger = logging.getLogger(__name__)
 
 
 def is_archive_file(filename: Union[str, Path]) -> bool:
+    if not Path(filename).is_file():
+        return False
     return is_zipfile(filename) or tarfile.is_tarfile(filename)
 
 
