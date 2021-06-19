@@ -3,6 +3,7 @@ from __future__ import annotations
 import dataclasses
 import datetime
 import os
+import shutil
 import sqlite3
 import uuid
 from contextlib import contextmanager
@@ -210,7 +211,7 @@ class Cache:
 
         self._cursor.execute("DELETE FROM cached_files WHERE id = ?", (item.id,))
         try:
-            os.remove(item.local_path)
+            shutil.rmtree(item.local_path)
         except FileNotFoundError:
             pass
 
