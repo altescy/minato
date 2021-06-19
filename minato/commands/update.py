@@ -58,6 +58,6 @@ class UpdateCommand(Subcommand):
                 return
 
         for cached_file in cached_files:
-            minato.cached_path(cached_file.url, update=True)
+            minato.cached_path(cached_file.url)
 
         print("Cache files were successfully updated.")

@@ -15,7 +15,8 @@ def open(
     mode: str = "r",
     extract: bool = False,
     use_cache: bool = True,
-    update: bool = False,
+    force_download: bool = False,
+    force_extract: bool = False,
     cache_root: Optional[Union[str, Path]] = None,
 ) -> Iterator[IO[Any]]:
     config = Config.load(cache_root=cache_root)
@@ -25,7 +26,8 @@ def open(
         mode=mode,
         extract=extract,
         use_cache=use_cache,
-        update=update,
+        force_download=force_download,
+        force_extract=force_extract,
     ) as fp:
         yield fp
 
@@ -33,7 +35,8 @@ def open(
 def cached_path(
     url_or_filename: Union[str, Path],
     extract: bool = False,
-    update: bool = False,
+    force_download: bool = False,
+    force_extract: bool = False,
     cache_root: Optional[Union[str, Path]] = None,
 ) -> Path:
     config = Config.load(cache_root=cache_root)
@@ -41,7 +44,8 @@ def cached_path(
     return Minato(config).cached_path(
         url_or_filename,
         extract=extract,
-        update=update,
+        force_download=force_download,
+        force_extract=force_extract,
     )
 
 

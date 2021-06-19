@@ -34,7 +34,8 @@ class Minato:
         mode: str = "r",
         extract: bool = False,
         use_cache: bool = True,
-        update: bool = False,
+        force_download: bool = False,
+        force_extract: bool = False,
     ) -> Iterator[IO[Any]]:
         if (
             not ("a" in mode and "w" in mode and "x" in mode and "+" in mode)
@@ -43,7 +44,8 @@ class Minato:
             url_or_filename = self.cached_path(
                 url_or_filename,
                 extract=extract,
-                update=update,
+                force_download=force_download,
+                force_extract=force_extract,
             )
 
         with open_file(url_or_filename, mode) as fp:
@@ -52,8 +54,8 @@ class Minato:
     def cached_path(
         self,
         url_or_filename: Union[str, Path],
-        update: bool = False,
         extract: bool = False,
+        force_download: bool = False,
         force_extract: bool = False,
     ) -> Path:
         url_or_filename = str(url_or_filename)
@@ -61,7 +63,10 @@ class Minato:
         if "!" in url_or_filename:
             remote_archive_path, file_path = url_or_filename.rsplit("!", 1)
             archive_path = self.cached_path(
-                remote_archive_path, extract=True, update=update
+                remote_archive_path,
+                extract=True,
+                force_extract=force_extract,
+                force_download=force_download,
             )
             if not archive_path.is_dir():
                 raise ValueError(
@@ -84,13 +89,19 @@ class Minato:
             with self._cache.tx() as tx:
                 cached_file = tx.add(url)
 
-        if not cached_file.local_path.exists() or update:
+        downloaded = False
+        if (
+            not cached_file.local_path.exists()
+            or self._cache.is_expired(cached_file)
+            or force_download
+        ):
             self.download(cached_file.url, cached_file.local_path)
-            update = True
+            downloaded = True
 
+        extracted = False
         if (
             (extract and cached_file.extraction_path is None)
-            or (update and cached_file.extraction_path is not None)
+            or (downloaded and cached_file.extraction_path is not None)
             or force_extract
         ) and is_archive_file(cached_file.local_path):
             cached_file.extraction_path = Path(
@@ -99,9 +110,9 @@ class Minato:
             if cached_file.extraction_path.exists():
                 remove_file_or_directory(cached_file.extraction_path)
             extract_archive_file(cached_file.local_path, cached_file.extraction_path)
-            update = True
+            extracted = True
 
-        if update:
+        if downloaded or extracted:
             with self._cache.tx() as tx:
                 tx.update(cached_file)
 
