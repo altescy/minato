@@ -8,3 +8,7 @@ class ConfigurationError(MinatoException):
 
 class CacheNotFoundError(MinatoException):
     """CacheNotFoundError"""
+
+
+class InvalidCacheStatus(MinatoException):
+    """InvalidCacheStatus"""

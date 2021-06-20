@@ -17,6 +17,7 @@ class CacheCommand(Subcommand):
         self.parser.add_argument("--extract", action="store_true")
         self.parser.add_argument("--force-extract", action="store_true")
         self.parser.add_argument("--force-download", action="store_true")
+        self.parser.add_argument("--not-retry", action="store_false")
         self.parser.add_argument("--expire-days", type=int, default=None)
         self.parser.add_argument("--root", type=Path, default=None)
 
@@ -32,5 +33,6 @@ class CacheCommand(Subcommand):
             extract=args.extract,
             force_extract=args.force_extract,
             force_download=args.force_download,
+            retry=args.not_retry,
         )
         print(cached_path)

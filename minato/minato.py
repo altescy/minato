@@ -4,6 +4,7 @@ from typing import IO, Any, Iterator, Optional, Union
 
 from minato.cache import Cache, CacheStatus
 from minato.config import Config
+from minato.exceptions import InvalidCacheStatus
 from minato.filesystems import download, open_file
 from minato.util import (
     extract_archive_file,
@@ -56,6 +57,7 @@ class Minato:
         extract: bool = False,
         force_download: bool = False,
         force_extract: bool = False,
+        retry: bool = True,
     ) -> Path:
         url_or_filename = str(url_or_filename)
 
@@ -91,6 +93,11 @@ class Minato:
             cached_file = self._cache.add(url)
 
         with self._cache.lock(cached_file):
+            cached_file = self._cache.by_url(url)
+
+            if retry and cached_file.status != CacheStatus.COMPLETED:
+                force_download = True
+
             try:
                 downloaded = False
                 if (
@@ -98,6 +105,8 @@ class Minato:
                     or self._cache.is_expired(cached_file)
                     or force_download
                 ):
+                    remove_file_or_directory(cached_file.local_path)
+
                     cached_file.status = CacheStatus.DOWNLOADING
                     self.download(cached_file.url, cached_file.local_path)
                     downloaded = True
@@ -111,8 +120,7 @@ class Minato:
                     cached_file.extraction_path = Path(
                         str(cached_file.local_path) + "-extracted"
                     )
-                    if cached_file.extraction_path.exists():
-                        remove_file_or_directory(cached_file.extraction_path)
+                    remove_file_or_directory(cached_file.extraction_path)
 
                     cached_file.status = CacheStatus.EXTRACTING
                     extract_archive_file(
@@ -120,9 +128,8 @@ class Minato:
                     )
                     extracted = True
 
-                cached_file.status = CacheStatus.COMPLETED
-
                 if downloaded or extracted:
+                    cached_file.status = CacheStatus.COMPLETED
                     self._cache.update(cached_file)
             except FileNotFoundError:
                 self._cache.delete(cached_file)
@@ -136,7 +143,7 @@ class Minato:
             if not cached_file.extraction_path.exists():
                 raise FileNotFoundError(cached_file.extraction_path)
             if cached_file.status != CacheStatus.COMPLETED:
-                raise RuntimeError(
+                raise InvalidCacheStatus(
                     f"Cached path status is not completed: status={cached_file.status}"
                 )
             return cached_file.extraction_path
@@ -144,7 +151,7 @@ class Minato:
         if not cached_file.local_path.exists():
             raise FileNotFoundError(cached_file.local_path)
         if cached_file.status != CacheStatus.COMPLETED:
-            raise RuntimeError(
+            raise InvalidCacheStatus(
                 f"Cached path status is not completed: status={cached_file.status}"
             )
         return cached_file.local_path

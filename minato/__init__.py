@@ -52,6 +52,7 @@ def cached_path(
     extract: bool = False,
     force_download: bool = False,
     force_extract: bool = False,
+    retry: bool = True,
     cache_root: Optional[Union[str, Path]] = None,
     expire_days: Optional[int] = None,
 ) -> Path:
@@ -65,6 +66,7 @@ def cached_path(
         extract=extract,
         force_download=force_download,
         force_extract=force_extract,
+        retry=retry,
     )
 
 
