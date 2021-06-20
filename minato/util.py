@@ -18,11 +18,14 @@ logger = logging.getLogger(__name__)
 
 
 def remove_file_or_directory(path: Union[str, Path]) -> None:
-    path = Path(path)
-    if path.is_dir():
-        shutil.rmtree(path)
-    else:
-        os.remove(path)
+    try:
+        path = Path(path)
+        if path.is_dir():
+            shutil.rmtree(path)
+        else:
+            os.remove(path)
+    except FileNotFoundError:
+        pass
 
 
 def is_archive_file(filename: Union[str, Path]) -> bool:

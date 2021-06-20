@@ -96,9 +96,7 @@ class Minato:
             or self._cache.is_expired(cached_file)
             or force_download
         ):
-            with FileLock(
-                cached_file.local_path.parent / (cached_file.local_path.name + ".lock")
-            ):
+            with FileLock(self._get_lockfile_path(cached_file.local_path)):
                 self.download(cached_file.url, cached_file.local_path)
             downloaded = True
 
@@ -113,10 +111,7 @@ class Minato:
             )
             if cached_file.extraction_path.exists():
                 remove_file_or_directory(cached_file.extraction_path)
-            with FileLock(
-                cached_file.extraction_path.parent
-                / (cached_file.extraction_path.name + ".lock")
-            ):
+            with FileLock(self._get_lockfile_path(cached_file.extraction_path)):
                 extract_archive_file(
                     cached_file.local_path, cached_file.extraction_path
                 )
@@ -150,4 +145,16 @@ class Minato:
             url = id_or_url
             cached_file = self._cache.by_url(url)
 
+        remove_file_or_directory(cached_file.local_path)
+        remove_file_or_directory(self._get_lockfile_path(cached_file.local_path))
+        if cached_file.extraction_path is not None:
+            remove_file_or_directory(cached_file.extraction_path)
+            remove_file_or_directory(
+                self._get_lockfile_path(cached_file.extraction_path)
+            )
+
         self._cache.delete(cached_file)
+
+    @staticmethod
+    def _get_lockfile_path(path: Path) -> Path:
+        return path.parent / (path.name + ".lock")

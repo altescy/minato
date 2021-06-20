@@ -1,7 +1,10 @@
 import tempfile
 from pathlib import Path
 
+import pytest
+
 from minato.cache import Cache
+from minato.exceptions import CacheNotFoundError
 
 
 def test_cache_add_list_and_delete() -> None:
@@ -23,7 +26,9 @@ def test_cache_add_list_and_delete() -> None:
 
         with cache.tx() as tx:
             tx.delete(cached_file)
-        assert not cached_file.local_path.exists()
+
+        with pytest.raises(CacheNotFoundError):
+            cache.by_id(cached_file.id)
 
 
 def test_cache_contains() -> None:

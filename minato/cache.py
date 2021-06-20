@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from minato.exceptions import CacheNotFoundError, ConfigurationError
-from minato.util import remove_file_or_directory
 
 
 @dataclasses.dataclass
@@ -212,12 +211,6 @@ class Cache:
         assert self._cursor is not None
 
         self._cursor.execute("DELETE FROM cached_files WHERE id = ?", (item.id,))
-        try:
-            remove_file_or_directory(item.local_path)
-            if item.extraction_path:
-                remove_file_or_directory(item.extraction_path)
-        except FileNotFoundError:
-            pass
 
     def is_expired(self, item: CachedFile) -> bool:
         if self._expire_days < 0:
