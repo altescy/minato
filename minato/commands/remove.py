@@ -1,7 +1,6 @@
 import argparse
 from pathlib import Path
 
-from minato.cache import CachedFile
 from minato.commands.subcommand import Subcommand
 from minato.config import Config
 from minato.minato import Minato
@@ -14,9 +13,10 @@ from minato.minato import Minato
 )
 class RemoveCommand(Subcommand):
     def set_arguments(self) -> None:
-        self.parser.add_argument("url_or_id", nargs="?", type=str, default=[])
+        self.parser.add_argument("url_or_uid", nargs="*", type=str, default=[])
         self.parser.add_argument("--force", action="store_true")
         self.parser.add_argument("--expired", action="store_true")
+        self.parser.add_argument("--failed", action="store_true")
         self.parser.add_argument("--expire-days", type=int, default=None)
         self.parser.add_argument("--root", type=Path, default=None)
 
@@ -28,18 +28,11 @@ class RemoveCommand(Subcommand):
         minato = Minato(config)
         cache = minato.cache
 
-        def get_cached_file(url_or_id: str) -> CachedFile:
-            try:
-                cache_id = int(url_or_id)
-                cached_file = cache.by_id(cache_id)
-            except ValueError:
-                url = url_or_id
-                cached_file = cache.by_url(url)
-            return cached_file
-
-        cached_files = [get_cached_file(url_or_id) for url_or_id in args.url_or_id]
-        if args.expired or args.expire_days is not None:
-            cached_files += cache.list_expired_caches()
+        cached_files = cache.match(
+            queries=args.url_or_uid,
+            expired=args.expired or args.expire_days is not None,
+            failed=args.failed,
+        )
 
         num_caches = len(cached_files)
 
@@ -49,7 +42,7 @@ class RemoveCommand(Subcommand):
 
         print(f"{num_caches} files will be deleted:")
         for cached_file in cached_files:
-            print(f"  [{cached_file.id}] {cached_file.url}")
+            print(f"  [{cached_file.uid[:8]}] {cached_file.url}")
 
         if not args.force:
             yes_or_not = input("Delete these caches? y/[n]: ")
@@ -57,8 +50,8 @@ class RemoveCommand(Subcommand):
                 print("canceled")
                 return
 
-        with cache:
-            for cached_file in cached_files:
+        for cached_file in cached_files:
+            with cache.lock(cached_file):
                 cache.delete(cached_file)
 
         print("Cache files were successfully deleted.")

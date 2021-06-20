@@ -2,7 +2,6 @@ import tempfile
 from pathlib import Path
 
 import minato
-from minato.config import Config
 
 
 def test_version() -> None:
@@ -32,7 +31,7 @@ def test_cached_path() -> None:
         )
 
         assert path.exists()
-        assert path.parent == Config(cache_root=cache_root).cache_artifact_dir
+        assert path.parent == cache_root
 
 
 def test_cached_path_with_zip_file() -> None:

@@ -15,12 +15,15 @@ from minato.util import is_archive_file, sizeof_fmt
 )
 class ListCommand(Subcommand):
     def set_arguments(self) -> None:
-        self.parser.add_argument("--sort", type=str, default="id")
+        self.parser.add_argument("uid_or_url", nargs="*", default=[])
+        self.parser.add_argument("--sort", type=str, default=None)
         self.parser.add_argument("--desc", action="store_true")
         self.parser.add_argument("--details", action="store_true")
         self.parser.add_argument("--column-width", type=int, default=None)
         self.parser.add_argument("--root", type=Path, default=None)
-        self.parser.add_argument("--expired", action="store_true")
+        self.parser.add_argument("--expired", action="store_true", default=None)
+        self.parser.add_argument("--failed", action="store_true", default=None)
+        self.parser.add_argument("--completed", action="store_true", default=None)
         self.parser.add_argument("--expire-days", type=int, default=None)
 
     def run(self, args: argparse.Namespace) -> None:
@@ -31,12 +34,14 @@ class ListCommand(Subcommand):
         minato = Minato(config)
         cache = minato.cache
 
-        if args.expired or args.expire_days is not None:
-            cached_files = cache.list_expired_caches()
-        else:
-            cached_files = cache.list()
+        cached_files = cache.match(
+            queries=args.uid_or_url,
+            expired=args.expired or args.expire_days is not None,
+            failed=args.failed,
+            completed=args.completed,
+        )
 
-        columns = ["id", "url", "size", "type", "expired"]
+        columns = ["uid", "url", "size", "type", "status", "expired"]
         if args.details:
             columns.append("local_path")
             columns.append("created_at")
@@ -51,6 +56,8 @@ class ListCommand(Subcommand):
         for cached_file in cached_files:
             info = cached_file.to_dict()
 
+            info["uid"] = info["uid"][:8]
+
             if cached_file.local_path.exists():
                 info["size"] = sizeof_fmt(cached_file.local_path.stat().st_size)
             else:
@@ -61,7 +68,8 @@ class ListCommand(Subcommand):
 
             table.add(info)
 
-        table.sort(args.sort, args.desc)
+        if args.sort:
+            table.sort(args.sort, args.desc)
 
         table.print()
 

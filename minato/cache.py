@@ -2,33 +2,47 @@ from __future__ import annotations
 
 import dataclasses
 import datetime
+import json
 import os
-import sqlite3
 import uuid
+from contextlib import contextmanager
+from enum import Enum
 from pathlib import Path
-from types import TracebackType
-from typing import Any, Dict, List, Optional, Tuple, Type, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 from minato.exceptions import CacheNotFoundError, ConfigurationError
+from minato.filelock import FileLock
+from minato.util import remove_file_or_directory
+
+
+class CacheStatus(Enum):
+    PENDING = "PENDING"
+    DOWNLOADING = "DOWNLOADING"
+    EXTRACTING = "EXTRACTING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    DELETED = "DELETED"
 
 
 @dataclasses.dataclass
 class CachedFile:
-    id: int
+    uid: str
     url: str
     local_path: Path
     created_at: datetime.datetime
     updated_at: datetime.datetime
     extraction_path: Optional[Path]
+    status: CacheStatus
 
     def __init__(
         self,
-        id: int,
+        uid: str,
         url: str,
         local_path: Union[str, Path],
         created_at: Union[str, datetime.datetime],
         updated_at: Union[str, datetime.datetime],
         extraction_path: Optional[Union[str, Path]] = None,
+        status: Union[str, CacheStatus] = CacheStatus.PENDING,
     ) -> None:
         if isinstance(local_path, str):
             local_path = Path(local_path)
@@ -40,27 +54,31 @@ class CachedFile:
             extraction_path = Path(extraction_path)
         if extraction_path is not None:
             extraction_path = extraction_path.absolute()
+        if isinstance(status, str):
+            status = CacheStatus(status)
 
-        self.id = id
+        self.uid = uid
         self.url = url
         self.local_path = local_path.absolute()
         self.created_at = created_at
         self.updated_at = updated_at
         self.extraction_path = extraction_path
+        self.status = status
 
-    def to_tuple(self) -> Tuple[int, str, str, str, str, Optional[str]]:
+    def to_tuple(self) -> Tuple[str, str, str, str, str, Optional[str], str]:
         return (
-            self.id,
+            self.uid,
             self.url,
             str(self.local_path),
             self.created_at.isoformat(),
             self.updated_at.isoformat(),
             str(self.extraction_path) if self.extraction_path else None,
+            self.status.value,
         )
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            "id": str(self.id),
+            "uid": str(self.uid),
             "url": str(self.url),
             "local_path": str(self.local_path),
             "created_at": self.created_at.isoformat(),
@@ -68,60 +86,26 @@ class CachedFile:
             "extraction_path": str(self.extraction_path)
             if self.extraction_path
             else None,
+            "status": self.status.value,
         }
 
 
 class Cache:
     def __init__(
         self,
-        artifact_dir: Path,
-        sqlite_path: Path,
+        root: Path,
         expire_days: int = -1,
     ) -> None:
-        if not artifact_dir.exists():
-            os.makedirs(artifact_dir, exist_ok=True)
+        if not root.exists():
+            os.makedirs(root, exist_ok=True)
 
-        if not artifact_dir.is_dir():
+        if not root.is_dir():
             raise ConfigurationError(
-                f"Given cache_directory path is not a directory: {artifact_dir}"
+                f"Given cache_directory path is not a directory: {root}"
             )
 
-        self._artifact_dir = artifact_dir
-        self._sqlite_path = sqlite_path
+        self._root = root
         self._expire_days = expire_days
-
-        self._connection: Optional[sqlite3.Connection] = None
-        self._cursor: Optional[sqlite3.Cursor] = None
-
-        self.migrate()
-
-    def __enter__(self) -> Cache:
-        self._connection = self._get_connection()
-        if self._cursor is None:
-            self._cursor = self._connection.cursor()
-        return self
-
-    def __exit__(
-        self,
-        exc_type: Optional[Type[BaseException]],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
-    ) -> bool:
-        assert self._connection is not None
-        assert self._cursor is not None
-
-        flag = exc_type is None
-        if flag:
-            self._connection.commit()
-        else:
-            self._connection.rollback()
-
-        self._cursor.close()
-        self._connection.close()
-
-        self._connection = None
-        self._cursor = None
-        return flag
 
     def __contains__(self, url: str) -> bool:
         try:
@@ -130,88 +114,81 @@ class Cache:
         except CacheNotFoundError:
             return False
 
-    def _check_connection(self) -> None:
-        if self._connection is None or self._cursor is None:
-            raise RuntimeError("SQLite connection is not established.")
+    @contextmanager
+    def lock(self, item: CachedFile) -> Iterator[None]:
+        lock = FileLock(self.get_lockfile_path(item.uid))
+        try:
+            lock.acquire()
+            yield
+        finally:
+            lock.release()
 
-    def _get_connection(self) -> sqlite3.Connection:
-        if self._connection is None:
-            self._connection = sqlite3.connect(self._sqlite_path)
-        return self._connection
+    @staticmethod
+    def _generate_uid() -> str:
+        return uuid.uuid4().hex
 
-    def _generate_unique_filename(self) -> Path:
-        name = uuid.uuid4().hex
-        return self._artifact_dir / name
+    def get_metadata_path(self, uid: str) -> Path:
+        return self._root / (uid + ".json")
+
+    def get_lockfile_path(self, uid: str) -> Path:
+        return self._root / (uid + ".lock")
+
+    def load_cached_file(self, metadata_path: Path) -> CachedFile:
+        print(metadata_path)
+        if not metadata_path.exists():
+            raise CacheNotFoundError(f"Cache not found: {metadata_path}")
+        with open(metadata_path, "r") as fp:
+            params = json.load(fp)
+        return CachedFile(**params)
+
+    def save_cached_file(self, item: CachedFile) -> None:
+        metadata_path = self.get_metadata_path(item.uid)
+        with open(metadata_path, "w") as fp:
+            json.dump(item.to_dict(), fp)
 
     def add(self, url: str) -> CachedFile:
-        self._check_connection()
-        assert self._connection is not None
-        assert self._cursor is not None
-
-        local_path = self._generate_unique_filename()
-        self._cursor.execute(
-            "INSERT INTO cached_files (url, local_path) VALUES (?, ?)",
-            (url, str(local_path)),
+        uid = self._generate_uid()
+        cached_file = CachedFile(
+            uid=uid,
+            url=url,
+            local_path=self._root / uid,
+            created_at=datetime.datetime.now(),
+            updated_at=datetime.datetime.now(),
         )
-
-        cached_file = self.by_id(self._cursor.lastrowid)
+        self.save_cached_file(cached_file)
         return cached_file
 
     def update(self, item: CachedFile) -> None:
-        self._check_connection()
-        assert self._connection is not None
-        assert self._cursor is not None
+        metadata_path = self.get_metadata_path(item.uid)
+        if not metadata_path.exists():
+            raise CacheNotFoundError(f"Cache not found with uid={item.uid}")
+        item.updated_at = datetime.datetime.now()
+        self.save_cached_file(item)
 
-        self._cursor.execute(
-            """
-            UPDATE
-                cached_files
-            SET
-                url = ?
-                , local_path = ?
-                , updated_at = (datetime('now', 'localtime'))
-                , extraction_path = ?
-            WHERE
-                id = ?
-            """,
-            (
-                item.url,
-                str(item.local_path),
-                str(item.extraction_path) if item.extraction_path else None,
-                item.id,
-            ),
-        )
-
-    def by_id(self, id_: int) -> CachedFile:
-        connection = self._get_connection()
-
-        rows = list(
-            connection.execute("SELECT * FROM cached_files WHERE id = ?", (id_,))
-        )
-        if not rows:
-            raise CacheNotFoundError(f"Cache not found with id={id}")
-
-        row = rows[0]
-        return CachedFile(*row)
+    def by_uid(self, uid: str) -> CachedFile:
+        metadata_path = self.get_metadata_path(uid)
+        if not metadata_path.exists():
+            raise CacheNotFoundError(f"Cache not found with uid={uid}")
+        with open(metadata_path, "r") as fp:
+            params = json.load(fp)
+        return CachedFile(**params)
 
     def by_url(self, url: str) -> CachedFile:
-        connection = self._get_connection()
-
-        rows = list(
-            connection.execute("SELECT * FROM cached_files WHERE url = ?", (url,))
-        )
-        if not rows:
-            raise CacheNotFoundError(f"Cache not found with id={id}")
-
-        row = rows[0]
-        return CachedFile(*row)
+        for cached_file in self.list():
+            if cached_file.url == url:
+                return cached_file
+        raise CacheNotFoundError(f"Cache not found with url={url}")
 
     def delete(self, item: CachedFile) -> None:
-        self._check_connection()
-        assert self._connection is not None
-        assert self._cursor is not None
+        metadata_path = self.get_metadata_path(item.uid)
+        lockfile_path = self.get_lockfile_path(item.uid)
 
-        self._cursor.execute("DELETE FROM cached_files WHERE id = ?", (item.id,))
+        remove_file_or_directory(item.local_path)
+        if item.extraction_path is not None:
+            remove_file_or_directory(item.extraction_path)
+
+        remove_file_or_directory(metadata_path)
+        remove_file_or_directory(lockfile_path)
 
     def is_expired(self, item: CachedFile) -> bool:
         if self._expire_days < 0:
@@ -221,30 +198,50 @@ class Cache:
         return delta.days >= self._expire_days
 
     def list(self) -> List[CachedFile]:
-        connection = self._get_connection()
-        rows = connection.execute("SELECT * FROM cached_files")
-        cached_files = [CachedFile(*row) for row in rows]
+        cached_files: List[CachedFile] = []
+        for metafile_path in self._root.glob("*.json"):
+            with open(metafile_path, "r") as fp:
+                params = json.load(fp)
+                cached_file = CachedFile(**params)
+            cached_files.append(cached_file)
+        cached_files = sorted(cached_files, key=lambda x: x.created_at)
+        return cached_files
+
+    def match(
+        self,
+        queries: List[str],
+        expired: Optional[bool] = None,
+        failed: Optional[bool] = None,
+        completed: Optional[bool] = None,
+    ) -> List[CachedFile]:
+        cached_files = self.list()
+        for query in queries:
+            cached_files = [
+                x for x in cached_files if query in x.url or x.uid.startswith(query)
+            ]
+        if expired is not None:
+            cached_files = [x for x in cached_files if self.is_expired(x) == expired]
+        if failed is not None:
+            cached_files = [
+                x for x in cached_files if (x.status == CacheStatus.FAILED) == failed
+            ]
+        if completed is not None:
+            cached_files = [
+                x
+                for x in cached_files
+                if (x.status == CacheStatus.COMPLETED) == completed
+            ]
+
+        unique_caches = {x.uid: x for x in cached_files}
+        cached_files = sorted(unique_caches.values(), key=lambda x: x.created_at)
         return cached_files
 
     def list_expired_caches(self) -> List[CachedFile]:
-        return [x for x in self.list() if self.is_expired(x)]
+        cached_files = [x for x in self.list() if self.is_expired(x)]
+        cached_files = sorted(cached_files, key=lambda x: x.created_at)
+        return cached_files
 
-    def migrate(self) -> None:
-        connection = sqlite3.connect(self._sqlite_path)
-        cursor = connection.cursor()
-        try:
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS cached_files (
-                    id INTEGER PRIMARY KEY
-                    , url TEXT NOT NULL UNIQUE
-                    , local_path TEXT NOT NULL
-                    , created_at TEXT DEFAULT (datetime('now', 'localtime'))
-                    , updated_at TEXT DEFAULT (datetime('now', 'localtime'))
-                    , extraction_path TEXT
-                )
-                """
-            )
-        finally:
-            cursor.close()
-            connection.close()
+    def list_failed_caches(self) -> List[CachedFile]:
+        cached_files = [x for x in self.list() if x.status == CacheStatus.FAILED]
+        cached_files = sorted(cached_files, key=lambda x: x.created_at)
+        return cached_files

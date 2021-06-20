@@ -2,7 +2,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import IO, Any, Iterator, Optional, Union
 
-from minato.cache import Cache
+from minato.cache import Cache, CacheStatus
 from minato.config import Config
 from minato.filesystems import download, open_file
 from minato.util import (
@@ -18,8 +18,7 @@ class Minato:
     def __init__(self, config: Optional[Config] = None) -> None:
         self._config = config or Config.load()
         self._cache = Cache(
-            artifact_dir=self._config.cache_artifact_dir,
-            sqlite_path=self._config.cache_db_path,
+            root=self._config.cache_root,
             expire_days=self._config.expire_days,
         )
 
@@ -80,23 +79,26 @@ class Minato:
         if is_local(url_or_filename):
             url_or_filename = extract_path(url_or_filename)
             if not extract and not is_archive_file(url_or_filename):
-                return Path(url_or_filename)
+                local_path = Path(url_or_filename)
+                if not local_path.exists():
+                    raise FileNotFoundError(local_path)
+                return local_path
 
-        with self._cache:
-            url = str(url_or_filename)
-            if url in self._cache:
-                cached_file = self._cache.by_url(url)
-            else:
-                cached_file = self._cache.add(url)
+        url = str(url_or_filename)
+        if url in self._cache:
+            cached_file = self._cache.by_url(url)
+        else:
+            cached_file = self._cache.add(url)
 
+        with self._cache.lock(cached_file):
             try:
-
                 downloaded = False
                 if (
                     not cached_file.local_path.exists()
                     or self._cache.is_expired(cached_file)
                     or force_download
                 ):
+                    cached_file.status = CacheStatus.DOWNLOADING
                     self.download(cached_file.url, cached_file.local_path)
                     downloaded = True
 
@@ -111,22 +113,40 @@ class Minato:
                     )
                     if cached_file.extraction_path.exists():
                         remove_file_or_directory(cached_file.extraction_path)
+
+                    cached_file.status = CacheStatus.EXTRACTING
                     extract_archive_file(
                         cached_file.local_path, cached_file.extraction_path
                     )
                     extracted = True
 
+                cached_file.status = CacheStatus.COMPLETED
+
                 if downloaded or extracted:
                     self._cache.update(cached_file)
+            except FileNotFoundError:
+                self._cache.delete(cached_file)
+                raise
             except (Exception, SystemExit, KeyboardInterrupt):
-                remove_file_or_directory(cached_file.local_path)
-                if cached_file.extraction_path:
-                    remove_file_or_directory(cached_file.extraction_path)
+                cached_file.status = CacheStatus.FAILED
+                self._cache.update(cached_file)
                 raise
 
         if (extract or force_extract) and cached_file.extraction_path:
+            if not cached_file.extraction_path.exists():
+                raise FileNotFoundError(cached_file.extraction_path)
+            if cached_file.status != CacheStatus.COMPLETED:
+                raise RuntimeError(
+                    f"Cached path status is not completed: status={cached_file.status}"
+                )
             return cached_file.extraction_path
 
+        if not cached_file.local_path.exists():
+            raise FileNotFoundError(cached_file.local_path)
+        if cached_file.status != CacheStatus.COMPLETED:
+            raise RuntimeError(
+                f"Cached path status is not completed: status={cached_file.status}"
+            )
         return cached_file.local_path
 
     @staticmethod
@@ -140,13 +160,8 @@ class Minato:
                 content = local_file.read()
                 remote_file.write(content)
 
-    def remove(self, id_or_url: Union[int, str]) -> None:
-        if isinstance(id_or_url, int):
-            cache_id = id_or_url
-            cached_file = self._cache.by_id(cache_id)
-        else:
-            url = id_or_url
-            cached_file = self._cache.by_url(url)
+    def remove(self, url: str) -> None:
+        cached_file = self._cache.by_url(url)
 
         remove_file_or_directory(cached_file.local_path)
         if cached_file.extraction_path is not None:

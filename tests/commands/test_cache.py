@@ -21,8 +21,8 @@ def test_cache_command() -> None:
 
         cached_files = [
             x
-            for x in config.cache_artifact_dir.glob("*")
-            if not x.name.endswith(".lock")
+            for x in config.cache_root.glob("*")
+            if not x.name.endswith(".lock") and not x.name.endswith(".json")
         ]
         assert len(cached_files) == 1
 
