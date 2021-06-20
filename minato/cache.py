@@ -5,9 +5,9 @@ import datetime
 import os
 import sqlite3
 import uuid
-from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from types import TracebackType
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from minato.exceptions import CacheNotFoundError, ConfigurationError
 
@@ -95,20 +95,17 @@ class Cache:
 
         self.migrate()
 
-    @contextmanager
-    def tx(self) -> Iterator[Cache]:
-        try:
-            self.__enter__()
-            yield self
-        finally:
-            self.__exit__()
-
     def __enter__(self) -> Cache:
         self._connection = sqlite3.connect(self._sqlite_path)
         self._cursor = self._connection.cursor()
         return self
 
-    def __exit__(self, *args: Any, **kwargs: Any) -> bool:
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> bool:
         assert self._connection is not None
         assert self._cursor is not None
 
@@ -119,7 +116,7 @@ class Cache:
 
         self._connection = None
         self._cursor = None
-        return True
+        return exc_type is None and exc_value is None and traceback is None
 
     def __contains__(self, url: str) -> bool:
         try:

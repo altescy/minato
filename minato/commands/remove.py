@@ -57,8 +57,8 @@ class RemoveCommand(Subcommand):
                 print("canceled")
                 return
 
-        with cache.tx() as tx:
+        with cache:
             for cached_file in cached_files:
-                tx.delete(cached_file)
+                cache.delete(cached_file)
 
         print("Cache files were successfully deleted.")

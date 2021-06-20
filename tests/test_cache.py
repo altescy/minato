@@ -12,20 +12,20 @@ def test_cache_add_list_and_delete() -> None:
         tempdir = Path(_tempdir)
         cache = Cache(tempdir / "artifacts", tempdir / "sqlite.db")
 
-        with cache.tx() as tx:
-            cached_file = tx.add("https://example.com/path/to/file_1")
-            _ = tx.add("https://example.com/path/to/file_2")
-            _ = tx.add("https://example.com/path/to/file_3")
+        with cache:
+            cached_file = cache.add("https://example.com/path/to/file_1")
+            _ = cache.add("https://example.com/path/to/file_2")
+            _ = cache.add("https://example.com/path/to/file_3")
 
         with cached_file.local_path.open("w") as fp:
             fp.write("Hello, world!")
         assert cached_file.local_path.exists()
 
-        files = tx.list()
+        files = cache.list()
         assert len(files) == 3
 
-        with cache.tx() as tx:
-            tx.delete(cached_file)
+        with cache:
+            cache.delete(cached_file)
 
         with pytest.raises(CacheNotFoundError):
             cache.by_id(cached_file.id)
@@ -37,7 +37,7 @@ def test_cache_contains() -> None:
         cache = Cache(tempdir / "artifacts", tempdir / "sqlite.db")
 
         url = "https://example.com/path/to/file"
-        with cache.tx() as tx:
-            _ = tx.add(url)
+        with cache:
+            _ = cache.add(url)
 
         assert url in cache

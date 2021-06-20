@@ -87,8 +87,8 @@ class Minato:
         if url in self._cache:
             cached_file = self._cache.by_url(url)
         else:
-            with self._cache.tx() as tx:
-                cached_file = tx.add(url)
+            with self._cache:
+                cached_file = self._cache.add(url)
 
         downloaded = False
         if (
@@ -118,8 +118,8 @@ class Minato:
             extracted = True
 
         if downloaded or extracted:
-            with self._cache.tx() as tx:
-                tx.update(cached_file)
+            with self._cache:
+                self._cache.update(cached_file)
 
         if (extract or force_extract) and cached_file.extraction_path:
             return cached_file.extraction_path
