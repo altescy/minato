@@ -90,6 +90,7 @@ class Minato:
                 cached_file = self._cache.add(url)
 
             try:
+
                 downloaded = False
                 if (
                     not cached_file.local_path.exists()
@@ -117,14 +118,14 @@ class Minato:
 
                 if downloaded or extracted:
                     self._cache.update(cached_file)
-
-                if (extract or force_extract) and cached_file.extraction_path:
-                    return cached_file.extraction_path
             except (Exception, SystemExit, KeyboardInterrupt):
                 remove_file_or_directory(cached_file.local_path)
                 if cached_file.extraction_path:
                     remove_file_or_directory(cached_file.extraction_path)
                 raise
+
+        if (extract or force_extract) and cached_file.extraction_path:
+            return cached_file.extraction_path
 
         return cached_file.local_path
 
