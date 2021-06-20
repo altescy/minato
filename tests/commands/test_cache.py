@@ -19,7 +19,11 @@ def test_cache_command() -> None:
 
         args.func(args)
 
-        cached_files = list(config.cache_artifact_dir.glob("*"))
+        cached_files = [
+            x
+            for x in config.cache_artifact_dir.glob("*")
+            if not x.name.endswith(".lock")
+        ]
         assert len(cached_files) == 1
 
         filepath = cached_files[0]
