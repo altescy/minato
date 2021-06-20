@@ -17,10 +17,14 @@ class CacheCommand(Subcommand):
         self.parser.add_argument("--extract", action="store_true")
         self.parser.add_argument("--force-extract", action="store_true")
         self.parser.add_argument("--force-download", action="store_true")
+        self.parser.add_argument("--expire-days", type=int, default=None)
         self.parser.add_argument("--root", type=Path, default=None)
 
     def run(self, args: argparse.Namespace) -> None:
-        config = Config.load(cache_root=args.root)
+        config = Config.load(
+            cache_root=args.root,
+            expire_days=args.expire_days,
+        )
         minato = Minato(config)
 
         cached_path = minato.cached_path(
