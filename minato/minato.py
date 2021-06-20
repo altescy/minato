@@ -4,6 +4,7 @@ from typing import IO, Any, Iterator, Optional, Union
 
 from minato.cache import Cache
 from minato.config import Config
+from minato.filelock import FileLock
 from minato.filesystems import download, open_file
 from minato.util import (
     extract_archive_file,
@@ -95,7 +96,10 @@ class Minato:
             or self._cache.is_expired(cached_file)
             or force_download
         ):
-            self.download(cached_file.url, cached_file.local_path)
+            with FileLock(
+                cached_file.local_path.parent / (cached_file.local_path.name + ".lock")
+            ):
+                self.download(cached_file.url, cached_file.local_path)
             downloaded = True
 
         extracted = False
@@ -109,7 +113,13 @@ class Minato:
             )
             if cached_file.extraction_path.exists():
                 remove_file_or_directory(cached_file.extraction_path)
-            extract_archive_file(cached_file.local_path, cached_file.extraction_path)
+            with FileLock(
+                cached_file.extraction_path.parent
+                / (cached_file.extraction_path.name + ".lock")
+            ):
+                extract_archive_file(
+                    cached_file.local_path, cached_file.extraction_path
+                )
             extracted = True
 
         if downloaded or extracted:
