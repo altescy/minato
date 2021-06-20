@@ -28,7 +28,7 @@ class RemoveCommand(Subcommand):
         minato = Minato(config)
         cache = minato.cache
 
-        cached_files = cache.match(
+        cached_files = cache.filter(
             queries=args.url_or_uid,
             expired=args.expired or args.expire_days is not None,
             failed=args.failed,

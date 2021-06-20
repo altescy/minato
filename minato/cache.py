@@ -174,7 +174,7 @@ class Cache:
         return CachedFile(**params)
 
     def by_url(self, url: str) -> CachedFile:
-        for cached_file in self.list():
+        for cached_file in self.all():
             if cached_file.url == url:
                 return cached_file
         raise CacheNotFoundError(f"Cache not found with url={url}")
@@ -197,7 +197,7 @@ class Cache:
         delta = now - item.updated_at
         return delta.days >= self._expire_days
 
-    def list(self) -> List[CachedFile]:
+    def all(self) -> List[CachedFile]:
         cached_files: List[CachedFile] = []
         for metafile_path in self._root.glob("*.json"):
             with open(metafile_path, "r") as fp:
@@ -207,14 +207,14 @@ class Cache:
         cached_files = sorted(cached_files, key=lambda x: x.created_at)
         return cached_files
 
-    def match(
+    def filter(
         self,
         queries: List[str],
         expired: Optional[bool] = None,
         failed: Optional[bool] = None,
         completed: Optional[bool] = None,
     ) -> List[CachedFile]:
-        cached_files = self.list()
+        cached_files = self.all()
         for query in queries:
             cached_files = [
                 x for x in cached_files if query in x.url or x.uid.startswith(query)
@@ -234,14 +234,4 @@ class Cache:
 
         unique_caches = {x.uid: x for x in cached_files}
         cached_files = sorted(unique_caches.values(), key=lambda x: x.created_at)
-        return cached_files
-
-    def list_expired_caches(self) -> List[CachedFile]:
-        cached_files = [x for x in self.list() if self.is_expired(x)]
-        cached_files = sorted(cached_files, key=lambda x: x.created_at)
-        return cached_files
-
-    def list_failed_caches(self) -> List[CachedFile]:
-        cached_files = [x for x in self.list() if x.status == CacheStatus.FAILED]
-        cached_files = sorted(cached_files, key=lambda x: x.created_at)
         return cached_files

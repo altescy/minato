@@ -20,7 +20,7 @@ def test_cache_add_list_and_delete() -> None:
             fp.write("Hello, world!")
         assert cached_file.local_path.exists()
 
-        files = cache.list()
+        files = cache.all()
         assert len(files) == 3
 
         with cache.lock(cached_file):
