@@ -75,8 +75,10 @@ class Minato:
                 )
 
             file_path = extract_path(file_path)
-            filename = archive_path / file_path
-            return filename
+            local_path = archive_path / file_path
+            if not local_path.exists():
+                raise FileNotFoundError(local_path)
+            return local_path
 
         if is_local(url_or_filename):
             url_or_filename = extract_path(url_or_filename)
