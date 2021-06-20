@@ -96,8 +96,9 @@ class Cache:
         self.migrate()
 
     def __enter__(self) -> Cache:
-        self._connection = sqlite3.connect(self._sqlite_path)
-        self._cursor = self._connection.cursor()
+        self._connection = self._get_connection()
+        if self._cursor is None:
+            self._cursor = self._connection.cursor()
         return self
 
     def __exit__(
@@ -109,14 +110,18 @@ class Cache:
         assert self._connection is not None
         assert self._cursor is not None
 
-        self._connection.commit()
+        flag = exc_type is None
+        if flag:
+            self._connection.commit()
+        else:
+            self._connection.rollback()
 
         self._cursor.close()
         self._connection.close()
 
         self._connection = None
         self._cursor = None
-        return exc_type is None and exc_value is None and traceback is None
+        return flag
 
     def __contains__(self, url: str) -> bool:
         try:
@@ -130,10 +135,9 @@ class Cache:
             raise RuntimeError("SQLite connection is not established.")
 
     def _get_connection(self) -> sqlite3.Connection:
-        if self._connection is not None:
-            return self._connection
-
-        return sqlite3.connect(self._sqlite_path)
+        if self._connection is None:
+            self._connection = sqlite3.connect(self._sqlite_path)
+        return self._connection
 
     def _generate_unique_filename(self) -> Path:
         name = uuid.uuid4().hex

@@ -4,7 +4,6 @@ from typing import IO, Any, Iterator, Optional, Union
 
 from minato.cache import Cache
 from minato.config import Config
-from minato.filelock import FileLock
 from minato.filesystems import download, open_file
 from minato.util import (
     extract_archive_file,
@@ -83,46 +82,49 @@ class Minato:
             if not extract and not is_archive_file(url_or_filename):
                 return Path(url_or_filename)
 
-        url = str(url_or_filename)
-        if url in self._cache:
-            cached_file = self._cache.by_url(url)
-        else:
-            with self._cache:
+        with self._cache:
+            url = str(url_or_filename)
+            if url in self._cache:
+                cached_file = self._cache.by_url(url)
+            else:
                 cached_file = self._cache.add(url)
 
-        downloaded = False
-        if (
-            not cached_file.local_path.exists()
-            or self._cache.is_expired(cached_file)
-            or force_download
-        ):
-            with FileLock(self._get_lockfile_path(cached_file.local_path)):
-                self.download(cached_file.url, cached_file.local_path)
-            downloaded = True
+            try:
+                downloaded = False
+                if (
+                    not cached_file.local_path.exists()
+                    or self._cache.is_expired(cached_file)
+                    or force_download
+                ):
+                    self.download(cached_file.url, cached_file.local_path)
+                    downloaded = True
 
-        extracted = False
-        if (
-            (extract and cached_file.extraction_path is None)
-            or (downloaded and cached_file.extraction_path is not None)
-            or force_extract
-        ) and is_archive_file(cached_file.local_path):
-            cached_file.extraction_path = Path(
-                str(cached_file.local_path) + "-extracted"
-            )
-            if cached_file.extraction_path.exists():
-                remove_file_or_directory(cached_file.extraction_path)
-            with FileLock(self._get_lockfile_path(cached_file.extraction_path)):
-                extract_archive_file(
-                    cached_file.local_path, cached_file.extraction_path
-                )
-            extracted = True
+                extracted = False
+                if (
+                    (extract and cached_file.extraction_path is None)
+                    or (downloaded and cached_file.extraction_path is not None)
+                    or force_extract
+                ) and is_archive_file(cached_file.local_path):
+                    cached_file.extraction_path = Path(
+                        str(cached_file.local_path) + "-extracted"
+                    )
+                    if cached_file.extraction_path.exists():
+                        remove_file_or_directory(cached_file.extraction_path)
+                    extract_archive_file(
+                        cached_file.local_path, cached_file.extraction_path
+                    )
+                    extracted = True
 
-        if downloaded or extracted:
-            with self._cache:
-                self._cache.update(cached_file)
+                if downloaded or extracted:
+                    self._cache.update(cached_file)
 
-        if (extract or force_extract) and cached_file.extraction_path:
-            return cached_file.extraction_path
+                if (extract or force_extract) and cached_file.extraction_path:
+                    return cached_file.extraction_path
+            except (Exception, SystemExit, KeyboardInterrupt):
+                remove_file_or_directory(cached_file.local_path)
+                if cached_file.extraction_path:
+                    remove_file_or_directory(cached_file.extraction_path)
+                raise
 
         return cached_file.local_path
 
@@ -146,15 +148,6 @@ class Minato:
             cached_file = self._cache.by_url(url)
 
         remove_file_or_directory(cached_file.local_path)
-        remove_file_or_directory(self._get_lockfile_path(cached_file.local_path))
         if cached_file.extraction_path is not None:
             remove_file_or_directory(cached_file.extraction_path)
-            remove_file_or_directory(
-                self._get_lockfile_path(cached_file.extraction_path)
-            )
-
         self._cache.delete(cached_file)
-
-    @staticmethod
-    def _get_lockfile_path(path: Path) -> Path:
-        return path.parent / (path.name + ".lock")
