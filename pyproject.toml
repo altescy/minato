@@ -6,7 +6,7 @@ authors = ["Yasuhiro Yamaguchi <altescy@fastmail.com>"]
 license = "MIT License"
 readme = "README.md"
 homepage = "https://github.com/altescy/minato"
-keywords=["python", "cache", "s3", "google-cloud-storage", "ftp"]
+keywords=["python", "cache", "s3", "google-cloud-storage"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
