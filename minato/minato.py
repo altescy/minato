@@ -113,6 +113,8 @@ class Minato:
                     remove_file_or_directory(cached_file.local_path)
 
                     cached_file.status = CacheStatus.DOWNLOADING
+                    self._cache.update(cached_file)
+
                     self.download(cached_file.url, cached_file.local_path)
                     downloaded = True
 
@@ -128,6 +130,8 @@ class Minato:
                     remove_file_or_directory(cached_file.extraction_path)
 
                     cached_file.status = CacheStatus.EXTRACTING
+                    self._cache.update(cached_file)
+
                     extract_archive_file(
                         cached_file.local_path, cached_file.extraction_path
                     )
