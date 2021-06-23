@@ -19,7 +19,6 @@ class GCSFileSystem(FileSystem):
 
         self._project = self._url.get_query("project")
         self._api_endpoint = self._url.get_query("api_endpoint")
-        self._region_name = self._url.get_query("region")
 
         self._client = Client()
         if self._project:

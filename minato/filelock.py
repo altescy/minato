@@ -34,37 +34,3 @@ class FileLock:
     ) -> bool:
         self.release()
         return exc_type is None and exc_value is None and traceback is None
-
-
-class LockedFile:
-    def __init__(self, path: Path) -> None:
-        self._path = path
-
-        self._lockfile = path.parent / (path.name + ".lock")
-        self._lock = FileLock(self._lockfile)
-
-    @property
-    def path(self) -> Path:
-        return self._path
-
-    def __repr__(self) -> str:
-        return str(self._path)
-
-    def acquire(self) -> None:
-        self._lock.acquire()
-
-    def release(self) -> None:
-        self._lock.release()
-
-    def __enter__(self) -> LockedFile:
-        self._lock.acquire()
-        return self
-
-    def __exit__(
-        self,
-        exc_type: Optional[Type[BaseException]],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
-    ) -> bool:
-        self.release()
-        return exc_type is None and exc_value is None and traceback is None

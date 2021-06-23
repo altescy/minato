@@ -1,4 +1,3 @@
-import hashlib
 import logging
 import os
 import shutil
@@ -116,9 +115,3 @@ def _session_with_backoff() -> requests.Session:
     session.mount("https://", HTTPAdapter(max_retries=retries))
 
     return session
-
-
-def _get_cached_filename(path: Union[str, Path]) -> str:
-    encoded_path = str(path).encode()
-    name = hashlib.md5(encoded_path).hexdigest()
-    return name
