@@ -10,7 +10,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
-from minato.exceptions import CacheNotFoundError, ConfigurationError
+from minato.exceptions import CacheAlreadyExists, CacheNotFoundError, ConfigurationError
 from minato.filelock import FileLock
 from minato.util import remove_file_or_directory
 
@@ -134,19 +134,13 @@ class Cache:
         return self._root / (uid + ".lock")
 
     def load_cached_file(self, metadata_path: Path) -> CachedFile:
-        print(metadata_path)
         if not metadata_path.exists():
             raise CacheNotFoundError(f"Cache not found: {metadata_path}")
         with open(metadata_path, "r") as fp:
             params = json.load(fp)
         return CachedFile(**params)
 
-    def save_cached_file(self, item: CachedFile) -> None:
-        metadata_path = self.get_metadata_path(item.uid)
-        with open(metadata_path, "w") as fp:
-            json.dump(item.to_dict(), fp)
-
-    def add(self, url: str) -> CachedFile:
+    def new(self, url: str) -> CachedFile:
         uid = self._generate_uid()
         cached_file = CachedFile(
             uid=uid,
@@ -155,15 +149,29 @@ class Cache:
             created_at=datetime.datetime.now(),
             updated_at=datetime.datetime.now(),
         )
-        self.save_cached_file(cached_file)
         return cached_file
+
+    def exists(self, item: CachedFile) -> bool:
+        metadata_path = self.get_metadata_path(item.uid)
+        return metadata_path.exists()
+
+    def save(self, item: CachedFile) -> None:
+        metadata_path = self.get_metadata_path(item.uid)
+        with open(metadata_path, "w") as fp:
+            json.dump(item.to_dict(), fp)
+
+    def add(self, item: CachedFile) -> CachedFile:
+        if self.exists(item):
+            raise CacheAlreadyExists(item.url)
+        self.save(item)
+        return item
 
     def update(self, item: CachedFile) -> None:
         metadata_path = self.get_metadata_path(item.uid)
         if not metadata_path.exists():
             raise CacheNotFoundError(f"Cache not found with uid={item.uid}")
         item.updated_at = datetime.datetime.now()
-        self.save_cached_file(item)
+        self.save(item)
 
     def by_uid(self, uid: str) -> CachedFile:
         metadata_path = self.get_metadata_path(uid)

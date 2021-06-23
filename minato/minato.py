@@ -92,9 +92,12 @@ class Minato:
         if url in self._cache:
             cached_file = self._cache.by_url(url)
         else:
-            cached_file = self._cache.add(url)
+            cached_file = self._cache.new(url)
 
         with self._cache.lock(cached_file):
+            if not self._cache.exists(cached_file):
+                self._cache.add(cached_file)
+
             cached_file = self._cache.by_url(url)
 
             if retry and cached_file.status != CacheStatus.COMPLETED:

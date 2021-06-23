@@ -12,9 +12,9 @@ def test_cache_add_list_and_delete() -> None:
         tempdir = Path(_tempdir)
         cache = Cache(root=tempdir)
 
-        cached_file = cache.add("https://example.com/path/to/file_1")
-        _ = cache.add("https://example.com/path/to/file_2")
-        _ = cache.add("https://example.com/path/to/file_3")
+        cached_file = cache.add(cache.new("https://example.com/path/to/file_1"))
+        cache.add(cache.new("https://example.com/path/to/file_2"))
+        cache.add(cache.new("https://example.com/path/to/file_3"))
 
         with cached_file.local_path.open("w") as fp:
             fp.write("Hello, world!")
@@ -36,6 +36,6 @@ def test_cache_contains() -> None:
         cache = Cache(root=tempdir)
 
         url = "https://example.com/path/to/file"
-        _ = cache.add(url)
+        _ = cache.add(cache.new(url))
 
         assert url in cache

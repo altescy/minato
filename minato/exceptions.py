@@ -12,3 +12,7 @@ class CacheNotFoundError(MinatoException):
 
 class InvalidCacheStatus(MinatoException):
     """InvalidCacheStatus"""
+
+
+class CacheAlreadyExists(MinatoException):
+    """CacheAlreadyExists"""
