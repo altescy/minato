@@ -7,7 +7,7 @@ from minato.config import Config
 from minato.filesystems import FileSystem
 from minato.minato import Minato
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 __all__ = [
     "Cache",
     "Config",
