@@ -8,7 +8,7 @@ import uuid
 from contextlib import contextmanager
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterator, List, Optional, Union
 
 from minato.exceptions import CacheAlreadyExists, CacheNotFoundError, ConfigurationError
 from minato.filelock import FileLock
@@ -64,17 +64,6 @@ class CachedFile:
         self.updated_at = updated_at
         self.extraction_path = extraction_path
         self.status = status
-
-    def to_tuple(self) -> Tuple[str, str, str, str, str, Optional[str], str]:
-        return (
-            self.uid,
-            self.url,
-            str(self.local_path),
-            self.created_at.isoformat(),
-            self.updated_at.isoformat(),
-            str(self.extraction_path) if self.extraction_path else None,
-            self.status.value,
-        )
 
     def to_dict(self) -> Dict[str, Any]:
         return {
