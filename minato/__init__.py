@@ -31,6 +31,7 @@ def open(
     force_extract: bool = False,
     cache_root: Optional[Union[str, Path]] = None,
     expire_days: Optional[int] = None,
+    retry: bool = True,
 ) -> Iterator[IO[Any]]:
     config = Config.load(
         cache_root=cache_root,
@@ -45,6 +46,7 @@ def open(
         force_download=force_download,
         force_extract=force_extract,
         expire_days=expire_days,
+        retry=retry,
     ) as fp:
         yield fp
 

@@ -39,6 +39,7 @@ class Minato:
         use_cache: bool = True,
         force_download: bool = False,
         force_extract: bool = False,
+        retry: bool = True,
     ) -> Iterator[IO[Any]]:
         if not ("a" in mode or "w" in mode or "x" in mode or "+" in mode) and use_cache:
             url_or_filename = self.cached_path(
@@ -48,6 +49,7 @@ class Minato:
                 expire_days=expire_days,
                 force_download=force_download,
                 force_extract=force_extract,
+                retry=retry,
             )
 
         with open_file(url_or_filename, mode) as fp:
