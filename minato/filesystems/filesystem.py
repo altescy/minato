@@ -29,6 +29,12 @@ def download(
     filesystem.download(download_path)
 
 
+def delete(url_or_filename: Union[str, Path]) -> None:
+    url = str(url_or_filename)
+    filesystem = FileSystem.by_url(url)
+    filesystem.delete()
+
+
 def get_version(
     url_or_filename: Union[str, Path],
 ) -> Optional[str]:

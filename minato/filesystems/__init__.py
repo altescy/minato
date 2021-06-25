@@ -1,5 +1,6 @@
 from minato.filesystems.filesystem import (  # noqa: F401
     FileSystem,
+    delete,
     download,
     get_version,
     open_file,

@@ -4,8 +4,8 @@ from typing import IO, Any, Iterator, Optional, Union
 
 from minato.cache import Cache, CacheStatus
 from minato.config import Config
-from minato.exceptions import CacheNotFoundError, InvalidCacheStatus
-from minato.filesystems import download, get_version, open_file
+from minato.exceptions import InvalidCacheStatus
+from minato.filesystems import delete, download, get_version, open_file
 from minato.util import (
     extract_archive_file,
     extract_path,
@@ -203,7 +203,15 @@ class Minato:
                 content = local_file.read()
                 remote_file.write(content)
 
-    def remove(self, url: str) -> None:
+    @staticmethod
+    def delete(url_or_filename: Union[str, Path]) -> None:
+        delete(url_or_filename)
+
+    def remove_cache(self, url_or_filename: Union[str, Path]) -> None:
+        if is_local(url_or_filename):
+            return
+
+        url = str(url_or_filename)
         cached_file = self._cache.by_url(url)
 
         remove_file_or_directory(cached_file.local_path)

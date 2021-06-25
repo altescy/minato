@@ -123,3 +123,16 @@ def test_auto_update() -> None:
         ) as fp:
             text = fp.read().strip()
             assert text == "world"
+
+
+@mock_s3
+def test_delete() -> None:
+    conn = boto3.resource("s3", region_name="us-east-1")
+    conn.create_bucket(Bucket="my_bucket")
+
+    url = "s3://my_bucket/foo"
+
+    with minato.open(url, "w") as fp:
+        fp.write("hello")
+
+    minato.delete(url)

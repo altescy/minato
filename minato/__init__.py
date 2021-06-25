@@ -74,6 +74,16 @@ def cached_path(
     )
 
 
+def remove_cache(
+    url_or_filename: Union[str, Path],
+    cache_root: Optional[Union[str, Path]] = None,
+) -> None:
+    config = Config.load(
+        cache_root=cache_root,
+    )
+    Minato(config).remove_cache(url_or_filename)
+
+
 def download(url: str, filename: Union[str, Path]) -> None:
     filename = Path(filename)
     Minato.download(url, filename)
@@ -82,3 +92,7 @@ def download(url: str, filename: Union[str, Path]) -> None:
 def upload(filename: Union[str, Path], url: str) -> None:
     filename = Path(filename)
     Minato.upload(filename, url)
+
+
+def delete(url_or_filename: Union[str, Path]) -> None:
+    Minato.delete(url_or_filename)
