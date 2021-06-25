@@ -82,12 +82,24 @@ class S3FileSystem(FileSystem):
         ]
         total = sum(obj.size for obj in objects)
         progress = tqdm(unit="B", total=total, desc="downloading")
-        for obj in objects:
-            relpath = os.path.relpath(obj.key, self._key)
-            file_path = path / relpath
+        if len(objects) == 1:  # if the given path is a file
+            obj = objects[0]
+            if path.is_dir():
+                file_path = path / os.path.basename(obj.key)
+            else:
+                file_path = path
             os.makedirs(file_path.parent, exist_ok=True)
             bucket.download_file(obj.key, str(file_path))
             progress.update(obj.size)
+        else:  # if the given path is a directory
+            for obj in objects:
+                relpath = os.path.relpath(obj.key, self._key)
+                parent_dir = path / os.path.dirname(relpath)
+                os.makedirs(parent_dir, exist_ok=True)
+
+                file_path = path / relpath
+                bucket.download_file(obj.key, str(file_path))
+                progress.update(obj.size)
         progress.close()
 
     def delete(self) -> None:
