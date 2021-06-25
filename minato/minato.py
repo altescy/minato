@@ -1,3 +1,4 @@
+import logging
 from contextlib import contextmanager
 from pathlib import Path
 from typing import IO, Any, Iterator, Optional, Union
@@ -13,6 +14,8 @@ from minato.util import (
     is_local,
     remove_file_or_directory,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class Minato:
@@ -42,6 +45,7 @@ class Minato:
         retry: bool = True,
     ) -> Iterator[IO[Any]]:
         if not ("a" in mode or "w" in mode or "x" in mode or "+" in mode) and use_cache:
+            logger.info("Open cached file of %s.", url_or_filename)
             url_or_filename = self.cached_path(
                 url_or_filename,
                 extract=extract,
@@ -117,6 +121,9 @@ class Minato:
             if cached_file.auto_update and cached_file.version is not None:
                 current_version = get_version(cached_file.url)
                 if current_version != cached_file.version:
+                    logger.info(
+                        "New version of data is available. It will be automatically updated."
+                    )
                     force_download = True
 
             if retry and cached_file.status != CacheStatus.COMPLETED:
@@ -134,6 +141,11 @@ class Minato:
                     cached_file.status = CacheStatus.DOWNLOADING
                     self._cache.update(cached_file)
 
+                    logger.info(
+                        "Start downloading file(s) from %s to %s.",
+                        cached_file.url,
+                        cached_file.local_path,
+                    )
                     self.download(cached_file.url, cached_file.local_path)
                     cached_file.version = get_version(cached_file.url)
                     downloaded = True
@@ -152,6 +164,11 @@ class Minato:
                     cached_file.status = CacheStatus.EXTRACTING
                     self._cache.update(cached_file)
 
+                    logging.info(
+                        "Extracting archive file from %s to %s.",
+                        cached_file.local_path,
+                        cached_file.extraction_path,
+                    )
                     extract_archive_file(
                         cached_file.local_path, cached_file.extraction_path
                     )

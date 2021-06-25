@@ -3,6 +3,7 @@ from __future__ import annotations
 import dataclasses
 import datetime
 import json
+import logging
 import os
 import uuid
 from contextlib import contextmanager
@@ -13,6 +14,8 @@ from typing import Any, Dict, Iterator, List, Optional, Union
 from minato.exceptions import CacheAlreadyExists, CacheNotFoundError, ConfigurationError
 from minato.filelock import FileLock
 from minato.util import remove_file_or_directory
+
+logger = logging.getLogger(__name__)
 
 
 class CacheStatus(Enum):
@@ -121,10 +124,12 @@ class Cache:
     def lock(self, item: CachedFile) -> Iterator[None]:
         lock = FileLock(self.get_lockfile_path(item.uid))
         try:
+            logger.info("Trying to acquire file lock of %s.", item.url)
             lock.acquire()
             yield
         finally:
             lock.release()
+            logger.info("File lock of %s was released.", item.url)
 
     @staticmethod
     def _generate_uid() -> str:
@@ -169,6 +174,7 @@ class Cache:
         if self.exists(item):
             raise CacheAlreadyExists(item.url)
         self.save(item)
+        logger.info("New cached file of %s was added.", item.url)
         return item
 
     def update(self, item: CachedFile) -> None:
@@ -202,6 +208,7 @@ class Cache:
 
         remove_file_or_directory(metadata_path)
         remove_file_or_directory(lockfile_path)
+        logger.info("A cached file of %s was successfully deleted.", item.url)
 
     def is_expired(self, item: CachedFile) -> bool:
         if item.expire_days < 0:

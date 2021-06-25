@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 import tempfile
@@ -10,6 +11,8 @@ import boto3
 from tqdm import tqdm
 
 from minato.filesystems.filesystem import FileSystem
+
+logger = logging.getLogger(__name__)
 
 
 @FileSystem.register(["s3"])
@@ -81,6 +84,10 @@ class S3FileSystem(FileSystem):
             if not obj.key.endswith("/")
         ]
         total = sum(obj.size for obj in objects)
+
+        logger.info(
+            "%s file(s) (%sB) will be downloaded to %s.", len(objects), total, path
+        )
         progress = tqdm(unit="B", total=total, desc="downloading")
         if len(objects) == 1:  # if the given path is a file
             obj = objects[0]

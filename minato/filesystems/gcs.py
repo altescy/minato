@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 import tempfile
@@ -9,6 +10,8 @@ from google.cloud.storage import Blob, Client
 from tqdm import tqdm
 
 from minato.filesystems.filesystem import FileSystem
+
+logger = logging.getLogger(__name__)
 
 
 @FileSystem.register(["gs", "gcs"])
@@ -64,6 +67,10 @@ class GCSFileSystem(FileSystem):
             if not blob.name.endswith("/")
         ]
         total = sum(blob.size for blob in blobs if blob.size)
+
+        logger.info(
+            "%s file(s) (%sB) will be downloaded to %s.", len(blobs), total, path
+        )
         progress = tqdm(unit="B", total=total, desc="downloading")
         for blob in blobs:
             relpath = os.path.relpath(blob.name, self._key)

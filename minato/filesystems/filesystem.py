@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import logging
 from contextlib import contextmanager
 from pathlib import Path
 from typing import IO, Any, Callable, Dict, Iterator, List, Optional, Type, Union
 from urllib.parse import urlparse
 
 from minato.url import URL
+
+logger = logging.getLogger(__name__)
 
 
 @contextmanager
@@ -65,6 +68,7 @@ class FileSystem:
             schemes = ", ".join(FileSystem.registry.keys())
             raise KeyError(f"Invalid scheme: {scheme} (not in {schemes})")
         subclass = FileSystem.registry[scheme]
+        logger.info("Infer file system of %s from url: %s", subclass.__name__, url)
         return subclass(url)
 
     def __init__(self, url_or_filename: Union[str, Path]) -> None:
