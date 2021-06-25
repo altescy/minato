@@ -1,7 +1,7 @@
 import shutil
 from contextlib import contextmanager
 from pathlib import Path
-from typing import IO, Any, Iterator, Union
+from typing import IO, Any, Iterator, Optional, Union
 
 from minato.filesystems.filesystem import FileSystem
 from minato.util import remove_file_or_directory
@@ -23,6 +23,9 @@ class OSFileSystem(FileSystem):
         if not self._path.exists():
             raise FileNotFoundError(self._path)
         remove_file_or_directory(self._path)
+
+    def get_version(self) -> Optional[str]:
+        return None
 
     @contextmanager
     def open_file(

@@ -5,7 +5,7 @@ from typing import IO, Any, Iterator, Optional, Union
 from minato.cache import Cache, CacheStatus
 from minato.config import Config
 from minato.exceptions import InvalidCacheStatus
-from minato.filesystems import download, open_file
+from minato.filesystems import download, get_version, open_file
 from minato.util import (
     extract_archive_file,
     extract_path,
@@ -20,7 +20,8 @@ class Minato:
         self._config = config or Config.load()
         self._cache = Cache(
             root=self._config.cache_root,
-            expire_days=self._config.expire_days,
+            default_expire_days=self._config.expire_days,
+            default_auto_update=self._config.auto_update,
         )
 
     @property
@@ -33,18 +34,17 @@ class Minato:
         url_or_filename: Union[str, Path],
         mode: str = "r",
         extract: bool = False,
+        auto_update: Optional[bool] = None,
         expire_days: Optional[int] = None,
         use_cache: bool = True,
         force_download: bool = False,
         force_extract: bool = False,
     ) -> Iterator[IO[Any]]:
-        if (
-            not ("a" in mode and "w" in mode and "x" in mode and "+" in mode)
-            and use_cache
-        ):
+        if not ("a" in mode or "w" in mode or "x" in mode or "+" in mode) and use_cache:
             url_or_filename = self.cached_path(
                 url_or_filename,
                 extract=extract,
+                auto_update=auto_update,
                 expire_days=expire_days,
                 force_download=force_download,
                 force_extract=force_extract,
@@ -57,6 +57,7 @@ class Minato:
         self,
         url_or_filename: Union[str, Path],
         extract: bool = False,
+        auto_update: Optional[bool] = None,
         expire_days: Optional[int] = None,
         force_download: bool = False,
         force_extract: bool = False,
@@ -97,13 +98,22 @@ class Minato:
         else:
             cached_file = self._cache.new(url)
 
-        if expire_days is not None:
-            cached_file.expire_days = expire_days
-            self._cache.save(cached_file)
-
         with self._cache.lock(cached_file):
             if not self._cache.exists(cached_file):
                 self._cache.add(cached_file)
+
+            if expire_days is not None:
+                cached_file.expire_days = expire_days
+                self._cache.save(cached_file)
+
+            if auto_update is not None:
+                cached_file.auto_update = auto_update
+                self._cache.save(cached_file)
+
+            if cached_file.auto_update and cached_file.version is not None:
+                current_version = get_version(cached_file.url)
+                if current_version != cached_file.version:
+                    force_download = True
 
             cached_file = self._cache.by_url(url)
 
@@ -123,6 +133,7 @@ class Minato:
                     self._cache.update(cached_file)
 
                     self.download(cached_file.url, cached_file.local_path)
+                    cached_file.version = get_version(cached_file.url)
                     downloaded = True
 
                 extracted = False

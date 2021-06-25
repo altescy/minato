@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from pathlib import Path
-from typing import IO, Any, Callable, Dict, Iterator, List, Type, Union
+from typing import IO, Any, Callable, Dict, Iterator, List, Optional, Type, Union
 from urllib.parse import urlparse
 
 from minato.url import URL
@@ -27,6 +27,14 @@ def download(
     url = str(url_or_filename)
     filesystem = FileSystem.by_url(url)
     filesystem.download(download_path)
+
+
+def get_version(
+    url_or_filename: Union[str, Path],
+) -> Optional[str]:
+    url = str(url_or_filename)
+    filesystem = FileSystem.by_url(url)
+    return filesystem.get_version()
 
 
 class FileSystem:
@@ -63,6 +71,9 @@ class FileSystem:
         raise NotImplementedError
 
     def delete(self) -> None:
+        raise NotImplementedError
+
+    def get_version(self) -> Optional[str]:
         raise NotImplementedError
 
     @contextmanager

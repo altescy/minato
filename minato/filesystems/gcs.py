@@ -3,7 +3,7 @@ import re
 import tempfile
 from contextlib import contextmanager
 from pathlib import Path
-from typing import IO, Any, Iterator, Union
+from typing import IO, Any, Iterator, Optional, Union
 
 from google.cloud.storage import Blob, Client
 
@@ -75,6 +75,20 @@ class GCSFileSystem(FileSystem):
         blobs = list(bucket.list_blobs(prefix=self._key))
         for blob in blobs:
             blob.delete()
+
+    def get_version(self) -> Optional[str]:
+        if not self.exists():
+            raise FileNotFoundError(self._url.raw)
+
+        client = self._client
+        bucket = client.bucket(self._bucket_name)
+        blobs = list(bucket.list_blobs(prefix=self._key))
+        hashes = [
+            str(blob.md5_hash)
+            for blob in blobs
+            if blob.md5_hash and not blob.name.endswith("/")
+        ]
+        return ".".join(sorted(hashes)) if hashes else None
 
     @contextmanager
     def open_file(

@@ -15,6 +15,7 @@ class CacheCommand(Subcommand):
     def set_arguments(self) -> None:
         self.parser.add_argument("url", type=str)
         self.parser.add_argument("--extract", action="store_true")
+        self.parser.add_argument("--auto-update", action="store_true")
         self.parser.add_argument("--force-extract", action="store_true")
         self.parser.add_argument("--force-download", action="store_true")
         self.parser.add_argument("--not-retry", action="store_false")
@@ -30,6 +31,7 @@ class CacheCommand(Subcommand):
         cached_path = minato.cached_path(
             args.url,
             extract=args.extract,
+            auto_update=args.auto_update,
             expire_days=args.expire_days,
             force_extract=args.force_extract,
             force_download=args.force_download,

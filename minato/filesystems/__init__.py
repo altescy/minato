@@ -1,4 +1,9 @@
-from minato.filesystems.filesystem import FileSystem, download, open_file  # noqa: F401
+from minato.filesystems.filesystem import (  # noqa: F401
+    FileSystem,
+    download,
+    get_version,
+    open_file,
+)
 from minato.filesystems.gcs import GCSFileSystem  # noqa: F401
 from minato.filesystems.http import HttpFileSystem  # noqa: F401
 from minato.filesystems.osfs import OSFileSystem  # noqa: F401

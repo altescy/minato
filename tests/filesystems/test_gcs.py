@@ -137,3 +137,44 @@ def test_delete() -> None:
         fs.delete()
 
         assert not fs.exists()
+
+
+@check_google_application_credentials
+def test_get_version() -> None:
+    with TempGCS() as gcs:
+        blob = gcs.get_blob("dir/foo.txt")
+        with StringIO("foo") as fp:
+            blob.upload_from_file(fp)
+
+        blob = gcs.get_blob("dir/bar.txt")
+        with StringIO("bar") as fp:
+            blob.upload_from_file(fp)
+
+        fs = GCSFileSystem(gcs.get_path("dir"))
+        version = fs.get_version()
+
+        assert version is not None
+        assert len(version.split(".")) == 2
+
+
+@check_google_application_credentials
+def test_update_version() -> None:
+    with TempGCS() as gcs:
+        fs = GCSFileSystem(gcs.get_path("foo"))
+
+        with fs.open_file("w") as fp:
+            fp.write("hello")
+
+        old_version = fs.get_version()
+        assert old_version is not None
+
+        current_version = fs.get_version()
+        assert current_version is not None
+        assert current_version == old_version
+
+        with fs.open_file("w") as fp:
+            fp.write("world")
+
+        new_version = fs.get_version()
+        assert new_version is not None
+        assert old_version != new_version

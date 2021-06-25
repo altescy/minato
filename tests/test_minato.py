@@ -1,6 +1,9 @@
 import tempfile
 from pathlib import Path
 
+import boto3
+from moto import mock_s3
+
 import minato
 
 
@@ -65,3 +68,58 @@ def test_cached_path_with_local_tar_file() -> None:
         with path.open("r") as fp:
             content = fp.read()
         assert content == "this file is foo.txt\n"
+
+
+@mock_s3
+def test_auto_update() -> None:
+    conn = boto3.resource("s3", region_name="us-east-1")
+    conn.create_bucket(Bucket="my_bucket")
+
+    with tempfile.TemporaryDirectory() as tempdir:
+        cache_root = Path(tempdir)
+
+        url = "s3://my_bucket/foo"
+
+        with minato.open(url, "w") as fp:
+            fp.write("hello")
+
+        minato.cached_path(url, expire_days=10, cache_root=cache_root)
+
+        with minato.open(
+            url,
+            auto_update=False,
+            use_cache=True,
+            cache_root=cache_root,
+        ) as fp:
+            text = fp.read().strip()
+            assert text == "hello"
+
+        with minato.open(
+            url,
+            auto_update=True,
+            use_cache=True,
+            cache_root=cache_root,
+        ) as fp:
+            text = fp.read().strip()
+            assert text == "hello"
+
+        with minato.open(url, "w") as fp:
+            fp.write("world")
+
+        with minato.open(
+            url,
+            auto_update=False,
+            use_cache=True,
+            cache_root=cache_root,
+        ) as fp:
+            text = fp.read().strip()
+            assert text == "hello"
+
+        with minato.open(
+            url,
+            auto_update=True,
+            use_cache=True,
+            cache_root=cache_root,
+        ) as fp:
+            text = fp.read().strip()
+            assert text == "world"

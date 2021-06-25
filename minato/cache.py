@@ -34,6 +34,8 @@ class CachedFile:
     expire_days: int
     extraction_path: Optional[Path]
     status: CacheStatus
+    version: Optional[str]
+    auto_update: bool
 
     def __init__(
         self,
@@ -45,6 +47,8 @@ class CachedFile:
         expire_days: int = -1,
         extraction_path: Optional[Union[str, Path]] = None,
         status: Union[str, CacheStatus] = CacheStatus.PENDING,
+        version: Optional[str] = None,
+        auto_update: bool = True,
     ) -> None:
         if isinstance(local_path, str):
             local_path = Path(local_path)
@@ -67,6 +71,8 @@ class CachedFile:
         self.expire_days = expire_days
         self.extraction_path = extraction_path
         self.status = status
+        self.version = version
+        self.auto_update = auto_update
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -80,6 +86,8 @@ class CachedFile:
             if self.extraction_path
             else None,
             "status": self.status.value,
+            "version": self.version,
+            "auto_update": self.auto_update,
         }
 
 
@@ -87,7 +95,8 @@ class Cache:
     def __init__(
         self,
         root: Path,
-        expire_days: int = -1,
+        default_expire_days: int = -1,
+        default_auto_update: bool = True,
     ) -> None:
         if not root.exists():
             os.makedirs(root, exist_ok=True)
@@ -98,7 +107,8 @@ class Cache:
             )
 
         self._root = root
-        self._expire_days = expire_days
+        self._default_expire_days = default_expire_days
+        self._default_auto_update = default_auto_update
 
     def __contains__(self, url: str) -> bool:
         try:
@@ -141,7 +151,8 @@ class Cache:
             local_path=self._root / uid,
             created_at=datetime.datetime.now(),
             updated_at=datetime.datetime.now(),
-            expire_days=self._expire_days,
+            expire_days=self._default_expire_days,
+            auto_update=self._default_auto_update,
         )
         return cached_file
 

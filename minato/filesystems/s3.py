@@ -4,7 +4,7 @@ import tempfile
 import threading
 from contextlib import contextmanager
 from pathlib import Path
-from typing import IO, Any, Iterator, Union
+from typing import IO, Any, Iterator, Optional, Union
 
 import boto3
 
@@ -100,6 +100,16 @@ class S3FileSystem(FileSystem):
         resource = self._get_resource()  # type: ignore
         bucket = resource.Bucket(self._bucket_name)
         bucket.objects.filter(Prefix=self._key).delete()
+
+    def get_version(self) -> Optional[str]:
+        if not self.exists():
+            raise FileNotFoundError(self._url.raw)
+
+        resource = self._get_resource()  # type: ignore
+        bucket = resource.Bucket(self._bucket_name)
+        objects = list(bucket.objects.filter(Prefix=self._key))
+        etags = [str(obj.e_tag) for obj in objects if obj.e_tag]
+        return ".".join(sorted(etags)) if etags else None
 
     @contextmanager
     def open_file(

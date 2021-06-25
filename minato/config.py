@@ -15,12 +15,14 @@ LOCAL_CONFIG_PATH = Path.cwd() / "minato.ini"
 class Config:
     cache_root: Path = DEFAULT_CACHE_ROOT
     expire_days: int = -1
+    auto_update: bool = True
 
     @classmethod
     def load(
         cls,
         cache_root: Optional[Union[str, Path]] = None,
         expire_days: Optional[int] = None,
+        auto_update: Optional[bool] = None,
         files: Optional[List[Union[str, Path]]] = None,
     ) -> Config:
         if files is None:
@@ -32,6 +34,8 @@ class Config:
             config.cache_root = Path(cache_root)
         if expire_days is not None:
             config.expire_days = expire_days
+        if auto_update is not None:
+            config.auto_update = auto_update
 
         return config
 
@@ -46,12 +50,6 @@ class Config:
             if "root" in section:
                 self.cache_root = Path(parser["cache"]["root"])
             if "expire_days" in section:
-                self.expire_days = int(parser["cache"]["expire_days"])
-
-    @property
-    def cache_db_path(self) -> Path:
-        return self.cache_root / "cache.db"
-
-    @property
-    def cache_artifact_dir(self) -> Path:
-        return self.cache_root / "artifacts"
+                self.expire_days = parser.getint("cache", "expire_days")
+            if "auto_update" in section:
+                self.auto_update = parser.getboolean("cache", "auto_update")

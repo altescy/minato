@@ -2,12 +2,12 @@ import os
 import tempfile
 from contextlib import contextmanager
 from pathlib import Path
-from typing import IO, Any, Iterator, Union
+from typing import IO, Any, Iterator, Optional, Union
 
 import requests
 
 from minato.filesystems.filesystem import FileSystem
-from minato.util import http_get
+from minato.util import _session_with_backoff, http_get
 
 
 @FileSystem.register(["http", "https"])
@@ -26,6 +26,20 @@ class HttpFileSystem(FileSystem):
 
     def delete(self) -> None:
         raise OSError("HttpFileSystem cannot delete files or directories.")
+
+    def get_version(self) -> Optional[str]:
+        if not self.exists():
+            raise FileNotFoundError(self._url.raw)
+
+        with _session_with_backoff() as session:
+            response = session.head(self._url.raw, allow_redirects=True)
+        if response.status_code != 200:
+            raise OSError(
+                "HEAD request failed for url {} with status code {}".format(
+                    self._url.raw, response.status_code
+                )
+            )
+        return response.headers.get("ETag")
 
     @contextmanager
     def open_file(
