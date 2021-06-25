@@ -122,3 +122,18 @@ def test_exists() -> None:
         assert GCSFileSystem(gcs.get_path("foo")).exists()
         assert GCSFileSystem(gcs.get_path("foo/foo.txt")).exists()
         assert not GCSFileSystem(gcs.get_path("foo/bar.txt")).exists()
+
+
+@check_google_application_credentials
+def test_delete() -> None:
+    with TempGCS() as gcs:
+        blob = gcs.get_blob("foo/foo.txt")
+        with StringIO("foo") as fp:
+            blob.upload_from_file(fp)
+
+        fs = GCSFileSystem(gcs.get_path("foo"))
+        assert fs.exists()
+
+        fs.delete()
+
+        assert not fs.exists()

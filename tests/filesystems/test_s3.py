@@ -77,3 +77,19 @@ def test_exists() -> None:
     assert S3FileSystem("s3://my_bucket/path/to/dir").exists()
     assert S3FileSystem("s3://my_bucket/path/to/dir/foo.txt").exists()
     assert not S3FileSystem("s3://my_bucket/path/to/dir/bar.txt").exists()
+
+
+@mock_s3
+def test_delete() -> None:
+    conn = boto3.resource("s3", region_name="us-east-1")
+    conn.create_bucket(Bucket="my_bucket")
+
+    with S3FileSystem("s3://my_bucket/path/to/dir/foo.txt").open_file("w") as fp:
+        fp.write("foo")
+
+    fs = S3FileSystem("s3://my_bucket/path/to/dir")
+    assert fs.exists()
+
+    fs.delete()
+
+    assert not fs.exists()

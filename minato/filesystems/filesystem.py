@@ -62,6 +62,9 @@ class FileSystem:
     def download(self, path: Union[str, Path]) -> None:
         raise NotImplementedError
 
+    def delete(self) -> None:
+        raise NotImplementedError
+
     @contextmanager
     def open_file(self, mode: str = "r") -> Iterator[IO[Any]]:
         raise NotImplementedError

@@ -93,6 +93,14 @@ class S3FileSystem(FileSystem):
                 file_path = path / relpath
                 bucket.download_file(obj.key, str(file_path))
 
+    def delete(self) -> None:
+        if not self.exists():
+            raise FileNotFoundError(self._url.raw)
+
+        resource = self._get_resource()  # type: ignore
+        bucket = resource.Bucket(self._bucket_name)
+        bucket.objects.filter(Prefix=self._key).delete()
+
     @contextmanager
     def open_file(
         self,

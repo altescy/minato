@@ -24,6 +24,9 @@ class HttpFileSystem(FileSystem):
         with open(path, "w+b") as fp:
             http_get(self._url.raw, fp)
 
+    def delete(self) -> None:
+        raise OSError("HttpFileSystem cannot delete files or directories.")
+
     @contextmanager
     def open_file(
         self,

@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import IO, Any, Iterator, Union
 
 from minato.filesystems.filesystem import FileSystem
+from minato.util import remove_file_or_directory
 
 
 @FileSystem.register(["file", "osfs", ""])
@@ -17,6 +18,11 @@ class OSFileSystem(FileSystem):
 
     def download(self, path: Union[str, Path]) -> None:
         shutil.copy(self._path, path)
+
+    def delete(self) -> None:
+        if not self._path.exists():
+            raise FileNotFoundError(self._path)
+        remove_file_or_directory(self._path)
 
     @contextmanager
     def open_file(

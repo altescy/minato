@@ -66,6 +66,16 @@ class GCSFileSystem(FileSystem):
             if not blob.name.endswith("/"):
                 blob.download_to_filename(str(file_path))
 
+    def delete(self) -> None:
+        if not self.exists():
+            raise FileNotFoundError(self._url.raw)
+
+        client = self._client
+        bucket = client.bucket(self._bucket_name)
+        blobs = list(bucket.list_blobs(prefix=self._key))
+        for blob in blobs:
+            blob.delete()
+
     @contextmanager
     def open_file(
         self,
