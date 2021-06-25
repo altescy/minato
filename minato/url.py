@@ -36,6 +36,10 @@ class URL:
     def hostname(self) -> Optional[str]:
         return self._parse_result.hostname
 
+    @property
+    def netloc(self) -> Optional[str]:
+        return self._parse_result.netloc
+
     def get_queries(self, key: str) -> Optional[List[str]]:
         return self._queries.get(key)
 

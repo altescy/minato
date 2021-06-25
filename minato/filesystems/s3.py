@@ -18,7 +18,7 @@ class S3FileSystem(FileSystem):
         super().__init__(url_or_filename)
         self._tlocal = threading.local()
 
-        self._bucket_name = self._url.hostname or ""
+        self._bucket_name = self._url.netloc or ""
         self._key = re.sub(r"^/", "", self._url.path)
 
         self._aws_access_key_id = self._url.username or os.environ.get(

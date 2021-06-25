@@ -15,7 +15,7 @@ from minato.filesystems.filesystem import FileSystem
 class GCSFileSystem(FileSystem):
     def __init__(self, url_or_filename: Union[str, Path]) -> None:
         super().__init__(url_or_filename)
-        self._bucket_name = self._url.hostname or ""
+        self._bucket_name = self._url.netloc or ""
         self._key = re.sub(r"^/", "", self._url.path)
 
         self._project = self._url.get_query("project")
