@@ -102,6 +102,8 @@ class Minato:
             if not self._cache.exists(cached_file):
                 self._cache.add(cached_file)
 
+            cached_file = self._cache.by_url(url)
+
             if expire_days is not None:
                 cached_file.expire_days = expire_days
                 self._cache.save(cached_file)
@@ -114,8 +116,6 @@ class Minato:
                 current_version = get_version(cached_file.url)
                 if current_version != cached_file.version:
                     force_download = True
-
-            cached_file = self._cache.by_url(url)
 
             if retry and cached_file.status != CacheStatus.COMPLETED:
                 force_download = True
