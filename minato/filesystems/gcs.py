@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import IO, Any, Iterator, Optional, Union
 
 from google.cloud.storage import Blob, Client
+from tqdm import tqdm
 
 from minato.filesystems.filesystem import FileSystem
 
@@ -57,14 +58,20 @@ class GCSFileSystem(FileSystem):
 
         client = self._client
         bucket = client.bucket(self._bucket_name)
-        blobs = list(bucket.list_blobs(prefix=self._key))
-
+        blobs = [
+            blob
+            for blob in bucket.list_blobs(prefix=self._key)
+            if not blob.name.endswith("/")
+        ]
+        total = sum(blob.size for blob in blobs if blob.size)
+        progress = tqdm(unit="B", total=total, desc="downloading")
         for blob in blobs:
             relpath = os.path.relpath(blob.name, self._key)
             file_path = path / relpath
             os.makedirs(file_path.parent, exist_ok=True)
-            if not blob.name.endswith("/"):
-                blob.download_to_filename(str(file_path))
+            blob.download_to_filename(str(file_path))
+            progress.update(blob.size or 0)
+        progress.close()
 
     def delete(self) -> None:
         if not self.exists():

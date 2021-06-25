@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import IO, Any, Iterator, Optional, Union
 
 import boto3
+from tqdm import tqdm
 
 from minato.filesystems.filesystem import FileSystem
 
@@ -74,24 +75,20 @@ class S3FileSystem(FileSystem):
 
         resource = self._get_resource()  # type: ignore
         bucket = resource.Bucket(self._bucket_name)
-        objects = list(bucket.objects.filter(Prefix=self._key))
-
-        if len(objects) == 1:  # if the given path is a file
-            obj = objects[0]
-            if path.is_dir():
-                file_path = path / os.path.basename(obj.key)
-            else:
-                file_path = path
+        objects = [
+            obj
+            for obj in bucket.objects.filter(Prefix=self._key)
+            if not obj.key.endswith("/")
+        ]
+        total = sum(obj.size for obj in objects)
+        progress = tqdm(unit="B", total=total, desc="downloading")
+        for obj in objects:
+            relpath = os.path.relpath(obj.key, self._key)
+            file_path = path / relpath
             os.makedirs(file_path.parent, exist_ok=True)
             bucket.download_file(obj.key, str(file_path))
-        else:  # if the given path is a directory
-            for obj in objects:
-                relpath = os.path.relpath(obj.key, self._key)
-                parent_dir = path / os.path.dirname(relpath)
-                os.makedirs(parent_dir, exist_ok=True)
-
-                file_path = path / relpath
-                bucket.download_file(obj.key, str(file_path))
+            progress.update(obj.size)
+        progress.close()
 
     def delete(self) -> None:
         if not self.exists():
