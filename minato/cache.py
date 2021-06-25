@@ -31,6 +31,7 @@ class CachedFile:
     local_path: Path
     created_at: datetime.datetime
     updated_at: datetime.datetime
+    expire_days: int
     extraction_path: Optional[Path]
     status: CacheStatus
 
@@ -41,6 +42,7 @@ class CachedFile:
         local_path: Union[str, Path],
         created_at: Union[str, datetime.datetime],
         updated_at: Union[str, datetime.datetime],
+        expire_days: int = -1,
         extraction_path: Optional[Union[str, Path]] = None,
         status: Union[str, CacheStatus] = CacheStatus.PENDING,
     ) -> None:
@@ -62,6 +64,7 @@ class CachedFile:
         self.local_path = local_path.absolute()
         self.created_at = created_at
         self.updated_at = updated_at
+        self.expire_days = expire_days
         self.extraction_path = extraction_path
         self.status = status
 
@@ -72,6 +75,7 @@ class CachedFile:
             "local_path": str(self.local_path),
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
+            "expire_days": self.expire_days,
             "extraction_path": str(self.extraction_path)
             if self.extraction_path
             else None,
@@ -137,6 +141,7 @@ class Cache:
             local_path=self._root / uid,
             created_at=datetime.datetime.now(),
             updated_at=datetime.datetime.now(),
+            expire_days=self._expire_days,
         )
         return cached_file
 
@@ -188,11 +193,11 @@ class Cache:
         remove_file_or_directory(lockfile_path)
 
     def is_expired(self, item: CachedFile) -> bool:
-        if self._expire_days < 0:
+        if item.expire_days < 0:
             return False
         now = datetime.datetime.now()
         delta = now - item.updated_at
-        return delta.days >= self._expire_days
+        return delta.days >= item.expire_days
 
     def all(self) -> List[CachedFile]:
         cached_files: List[CachedFile] = []

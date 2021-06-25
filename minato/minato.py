@@ -33,6 +33,7 @@ class Minato:
         url_or_filename: Union[str, Path],
         mode: str = "r",
         extract: bool = False,
+        expire_days: Optional[int] = None,
         use_cache: bool = True,
         force_download: bool = False,
         force_extract: bool = False,
@@ -44,6 +45,7 @@ class Minato:
             url_or_filename = self.cached_path(
                 url_or_filename,
                 extract=extract,
+                expire_days=expire_days,
                 force_download=force_download,
                 force_extract=force_extract,
             )
@@ -55,6 +57,7 @@ class Minato:
         self,
         url_or_filename: Union[str, Path],
         extract: bool = False,
+        expire_days: Optional[int] = None,
         force_download: bool = False,
         force_extract: bool = False,
         retry: bool = True,
@@ -93,6 +96,10 @@ class Minato:
             cached_file = self._cache.by_url(url)
         else:
             cached_file = self._cache.new(url)
+
+        if expire_days is not None:
+            cached_file.expire_days = expire_days
+            self._cache.save(cached_file)
 
         with self._cache.lock(cached_file):
             if not self._cache.exists(cached_file):

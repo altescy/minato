@@ -24,13 +24,13 @@ class CacheCommand(Subcommand):
     def run(self, args: argparse.Namespace) -> None:
         config = Config.load(
             cache_root=args.root,
-            expire_days=args.expire_days,
         )
         minato = Minato(config)
 
         cached_path = minato.cached_path(
             args.url,
             extract=args.extract,
+            expire_days=args.expire_days,
             force_extract=args.force_extract,
             force_download=args.force_download,
             retry=args.not_retry,

@@ -13,26 +13,27 @@ from minato.minato import Minato
 )
 class RemoveCommand(Subcommand):
     def set_arguments(self) -> None:
-        self.parser.add_argument("url_or_uid", nargs="*", type=str, default=[])
+        self.parser.add_argument("query", nargs="*", type=str, default=[])
         self.parser.add_argument("--force", action="store_true")
-        self.parser.add_argument("--expired", action="store_true")
-        self.parser.add_argument("--failed", action="store_true")
-        self.parser.add_argument("--expire-days", type=int, default=None)
+        self.parser.add_argument("--expired", action="store_true", default=None)
+        self.parser.add_argument("--failed", action="store_true", default=None)
         self.parser.add_argument("--root", type=Path, default=None)
 
     def run(self, args: argparse.Namespace) -> None:
         config = Config.load(
             cache_root=args.root,
-            expire_days=args.expire_days,
         )
         minato = Minato(config)
         cache = minato.cache
 
-        cached_files = cache.filter(
-            queries=args.url_or_uid,
-            expired=args.expired or args.expire_days is not None,
-            failed=args.failed,
-        )
+        if args.query or args.expired is not None or args.failed is not None:
+            cached_files = cache.filter(
+                queries=args.query,
+                expired=args.expired or args.expire_days is not None,
+                failed=args.failed,
+            )
+        else:
+            cached_files = []
 
         num_caches = len(cached_files)
 

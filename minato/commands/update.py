@@ -13,8 +13,10 @@ from minato.minato import Minato
 )
 class UpdateCommand(Subcommand):
     def set_arguments(self) -> None:
-        self.parser.add_argument("uid_or_url", nargs="*", default=[])
+        self.parser.add_argument("query", nargs="*", default=[])
         self.parser.add_argument("--force", action="store_true")
+        self.parser.add_argument("--force-download", action="store_true")
+        self.parser.add_argument("--force-extract", action="store_true")
         self.parser.add_argument("--expired", action="store_true")
         self.parser.add_argument("--failed", action="store_true")
         self.parser.add_argument("--expire-days", type=int, default=None)
@@ -28,11 +30,14 @@ class UpdateCommand(Subcommand):
         minato = Minato(config)
         cache = minato.cache
 
-        cached_files = cache.filter(
-            queries=args.uid_or_url,
-            expired=args.expired or args.expire_days is not None,
-            failed=args.failed,
-        )
+        if args.query or args.expired or args.failed:
+            cached_files = cache.filter(
+                queries=args.query,
+                expired=args.expired,
+                failed=args.failed,
+            )
+        else:
+            cached_files = []
 
         num_caches = len(cached_files)
         if num_caches == 0:
@@ -50,6 +55,11 @@ class UpdateCommand(Subcommand):
                 return
 
         for cached_file in cached_files:
-            minato.cached_path(cached_file.url)
+            minato.cached_path(
+                cached_file.url,
+                expire_days=args.expire_days,
+                force_download=args.force_download,
+                force_extract=args.force_extract,
+            )
 
         print("Cache files were successfully updated.")

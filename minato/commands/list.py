@@ -1,4 +1,5 @@
 import argparse
+import datetime
 from pathlib import Path
 
 from minato.commands.subcommand import Subcommand
@@ -15,7 +16,7 @@ from minato.util import is_archive_file, sizeof_fmt
 )
 class ListCommand(Subcommand):
     def set_arguments(self) -> None:
-        self.parser.add_argument("uid_or_url", nargs="*", default=[])
+        self.parser.add_argument("query", nargs="*", default=[])
         self.parser.add_argument("--sort", type=str, default=None)
         self.parser.add_argument("--desc", action="store_true")
         self.parser.add_argument("--details", action="store_true")
@@ -24,24 +25,22 @@ class ListCommand(Subcommand):
         self.parser.add_argument("--expired", action="store_true", default=None)
         self.parser.add_argument("--failed", action="store_true", default=None)
         self.parser.add_argument("--completed", action="store_true", default=None)
-        self.parser.add_argument("--expire-days", type=int, default=None)
 
     def run(self, args: argparse.Namespace) -> None:
         config = Config.load(
             cache_root=args.root,
-            expire_days=args.expire_days,
         )
         minato = Minato(config)
         cache = minato.cache
 
         cached_files = cache.filter(
-            queries=args.uid_or_url,
-            expired=args.expired or args.expire_days is not None,
+            queries=args.query,
+            expired=args.expired,
             failed=args.failed,
             completed=args.completed,
         )
 
-        columns = ["uid", "url", "size", "type", "status", "expired"]
+        columns = ["uid", "url", "size", "type", "status", "expire_days"]
         if args.details:
             columns.append("local_path")
             columns.append("created_at")
@@ -63,8 +62,16 @@ class ListCommand(Subcommand):
             else:
                 info["size"] = "-"
 
+            if cache.is_expired(cached_file):
+                info["expire_days"] = f"EXPIRED({cached_file.expire_days})"
+            elif cached_file.expire_days < 0:
+                info["expire_days"] = "NONE"
+            else:
+                now = datetime.datetime.now()
+                delta = now - cached_file.updated_at
+                info["expire_days"] = f"{delta.days}/{cached_file.expire_days}"
+
             info["type"] = get_cache_type(cached_file.local_path)
-            info["expired"] = cache.is_expired(cached_file)
 
             table.add(info)
 
