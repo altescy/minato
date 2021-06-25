@@ -29,7 +29,7 @@ class RemoveCommand(Subcommand):
         if args.query or args.expired is not None or args.failed is not None:
             cached_files = cache.filter(
                 queries=args.query,
-                expired=args.expired or args.expire_days is not None,
+                expired=args.expired,
                 failed=args.failed,
             )
         else:
