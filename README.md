@@ -33,17 +33,15 @@ local_filename = minato.cached_path("http://example.com/path/to/archive.zip!inne
 ### CLI
 
 ```
-$ minato --help
+❯ poetry run minato --help
 usage: minato
 
 positional arguments:
-  {cache,download,list,remove,update,upload}
+  {cache,list,remove,update}
     cache               cache remote file and return cached local file path
-    download            download file to local
     list                show list of cached files
     remove              remove cached files
     update              update cached files
-    upload              upload local file to remote
 
 optional arguments:
   -h, --help            show this help message and exit
