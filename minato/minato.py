@@ -4,7 +4,7 @@ from typing import IO, Any, Iterator, Optional, Union
 
 from minato.cache import Cache, CacheStatus
 from minato.config import Config
-from minato.exceptions import InvalidCacheStatus
+from minato.exceptions import CacheNotFoundError, InvalidCacheStatus
 from minato.filesystems import download, get_version, open_file
 from minato.util import (
     extract_archive_file,
@@ -182,6 +182,15 @@ class Minato:
                 f"Cached path status is not completed: status={cached_file.status}"
             )
         return cached_file.local_path
+
+    def available_update(self, url_or_filename: Union[str]) -> bool:
+        if is_local(url_or_filename):
+            return False
+
+        url = str(url_or_filename)
+        cached_file = self._cache.by_url(url)
+        current_version = get_version(url)
+        return cached_file.version != current_version
 
     @staticmethod
     def download(url: str, filename: Path) -> None:

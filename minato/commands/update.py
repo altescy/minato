@@ -14,7 +14,7 @@ from minato.minato import Minato
 class UpdateCommand(Subcommand):
     def set_arguments(self) -> None:
         self.parser.add_argument("query", nargs="*", default=[])
-        self.parser.add_argument("--auto-update", action="store_true")
+        self.parser.add_argument("--auto", action="store_true")
         self.parser.add_argument("--force", action="store_true")
         self.parser.add_argument("--force-download", action="store_true")
         self.parser.add_argument("--force-extract", action="store_true")
@@ -26,7 +26,6 @@ class UpdateCommand(Subcommand):
     def run(self, args: argparse.Namespace) -> None:
         config = Config.load(
             cache_root=args.root,
-            expire_days=args.expire_days,
         )
         minato = Minato(config)
         cache = minato.cache
@@ -37,8 +36,12 @@ class UpdateCommand(Subcommand):
                 expired=args.expired,
                 failed=args.failed,
             )
+        elif args.auto:
+            cached_files = cache.all()
         else:
-            cached_files = cache.all() if args.auto_update else []
+            cached_files = []
+
+        cached_files = [x for x in cached_files if minato.available_update(x.url)]
 
         num_caches = len(cached_files)
         if num_caches == 0:
@@ -58,8 +61,8 @@ class UpdateCommand(Subcommand):
         for cached_file in cached_files:
             minato.cached_path(
                 cached_file.url,
-                auto_update=args.auto_update,
                 expire_days=args.expire_days,
+                auto_update=args.auto,
                 force_download=args.force_download,
                 force_extract=args.force_extract,
             )
