@@ -12,7 +12,7 @@ Cache & file system for online resources in Python
 ## Installation
 
 ```
-$ pip install minato
+pip install minato
 ```
 
 ## Usage
