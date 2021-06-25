@@ -206,15 +206,3 @@ class Minato:
     @staticmethod
     def delete(url_or_filename: Union[str, Path]) -> None:
         delete(url_or_filename)
-
-    def remove_cache(self, url_or_filename: Union[str, Path]) -> None:
-        if is_local(url_or_filename):
-            return
-
-        url = str(url_or_filename)
-        cached_file = self._cache.by_url(url)
-
-        remove_file_or_directory(cached_file.local_path)
-        if cached_file.extraction_path is not None:
-            remove_file_or_directory(cached_file.extraction_path)
-        self._cache.delete(cached_file)

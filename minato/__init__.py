@@ -74,16 +74,6 @@ def cached_path(
     )
 
 
-def remove_cache(
-    url_or_filename: Union[str, Path],
-    cache_root: Optional[Union[str, Path]] = None,
-) -> None:
-    config = Config.load(
-        cache_root=cache_root,
-    )
-    Minato(config).remove_cache(url_or_filename)
-
-
 def download(url: str, filename: Union[str, Path]) -> None:
     filename = Path(filename)
     Minato.download(url, filename)
