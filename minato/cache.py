@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 import datetime
+import hashlib
 import json
 import logging
 import os
@@ -132,8 +133,10 @@ class Cache:
             logger.info("File lock of %s was released.", item.url)
 
     @staticmethod
-    def _generate_uid() -> str:
-        return uuid.uuid4().hex
+    def _generate_uid(url: str) -> str:
+        hashval = hashlib.md5(url.encode()).hexdigest()
+        uuidval = uuid.uuid4().hex
+        return f"{hashval}-{uuidval}"
 
     def get_metadata_path(self, uid: str) -> Path:
         return self._root / (uid + ".json")
@@ -149,7 +152,7 @@ class Cache:
         return CachedFile(**params)
 
     def new(self, url: str) -> CachedFile:
-        uid = self._generate_uid()
+        uid = self._generate_uid(url)
         cached_file = CachedFile(
             uid=uid,
             url=url,
@@ -193,6 +196,21 @@ class Cache:
         return CachedFile(**params)
 
     def by_url(self, url: str) -> CachedFile:
+        logger.info("Try to find cached file of %s", url)
+        hashval = hashlib.md5(url.encode()).hexdigest()
+        for metadata_path in self._root.glob(f"{hashval}-*.json"):
+            cached_file = self.load_cached_file(metadata_path)
+            if cached_file.url == url:
+                logger.info("Find cached file of %s: %s", url, cached_file.local_path)
+                return cached_file
+
+        logger.info(
+            "There is no cached files with hashval of %s, "
+            "so try to find a corresponding file from all files in %s",
+            url,
+            self._root,
+        )
+
         for cached_file in self.all():
             if cached_file.url == url:
                 return cached_file
