@@ -5,7 +5,7 @@ from typing import IO, Any, Iterator, Optional, Union
 
 from minato.cache import Cache, CacheStatus
 from minato.config import Config
-from minato.exceptions import InvalidCacheStatus
+from minato.exceptions import CacheNotFoundError, InvalidCacheStatus
 from minato.filesystems import delete, download, get_version, open_file
 from minato.util import (
     extract_archive_file,
@@ -99,16 +99,16 @@ class Minato:
                 return local_path
 
         url = str(url_or_filename)
-        if url in self._cache:
+        try:
             cached_file = self._cache.by_url(url)
-        else:
+        except CacheNotFoundError:
             cached_file = self._cache.new(url)
 
         with self._cache.lock(cached_file):
             if not self._cache.exists(cached_file):
                 self._cache.add(cached_file)
 
-            cached_file = self._cache.by_url(url)
+            cached_file = self._cache.by_uid(cached_file.uid)
 
             if expire_days is not None:
                 cached_file.expire_days = expire_days
