@@ -7,6 +7,7 @@ from io import StringIO
 from pathlib import Path
 from typing import Any, Callable, Literal, Optional
 
+import pytest
 from google.cloud.storage import Blob, Client
 
 from minato.filesystems.gcs import GCSFileSystem
@@ -53,17 +54,15 @@ def check_google_application_credentials(
     def decorator() -> None:
         google_credentials = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
         if not google_credentials:
-            warnings.warn(
+            pytest.skip(
                 f"GOOGLE_APPLICATION_CREDENTIALS was not given, so {func.__name__} was skipped."
             )
-            return
 
         test_gcs_bucket = os.environ.get("MINATO_GCS_BUCKET_TEST")
         if not test_gcs_bucket:
-            warnings.warn(
+            pytest.skip(
                 f"MINATO_GCS_BUCKET_TEST was not given, so {func.__name__} was skipped."
             )
-            return
 
         func()
 
