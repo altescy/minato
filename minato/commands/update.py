@@ -13,15 +13,54 @@ from minato.minato import Minato
 )
 class UpdateCommand(Subcommand):
     def set_arguments(self) -> None:
-        self.parser.add_argument("query", nargs="*", default=[])
-        self.parser.add_argument("--auto", action="store_true")
-        self.parser.add_argument("--force", action="store_true")
-        self.parser.add_argument("--force-download", action="store_true")
-        self.parser.add_argument("--force-extract", action="store_true")
-        self.parser.add_argument("--expired", action="store_true")
-        self.parser.add_argument("--failed", action="store_true")
-        self.parser.add_argument("--expire-days", type=int, default=None)
-        self.parser.add_argument("--root", type=Path, default=None)
+        self.parser.add_argument(
+            "query",
+            nargs="*",
+            default=[],
+            help="query to filter cached files",
+        )
+        self.parser.add_argument(
+            "--auto",
+            action="store_true",
+            help="check update and download files if updates are available",
+        )
+        self.parser.add_argument(
+            "--force",
+            action="store_true",
+            help="update cached files without confirmation",
+        )
+        self.parser.add_argument(
+            "--force-download",
+            action="store_true",
+            help="force to download files whether updates exist or not",
+        )
+        self.parser.add_argument(
+            "--force-extract",
+            action="store_true",
+            help="force to extract archive files",
+        )
+        self.parser.add_argument(
+            "--expired",
+            action="store_true",
+            help="update cached files that were expired",
+        )
+        self.parser.add_argument(
+            "--failed",
+            action="store_true",
+            help="update cached files that were failed to download",
+        )
+        self.parser.add_argument(
+            "--expire-days",
+            type=int,
+            default=None,
+            help="specify expire days of the cache",
+        )
+        self.parser.add_argument(
+            "--root",
+            type=Path,
+            default=None,
+            help="specify the root directory path of cached data",
+        )
 
     def run(self, args: argparse.Namespace) -> None:
         config = Config.load(

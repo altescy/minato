@@ -16,15 +16,58 @@ from minato.util import is_archive_file, sizeof_fmt
 )
 class ListCommand(Subcommand):
     def set_arguments(self) -> None:
-        self.parser.add_argument("query", nargs="*", default=[])
-        self.parser.add_argument("--sort", type=str, default=None)
-        self.parser.add_argument("--desc", action="store_true")
-        self.parser.add_argument("--details", action="store_true")
-        self.parser.add_argument("--column-width", type=int, default=None)
-        self.parser.add_argument("--root", type=Path, default=None)
-        self.parser.add_argument("--expired", action="store_true", default=None)
-        self.parser.add_argument("--failed", action="store_true", default=None)
-        self.parser.add_argument("--completed", action="store_true", default=None)
+        self.parser.add_argument(
+            "query",
+            nargs="*",
+            default=[],
+            help="query to filter cached files",
+        )
+        self.parser.add_argument(
+            "--sort",
+            type=str,
+            default=None,
+            help="sort by the specified key",
+        )
+        self.parser.add_argument(
+            "--desc",
+            action="store_true",
+            help="sort the list in descending order",
+        )
+        self.parser.add_argument(
+            "--details",
+            action="store_true",
+            help="show more detailed information",
+        )
+        self.parser.add_argument(
+            "--column-width",
+            type=int,
+            default=None,
+            help="specify the max column width",
+        )
+        self.parser.add_argument(
+            "--root",
+            type=Path,
+            default=None,
+            help="specify the root directory path of cached data",
+        )
+        self.parser.add_argument(
+            "--expired",
+            action="store_true",
+            default=None,
+            help="show cached files that were expired",
+        )
+        self.parser.add_argument(
+            "--failed",
+            action="store_true",
+            default=None,
+            help="show cached files that were failed to download",
+        )
+        self.parser.add_argument(
+            "--completed",
+            action="store_true",
+            default=None,
+            help="show cached files that were successfully downloaded",
+        )
 
     def run(self, args: argparse.Namespace) -> None:
         config = Config.load(

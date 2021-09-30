@@ -13,14 +13,49 @@ from minato.minato import Minato
 )
 class CacheCommand(Subcommand):
     def set_arguments(self) -> None:
-        self.parser.add_argument("url", type=str)
-        self.parser.add_argument("--extract", action="store_true")
-        self.parser.add_argument("--auto-update", action="store_true")
-        self.parser.add_argument("--force-extract", action="store_true")
-        self.parser.add_argument("--force-download", action="store_true")
-        self.parser.add_argument("--not-retry", action="store_false")
-        self.parser.add_argument("--expire-days", type=int, default=None)
-        self.parser.add_argument("--root", type=Path, default=None)
+        self.parser.add_argument(
+            "url",
+            type=str,
+            help="specify file path or url",
+        )
+        self.parser.add_argument(
+            "--extract",
+            action="store_true",
+            help="extract archive file",
+        )
+        self.parser.add_argument(
+            "--auto-update",
+            action="store_true",
+            help="download new version if available",
+        )
+        self.parser.add_argument(
+            "--force-extract",
+            action="store_true",
+            help="force to extract the specified archive file",
+        )
+        self.parser.add_argument(
+            "--force-download",
+            action="store_true",
+            help="force to download the specified file whether the cache exists or not",
+        )
+        self.parser.add_argument(
+            "--not-retry",
+            action="store_false",
+            help="do not retry to download the file even if "
+            "the previous download operation is failed",
+        )
+        self.parser.add_argument(
+            "--expire-days",
+            type=int,
+            default=None,
+            help="specify expire days of the cache",
+        )
+        self.parser.add_argument(
+            "--root",
+            type=Path,
+            default=None,
+            help="specify the root directory path of cached data",
+        )
 
     def run(self, args: argparse.Namespace) -> None:
         config = Config.load(

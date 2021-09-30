@@ -13,11 +13,36 @@ from minato.minato import Minato
 )
 class RemoveCommand(Subcommand):
     def set_arguments(self) -> None:
-        self.parser.add_argument("query", nargs="*", type=str, default=[])
-        self.parser.add_argument("--force", action="store_true")
-        self.parser.add_argument("--expired", action="store_true", default=None)
-        self.parser.add_argument("--failed", action="store_true", default=None)
-        self.parser.add_argument("--root", type=Path, default=None)
+        self.parser.add_argument(
+            "query",
+            nargs="*",
+            type=str,
+            default=[],
+            help="query to filter cached files",
+        )
+        self.parser.add_argument(
+            "--force",
+            action="store_true",
+            help="remove files without confirmation",
+        )
+        self.parser.add_argument(
+            "--expired",
+            action="store_true",
+            default=None,
+            help="remove files that were expired",
+        )
+        self.parser.add_argument(
+            "--failed",
+            action="store_true",
+            default=None,
+            help="remove files that were failed to download",
+        )
+        self.parser.add_argument(
+            "--root",
+            type=Path,
+            default=None,
+            help="specify the root directory path of cached data",
+        )
 
     def run(self, args: argparse.Namespace) -> None:
         config = Config.load(
