@@ -124,7 +124,7 @@ class S3FileSystem(FileSystem):
         resource = self._get_resource()  # type: ignore
         bucket = resource.Bucket(self._bucket_name)
         objects = list(bucket.objects.filter(Prefix=self._key))
-        etags = [str(obj.e_tag) for obj in objects if obj.e_tag]
+        etags = [str(obj.e_tag).strip('"') for obj in objects if obj.e_tag]
         return ".".join(sorted(etags)) if etags else None
 
     @contextmanager
