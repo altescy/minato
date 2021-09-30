@@ -12,14 +12,19 @@ keywords=["python", "cache", "s3", "google-cloud-storage"]
 python = "^3.8"
 requests = "^2.25.1"
 tqdm = "^4.60.0"
-boto3 = "^1.17.97"
-google-cloud-storage = "^1.39.0"
+boto3 = { version = "^1.17.97", optional = true }
+google-cloud-storage = { version = "^1.39.0", optional = true }
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
 python-language-server = "^0.36.2"
 pysen = {version = "^0.9.1", extras = ["lint"]}
 moto = {version = "^2.0.9", extras = ["s3"]}
+
+[tool.poetry.extras]
+s3=["boto3"]
+gcs=["google-cloud-storage"]
+all=["boto3", "google-cloud-storage"]
 
 [tool.poetry.scripts]
 minato = "minato.__main__:run"

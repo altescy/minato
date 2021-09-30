@@ -6,10 +6,17 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import IO, Any, Iterator, Optional, Union
 
-from google.cloud.storage import Blob, Client
 from tqdm import tqdm
 
 from minato.filesystems.filesystem import FileSystem
+
+try:
+    import google.cloud.storage as gcs
+    from google.cloud.storage import Blob, Client
+except ImportError:
+    gcs = None
+    Blob, Client = None, None
+
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +24,12 @@ logger = logging.getLogger(__name__)
 @FileSystem.register(["gs", "gcs"])
 class GCSFileSystem(FileSystem):
     def __init__(self, url_or_filename: Union[str, Path]) -> None:
+        if gcs is None:
+            raise ModuleNotFoundError(
+                "GCSFileSystem is not available. Please make sure that "
+                "google-cloud-storage is successfully installed."
+            )
+
         super().__init__(url_or_filename)
         self._bucket_name = self._url.netloc or ""
         self._key = re.sub(r"^/", "", self._url.path)
