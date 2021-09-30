@@ -8,7 +8,9 @@ Minato
 
 Cache & file system for online resources in Python
 
-**Features**
+
+## Features
+
 Minato enables you to:
 - Download & cache online recsources
   - minato supports the following protocols: HTTP(S) / AWS S3 / Google Cloud Storage
