@@ -8,6 +8,15 @@ Minato
 
 Cache & file system for online resources in Python
 
+**Features**
+Minato enables you to:
+- Download & cache online recsources
+  - minato supports the following protocols: HTTP(S) / AWS S3 / Google Cloud Storage
+  - You can manage cached file via command line interface
+- Automatically updates cached files based on ETag
+  - minato downloads new versions if available when you access cached files
+- Open online files super easily
+  - By using `minato.open`, you can read/write online resources like the built-in `open` method.
 
 ## Installation
 
