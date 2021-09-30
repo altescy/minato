@@ -31,6 +31,16 @@ class OSFileSystem(FileSystem):
     def open_file(
         self,
         mode: str = "r",
+        buffering: int = -1,
+        encoding: Optional[str] = None,
+        errors: Optional[str] = None,
+        newline: Optional[str] = None,
     ) -> Iterator[IO[Any]]:
-        with self._path.open(mode) as fp:
+        with self._path.open(
+            mode=mode,
+            buffering=buffering,
+            encoding=encoding,
+            errors=errors,
+            newline=newline,
+        ) as fp:
             yield fp

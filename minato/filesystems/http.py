@@ -45,6 +45,10 @@ class HttpFileSystem(FileSystem):
     def open_file(
         self,
         mode: str = "r",
+        buffering: int = -1,
+        encoding: Optional[str] = None,
+        errors: Optional[str] = None,
+        newline: Optional[str] = None,
     ) -> Iterator[IO[Any]]:
         if not self.exists():
             raise FileNotFoundError(self._url.raw)
@@ -56,7 +60,14 @@ class HttpFileSystem(FileSystem):
         try:
             http_get(self._url.raw, temp_file)
             temp_file.close()
-            with open(temp_file.name, mode) as fp:
+            with open(
+                temp_file.name,
+                mode=mode,
+                encoding=encoding,
+                buffering=buffering,
+                errors=errors,
+                newline=newline,
+            ) as fp:
                 yield fp
         finally:
             os.remove(temp_file.name)

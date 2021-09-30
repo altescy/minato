@@ -121,6 +121,10 @@ class GCSFileSystem(FileSystem):
     def open_file(
         self,
         mode: str = "r",
+        buffering: int = -1,
+        encoding: Optional[str] = None,
+        errors: Optional[str] = None,
+        newline: Optional[str] = None,
     ) -> Iterator[IO[Any]]:
         if "x" in mode and self.exists():
             raise FileExistsError(self._url.raw)
@@ -133,7 +137,14 @@ class GCSFileSystem(FileSystem):
                 self._download_fileobj(self._key, local_file)
 
             local_file.close()
-            with open(local_file.name, mode) as fp:
+            with open(
+                local_file.name,
+                mode=mode,
+                buffering=buffering,
+                encoding=encoding,
+                errors=errors,
+                newline=newline,
+            ) as fp:
                 yield fp
 
             if "w" in mode or "a" in mode or "+" in mode or "x" in mode:
