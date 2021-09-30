@@ -23,7 +23,7 @@ Minato enables you to:
 ## Installation
 
 ```
-pip install minato
+pip install minato[all]
 ```
 
 ## Usage
