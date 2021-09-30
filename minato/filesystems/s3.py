@@ -7,10 +7,15 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import IO, Any, Iterator, Optional, Union
 
-import boto3
 from tqdm import tqdm
 
 from minato.filesystems.filesystem import FileSystem
+
+try:
+    import boto3
+except ModuleNotFoundError:
+    boto3 = None
+
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +23,12 @@ logger = logging.getLogger(__name__)
 @FileSystem.register(["s3"])
 class S3FileSystem(FileSystem):
     def __init__(self, url_or_filename: Union[str, Path]) -> None:
+        if boto3 is None:
+            raise ModuleNotFoundError(
+                "S3FileSystem is not available. Please make sure that "
+                "boto3 is successfully installed."
+            )
+
         super().__init__(url_or_filename)
         self._tlocal = threading.local()
 
