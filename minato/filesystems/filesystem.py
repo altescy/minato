@@ -15,11 +15,21 @@ logger = logging.getLogger(__name__)
 def open_file(
     url_or_filename: Union[str, Path],
     mode: str = "r",
+    buffering: int = -1,
+    encoding: Optional[str] = None,
+    errors: Optional[str] = None,
+    newline: Optional[str] = None,
 ) -> Iterator[IO[Any]]:
 
     url = str(url_or_filename)
     filesystem = FileSystem.by_url(url)
-    with filesystem.open_file(mode) as fp:
+    with filesystem.open_file(
+        mode=mode,
+        buffering=buffering,
+        encoding=encoding,
+        errors=errors,
+        newline=newline,
+    ) as fp:
         yield fp
 
 
@@ -87,5 +97,12 @@ class FileSystem:
         raise NotImplementedError
 
     @contextmanager
-    def open_file(self, mode: str = "r") -> Iterator[IO[Any]]:
+    def open_file(
+        self,
+        mode: str = "r",
+        buffering: int = -1,
+        encoding: Optional[str] = None,
+        errors: Optional[str] = None,
+        newline: Optional[str] = None,
+    ) -> Iterator[IO[Any]]:
         raise NotImplementedError

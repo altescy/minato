@@ -24,6 +24,11 @@ __all__ = [
 def open(
     url_or_filename: Union[str, Path],
     mode: str = "r",
+    buffering: int = -1,
+    encoding: Optional[str] = None,
+    errors: Optional[str] = None,
+    newline: Optional[str] = None,
+    *,
     extract: bool = False,
     auto_update: Optional[bool] = None,
     use_cache: bool = True,
@@ -40,6 +45,10 @@ def open(
     with Minato(config).open(
         url_or_filename,
         mode=mode,
+        buffering=buffering,
+        encoding=encoding,
+        errors=errors,
+        newline=newline,
         extract=extract,
         auto_update=auto_update,
         use_cache=use_cache,
