@@ -1,7 +1,8 @@
+import argparse
 import tempfile
 from pathlib import Path
 
-from minato.commands import create_parser
+from minato.commands import Subcommand
 from minato.commands.cache import CacheCommand  # noqa: F401
 from minato.config import Config
 
@@ -14,10 +15,11 @@ def test_cache_command() -> None:
     with tempfile.TemporaryDirectory() as tempdir:
         config = Config(cache_root=Path(tempdir))
 
-        parser = create_parser()
-        args = parser.parse_args(["cache", url, "--root", str(config.cache_root)])
+        parser = argparse.ArgumentParser()
+        app = Subcommand.build(parser)
 
-        args.func(args)
+        args = parser.parse_args(["cache", url, "--root", str(config.cache_root)])
+        app(args)
 
         cached_files = [
             x
