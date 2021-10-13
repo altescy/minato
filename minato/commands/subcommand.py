@@ -71,7 +71,7 @@ class Subcommand:
             func = cast(
                 Optional[Callable[[argparse.Namespace], None]],
                 getattr(args, cls._func_key, None),
-            )  # noqa
+            )
             if func:
                 func(args)
             else:
