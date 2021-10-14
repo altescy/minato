@@ -6,7 +6,7 @@ from typing import IO, Any, Iterator, Optional, Union
 from minato.cache import Cache, CacheStatus
 from minato.config import Config
 from minato.exceptions import CacheNotFoundError, InvalidCacheStatus
-from minato.filesystems import delete, download, get_version, open_file
+from minato.filesystems import delete, download, exists, get_version, open_file
 from minato.util import (
     extract_archive_file,
     extract_path,
@@ -230,3 +230,7 @@ class Minato:
     @staticmethod
     def delete(url_or_filename: Union[str, Path]) -> None:
         delete(url_or_filename)
+
+    @staticmethod
+    def exists(url_or_filename: Union[str, Path]) -> bool:
+        return exists(url_or_filename)

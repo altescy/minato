@@ -2,6 +2,7 @@ from minato.filesystems.filesystem import (  # noqa: F401
     FileSystem,
     delete,
     download,
+    exists,
     get_version,
     open_file,
 )
