@@ -7,12 +7,11 @@ from minato.minato import Minato
 
 
 @Subcommand.register(
-    "remove",
+    name="remove",
     description="remove cached files",
-    help="remove cached files",
 )
 class RemoveCommand(Subcommand):
-    def set_arguments(self) -> None:
+    def setup(self) -> None:
         self.parser.add_argument(
             "query",
             nargs="*",

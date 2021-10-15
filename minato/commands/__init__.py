@@ -9,13 +9,16 @@ from minato.commands.subcommand import Subcommand
 from minato.commands.update import UpdateCommand  # noqa: F401
 
 
-def main(prog: Optional[str] = None) -> None:
+def create_subcommand(prog: Optional[str] = None) -> Subcommand:
     parser = argparse.ArgumentParser(usage="%(prog)s", prog=prog)
     parser.add_argument(
         "--version",
         action="version",
         version="%(prog)s " + __version__,
     )
+    return Subcommand(parser)
 
-    app = Subcommand.build(parser)
+
+def main(prog: Optional[str] = None) -> None:
+    app = create_subcommand(prog)
     app()
