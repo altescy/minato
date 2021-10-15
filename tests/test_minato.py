@@ -136,3 +136,17 @@ def test_delete() -> None:
         fp.write("hello")
 
     minato.delete(url)
+
+
+@mock_s3
+def test_exists() -> None:
+    conn = boto3.resource("s3", region_name="us-east-1")
+    conn.create_bucket(Bucket="my_bucket")
+
+    url = "s3://my_bucket/foo"
+
+    with minato.open(url, "w") as fp:
+        fp.write("hello")
+
+    assert minato.exists(url)
+    assert not minato.exists("s3://my_bucket/bar")

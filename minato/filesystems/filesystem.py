@@ -33,6 +33,12 @@ def open_file(
         yield fp
 
 
+def exists(url_or_filename: Union[str, Path]) -> bool:
+    url = str(url_or_filename)
+    filesystem = FileSystem.by_url(url)
+    return filesystem.exists()
+
+
 def download(
     url_or_filename: Union[str, Path],
     download_path: Union[str, Path],

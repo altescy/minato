@@ -15,6 +15,7 @@ __all__ = [
     "Minato",
     "cached_path",
     "download",
+    "exists",
     "open",
     "upload",
 ]
@@ -97,3 +98,7 @@ def upload(filename: Union[str, Path], url: str) -> None:
 
 def delete(url_or_filename: Union[str, Path]) -> None:
     Minato.delete(url_or_filename)
+
+
+def exists(url_or_filename: Union[str, Path]) -> bool:
+    return Minato.exists(url_or_filename)
