@@ -36,6 +36,7 @@ class Subcommand:
         usage: Optional[str] = None,
         description: Optional[str] = None,
         epilog: Optional[str] = None,
+        exist_ok: bool = False,
     ) -> Callable[[Type[Subclass]], Type[Subclass]]:
         registry = Subcommand._registry[cls]
 
@@ -49,6 +50,10 @@ class Subcommand:
                 epilog=epilog,
             )
             subclass._cmd_info = info
+
+            if not exist_ok and name in registry:
+                raise ValueError(f"Subcommand '{name}' was already registered.")
+
             registry[_name] = subclass
             return subclass
 
