@@ -41,12 +41,10 @@ class Subcommand:
         registry = Subcommand._registry[cls]
 
         def wrapper(subclass: Type[Subclass]) -> Type[Subclass]:
-            _name = name or cls.camel_to_snake(subclass.__name__)
-            _description = description or subclass.__doc__
             info = SubcommandInfo(
-                name=_name,
+                name=name or cls.camel_to_snake(subclass.__name__),
                 usage=usage,
-                description=_description,
+                description=description or subclass.__doc__,
                 epilog=epilog,
             )
             subclass._cmd_info = info
@@ -54,7 +52,7 @@ class Subcommand:
             if not exist_ok and name in registry:
                 raise ValueError(f"Subcommand '{name}' was already registered.")
 
-            registry[_name] = subclass
+            registry[info.name] = subclass
             return subclass
 
         return wrapper
@@ -62,8 +60,10 @@ class Subcommand:
     @classmethod
     def get_info(cls) -> SubcommandInfo:
         if not hasattr(cls, "_cmd_info"):
-            name = cls.camel_to_snake(cls.__name__)
-            cls._cmd_info = SubcommandInfo(name=name)
+            cls._cmd_info = SubcommandInfo(
+                name=cls.camel_to_snake(cls.__name__),
+                description=cls.__doc__,
+            )
         return cls._cmd_info
 
     @staticmethod
