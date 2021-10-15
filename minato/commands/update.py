@@ -7,12 +7,11 @@ from minato.minato import Minato
 
 
 @Subcommand.register(
-    "update",
+    name="update",
     description="update cached files",
-    help="update cached files",
 )
 class UpdateCommand(Subcommand):
-    def set_arguments(self) -> None:
+    def setup(self) -> None:
         self.parser.add_argument(
             "query",
             nargs="*",

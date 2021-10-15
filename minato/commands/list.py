@@ -10,12 +10,11 @@ from minato.util import is_archive_file, sizeof_fmt
 
 
 @Subcommand.register(
-    "list",
+    name="list",
     description="show list of cached files",
-    help="show list of cached files",
 )
 class ListCommand(Subcommand):
-    def set_arguments(self) -> None:
+    def setup(self) -> None:
         self.parser.add_argument(
             "query",
             nargs="*",

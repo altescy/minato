@@ -7,12 +7,11 @@ from minato.minato import Minato
 
 
 @Subcommand.register(
-    "cache",
+    name="cache",
     description="cache remote file and return cached local file path",
-    help="cache remote file and return cached local file path",
 )
 class CacheCommand(Subcommand):
-    def set_arguments(self) -> None:
+    def setup(self) -> None:
         self.parser.add_argument(
             "url",
             type=str,
