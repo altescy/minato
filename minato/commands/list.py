@@ -89,10 +89,7 @@ class ListCommand(Subcommand):
             columns.append("updated_at")
             columns.append("extraction_path")
 
-        table = Table(
-            columns=columns,
-            max_column_width=args.column_width,
-        )
+        table = Table(columns=columns)
 
         for cached_file in cached_files:
             info = cached_file.to_dict()
@@ -120,7 +117,7 @@ class ListCommand(Subcommand):
         if args.sort:
             table.sort(args.sort, args.desc)
 
-        table.print()
+        table.show()
 
 
 def get_cache_type(path: Path) -> str:

@@ -1,41 +1,26 @@
-from __future__ import annotations
-
-from typing import Any, Dict, List, Optional
+import os
+import sys
+from typing import Any, Dict, List, Optional, TextIO, Union
 
 
 class Table:
-    _MIN_MAX_COLUMN_WIDTH = 3
+    MIN_COLUMN_WIDTH = 2
 
-    def __init__(
-        self,
-        columns: List[str],
-        max_column_width: Optional[int] = None,
-    ) -> None:
-        if (
-            max_column_width is not None
-            and max_column_width < Table._MIN_MAX_COLUMN_WIDTH
-        ):
-            raise ValueError(
-                f"max_column_widh must be larger than"
-                f"{Table._MIN_MAX_COLUMN_WIDTH}: {max_column_width}"
-            )
-
+    def __init__(self, columns: List[str]) -> None:
         self._columns = columns
-        self._max_column_width = max_column_width
         self._items: List[Dict[str, Any]] = []
 
-    def __getitem__(self, columns: List[str]) -> Table:
-        table = Table(columns=columns, max_column_width=self._max_column_width)
+    def __getitem__(self, columns: List[str]) -> "Table":
+        table = Table(columns=columns)
         for item in self._items:
             table.add(item)
         return table
 
     @staticmethod
     def _get_padded_column_value(value: str, width: int) -> str:
+        width = max(width, Table.MIN_COLUMN_WIDTH)
         if len(value) > width:
-            assert len(value) >= Table._MIN_MAX_COLUMN_WIDTH
-            value = value[: width - 2] + ".."
-
+            value = value[: width - 1] + "\u2026"
         return f"{value:{width}}"
 
     @staticmethod
@@ -54,10 +39,22 @@ class Table:
 
             column_width = max(len(x) for x in column_value_strings + [col])
 
-            if self._max_column_width is not None:
-                column_width = min(column_width, self._max_column_width)
-
             column_widths[col] = column_width
+
+        num_columns = len(self.columns)
+        terminal_width, _ = os.get_terminal_size()
+
+        total_column_width = num_columns + sum(column_widths.values()) - 1
+        previous_width = -1
+        while (
+            total_column_width > terminal_width and previous_width != total_column_width
+        ):
+            width, column = max(
+                (width, column) for column, width in column_widths.items()
+            )
+            column_widths[column] = max(width - 1, Table.MIN_COLUMN_WIDTH)
+            previous_width = total_column_width
+            total_column_width = num_columns + sum(column_widths.values()) - 1
         return column_widths
 
     @property
@@ -73,22 +70,38 @@ class Table:
 
         self._items = sorted(self._items, key=_key, reverse=desc)
 
-    def print(self) -> None:
+    def filter(self, query: Union[str, Dict[str, str]]) -> "Table":
+        if isinstance(query, str):
+            query = {col: query for col in self.columns}
+        table = Table(columns=self.columns)
+        for item in self._items:
+            for c, q in query.items():
+                if q in item[c]:
+                    table.add(item)
+                    break
+        return table
+
+    def show(self, output: Optional[TextIO] = None) -> None:
+        if output is None:
+            output = sys.stdout
+
         column_widths = self._get_column_widths()
 
-        print(
+        output.write(
             " ".join(
                 self._get_padded_column_value(col, column_widths[col])
                 for col in self.columns
             )
+            + "\n"
         )
-        print(" ".join("=" * column_widths[col] for col in self.columns))
+        output.write(" ".join("=" * column_widths[col] for col in self.columns) + "\n")
         for item in self._items:
-            print(
+            output.write(
                 " ".join(
                     self._get_padded_column_value(
                         self._get_column_value_str(item[col]), column_widths[col]
                     )
                     for col in self.columns
                 )
+                + "\n"
             )
