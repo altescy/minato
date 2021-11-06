@@ -14,7 +14,7 @@ from minato.filesystems.filesystem import FileSystem
 try:
     import boto3
 except ModuleNotFoundError:
-    boto3 = None
+    boto3 = None  # type: ignore[assignment]
 
 
 logger = logging.getLogger(__name__)
@@ -84,8 +84,7 @@ class S3FileSystem(FileSystem):
         if not self.exists():
             raise FileNotFoundError(self._url.raw)
 
-        if isinstance(path, str):
-            path = Path(path)
+        path = Path(path)
 
         resource = self._get_resource()  # type: ignore
         bucket = resource.Bucket(self._bucket_name)
@@ -99,26 +98,16 @@ class S3FileSystem(FileSystem):
         logger.info(
             "%s file(s) (%sB) will be downloaded to %s.", len(objects), total, path
         )
-        progress = tqdm(unit="B", total=total, desc="downloading")
-        if len(objects) == 1:  # if the given path is a file
-            obj = objects[0]
-            if path.is_dir():
-                file_path = path / os.path.basename(obj.key)
-            else:
-                file_path = path
-            os.makedirs(file_path.parent, exist_ok=True)
-            bucket.download_file(obj.key, str(file_path))
-            progress.update(obj.size)
-        else:  # if the given path is a directory
-            for obj in objects:
-                relpath = os.path.relpath(obj.key, self._key)
-                parent_dir = path / os.path.dirname(relpath)
-                os.makedirs(parent_dir, exist_ok=True)
 
-                file_path = path / relpath
+        path = path / os.path.basename(self._key) if path.is_dir() else path
+
+        with tqdm(unit="B", total=total, desc="downloading") as progress:
+            for obj in objects:
+                relprefix = os.path.relpath(obj.key, self._key)
+                file_path = path / relprefix
+                os.makedirs(file_path.parent, exist_ok=True)
                 bucket.download_file(obj.key, str(file_path))
                 progress.update(obj.size)
-        progress.close()
 
     def delete(self) -> None:
         if not self.exists():
@@ -151,6 +140,7 @@ class S3FileSystem(FileSystem):
             raise FileExistsError(self._url.raw)
 
         local_file = tempfile.NamedTemporaryFile(delete=False)
+
         try:
             if "r" in mode or "a" in mode or "+" in mode:
                 if not self.exists():
@@ -158,6 +148,7 @@ class S3FileSystem(FileSystem):
                 self._download_fileobj(self._key, local_file)
 
             local_file.close()
+
             with open(
                 local_file.name,
                 mode=mode,
@@ -171,7 +162,6 @@ class S3FileSystem(FileSystem):
             if "w" in mode or "a" in mode or "+" in mode or "x" in mode:
                 with open(local_file.name, "rb") as fp:
                     self._upload_fileobj(fp, self._key)
-
         finally:
             local_file.close()
             os.remove(local_file.name)
