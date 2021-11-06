@@ -67,6 +67,11 @@ class ListCommand(Subcommand):
             default=None,
             help="show cached files that were successfully downloaded",
         )
+        self.parser.add_argument(
+            "--no-shrink",
+            action="store_true",
+            help="disable to shrink column width",
+        )
 
     def run(self, args: argparse.Namespace) -> None:
         config = Config.load(
@@ -89,7 +94,7 @@ class ListCommand(Subcommand):
             columns.append("updated_at")
             columns.append("extraction_path")
 
-        table = Table(columns=columns)
+        table = Table(columns=columns, shrink=not args.no_shrink)
 
         for cached_file in cached_files:
             info = cached_file.to_dict()

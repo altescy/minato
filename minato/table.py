@@ -6,9 +6,10 @@ from typing import Any, Dict, List, Optional, TextIO, Union
 class Table:
     MIN_COLUMN_WIDTH = 2
 
-    def __init__(self, columns: List[str]) -> None:
+    def __init__(self, columns: List[str], shrink: bool = True) -> None:
         self._columns = columns
         self._items: List[Dict[str, Any]] = []
+        self._shrink = shrink
 
     def __getitem__(self, columns: List[str]) -> "Table":
         table = Table(columns=columns)
@@ -40,6 +41,9 @@ class Table:
             column_width = max(len(x) for x in column_value_strings + [col])
 
             column_widths[col] = column_width
+
+        if not self._shrink:
+            return column_widths
 
         num_columns = len(self.columns)
         terminal_width, _ = os.get_terminal_size()
