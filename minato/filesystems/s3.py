@@ -105,7 +105,6 @@ class S3FileSystem(FileSystem):
             for obj in objects:
                 relprefix = os.path.relpath(obj.key, self._key)
                 file_path = path / relprefix
-                print(file_path)
                 os.makedirs(file_path.parent, exist_ok=True)
                 bucket.download_file(obj.key, str(file_path))
                 progress.update(obj.size)
