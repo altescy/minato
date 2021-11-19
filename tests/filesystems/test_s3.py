@@ -159,3 +159,109 @@ def test_update_version() -> None:
     new_version = fs.get_version()
     assert new_version is not None
     assert old_version != new_version
+
+
+@mock_s3
+def test_upload_file(tmpdir: Path) -> None:
+    conn = boto3.resource("s3", region_name="us-east-1")
+    conn.create_bucket(Bucket="my_bucket")
+
+    filename = tmpdir / "foo.txt"
+    with open(filename, "w") as localfile:
+        localfile.write("this is foo!")
+
+    fs = S3FileSystem("s3://my_bucket/dir/foo.txt")
+    assert not fs.exists()
+
+    fs.upload(filename)
+    assert fs.exists()
+
+    with fs.open_file("r") as remotefile:
+        content = remotefile.read()
+    assert content == "this is foo!"
+
+
+@mock_s3
+def test_upload_file_to_dir(tmpdir: Path) -> None:
+    conn = boto3.resource("s3", region_name="us-east-1")
+    conn.create_bucket(Bucket="my_bucket")
+
+    filename = tmpdir / "foo.txt"
+    with open(filename, "w") as localfile:
+        localfile.write("this is foo!")
+
+    dirfs = S3FileSystem("s3://my_bucket/dir/")
+    assert not dirfs.exists()
+
+    dirfs.upload(filename)
+
+    filefs = S3FileSystem("s3://my_bucket/dir/foo.txt")
+    assert filefs.exists()
+
+    with filefs.open_file("r") as remotefile:
+        content = remotefile.read()
+    assert content == "this is foo!"
+
+
+@mock_s3
+def test_upload_dir(tmpdir: Path) -> None:
+    workdir = tmpdir / "work"
+    workdir.mkdir()
+
+    conn = boto3.resource("s3", region_name="us-east-1")
+    conn.create_bucket(Bucket="my_bucket")
+
+    with open(workdir / "foo.txt", "w") as localfile:
+        localfile.write("this is foo!")
+    with open(workdir / "bar.txt", "w") as localfile:
+        localfile.write("this is bar!")
+
+    dirfs = S3FileSystem("s3://my_bucket/dir")
+    assert not dirfs.exists()
+
+    dirfs.upload(workdir)
+
+    foofs = S3FileSystem("s3://my_bucket/dir/foo.txt")
+    barfs = S3FileSystem("s3://my_bucket/dir/bar.txt")
+    assert foofs.exists()
+    assert barfs.exists()
+
+    with foofs.open_file("r") as remotefile:
+        content = remotefile.read()
+    assert content == "this is foo!"
+
+    with barfs.open_file("r") as remotefile:
+        content = remotefile.read()
+    assert content == "this is bar!"
+
+
+@mock_s3
+def test_upload_dir_to_dir(tmpdir: Path) -> None:
+    workdir = tmpdir / "work"
+    workdir.mkdir()
+
+    conn = boto3.resource("s3", region_name="us-east-1")
+    conn.create_bucket(Bucket="my_bucket")
+
+    with open(workdir / "foo.txt", "w") as localfile:
+        localfile.write("this is foo!")
+    with open(workdir / "bar.txt", "w") as localfile:
+        localfile.write("this is bar!")
+
+    dirfs = S3FileSystem("s3://my_bucket/dir/")
+    assert not dirfs.exists()
+
+    dirfs.upload(workdir)
+
+    foofs = S3FileSystem("s3://my_bucket/dir/work/foo.txt")
+    barfs = S3FileSystem("s3://my_bucket/dir/work/bar.txt")
+    assert foofs.exists()
+    assert barfs.exists()
+
+    with foofs.open_file("r") as remotefile:
+        content = remotefile.read()
+    assert content == "this is foo!"
+
+    with barfs.open_file("r") as remotefile:
+        content = remotefile.read()
+    assert content == "this is bar!"

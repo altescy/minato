@@ -150,3 +150,22 @@ def test_exists() -> None:
 
     assert minato.exists(url)
     assert not minato.exists("s3://my_bucket/bar")
+
+
+@mock_s3
+def test_upload(tmpdir: Path) -> None:
+    conn = boto3.resource("s3", region_name="us-east-1")
+    conn.create_bucket(Bucket="my_bucket")
+
+    filename = tmpdir / "local.txt"
+    with open(filename, "w") as localfile:
+        localfile.write("hello")
+
+    url = "s3://my_bucket/remote.txt"
+    minato.upload(filename, url)
+
+    assert minato.exists(url)
+
+    with minato.open(url) as remotefile:
+        content = remotefile.read()
+    assert content == "hello"
