@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minato"
-version = "0.6.2"
+version = "0.7.0"
 description = "Cache and file system for online resources"
 authors = ["Yasuhiro Yamaguchi <altescy@fastmail.com>"]
 license = "MIT License"
