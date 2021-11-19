@@ -6,7 +6,7 @@ from typing import IO, Any, Iterator, Optional, Union
 from minato.cache import Cache, CacheStatus
 from minato.config import Config
 from minato.exceptions import CacheNotFoundError, InvalidCacheStatus
-from minato.filesystems import delete, download, exists, get_version, open_file
+from minato.filesystems import delete, download, exists, get_version, open_file, upload
 from minato.util import (
     extract_archive_file,
     extract_path,
@@ -222,10 +222,7 @@ class Minato:
 
     @staticmethod
     def upload(filename: Path, url: str) -> None:
-        with open(filename, "rb") as local_file:
-            with open_file(url, "wb") as remote_file:
-                content = local_file.read()
-                remote_file.write(content)
+        upload(filename, url)
 
     @staticmethod
     def delete(url_or_filename: Union[str, Path]) -> None:
