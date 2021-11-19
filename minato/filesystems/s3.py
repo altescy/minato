@@ -5,7 +5,7 @@ import tempfile
 import threading
 from contextlib import contextmanager
 from pathlib import Path
-from typing import IO, Any, Iterator, List, Optional, Union
+from typing import IO, Any, Iterator, Optional, Union
 
 from tqdm import tqdm
 
