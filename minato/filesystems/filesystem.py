@@ -48,6 +48,12 @@ def download(
     filesystem.download(download_path)
 
 
+def upload(source: Union[str, Path], target: Union[str, Path]) -> None:
+    target = str(target)
+    filesystem = FileSystem.by_url(target)
+    filesystem.upload(source)
+
+
 def delete(url_or_filename: Union[str, Path]) -> None:
     url = str(url_or_filename)
     filesystem = FileSystem.by_url(url)
@@ -94,6 +100,9 @@ class FileSystem:
         raise NotImplementedError
 
     def download(self, path: Union[str, Path]) -> None:
+        raise NotImplementedError
+
+    def upload(self, path: Union[str, Path]) -> None:
         raise NotImplementedError
 
     def delete(self) -> None:
