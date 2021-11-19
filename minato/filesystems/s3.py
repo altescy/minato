@@ -109,6 +109,38 @@ class S3FileSystem(FileSystem):
                 bucket.download_file(obj.key, str(file_path))
                 progress.update(obj.size)
 
+    def upload(self, path: Union[str, Path]) -> None:
+        path = Path(path).absolute()
+
+        prefix = self._key
+        if prefix.endswith("/"):
+            prefix = os.path.join(prefix, path.name)
+
+        filenames = (
+            [subpath for subpath in path.glob("**/*") if subpath.is_file()]
+            if path.is_dir()
+            else [path]
+        )
+
+        total = sum(filename.stat().st_size for filename in filenames)
+
+        logger.info(
+            "%s file(s) (%sB) will be uploaded to %s", len(filenames), total, self._url
+        )
+
+        resource = self._get_resource()  # type: ignore
+        bucket = resource.Bucket(self._bucket_name)
+
+        with tqdm(unit="B", total=total, desc="uploading") as progress:
+            for filename in filenames:
+                if filename != path:
+                    relpath = os.path.relpath(filename, path)
+                    key = os.path.join(prefix, relpath)
+                else:
+                    key = prefix
+                bucket.upload_file(str(filename), key)
+                progress.update(filename.stat().st_size)
+
     def delete(self) -> None:
         if not self.exists():
             raise FileNotFoundError(self._url.raw)
