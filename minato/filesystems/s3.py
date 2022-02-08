@@ -101,12 +101,18 @@ class S3FileSystem(FileSystem):
 
         path = path / os.path.basename(self._key) if path.is_dir() else path
 
-        with tqdm(unit="B", total=total, desc="downloading") as progress:
+        with tqdm(
+            unit="iB",
+            unit_scale=True,
+            unit_divisor=1024,
+            total=total,
+            desc="downloading from s3",
+        ) as progress:
             for obj in objects:
                 relprefix = os.path.relpath(obj.key, self._key)
                 file_path = path / relprefix
                 os.makedirs(file_path.parent, exist_ok=True)
-                bucket.download_file(obj.key, str(file_path))
+                bucket.download_file(obj.key, str(file_path), Callback=progress.update)
                 progress.update(obj.size)
 
     def upload(self, path: Union[str, Path]) -> None:
@@ -131,7 +137,13 @@ class S3FileSystem(FileSystem):
         resource = self._get_resource()  # type: ignore
         bucket = resource.Bucket(self._bucket_name)
 
-        with tqdm(unit="B", total=total, desc="uploading") as progress:
+        with tqdm(
+            unit="iB",
+            unit_scale=True,
+            unit_divisor=1024,
+            total=total,
+            desc="uploading to s3",
+        ) as progress:
             for filename in filenames:
                 if filename != path:
                     relpath = os.path.relpath(filename, path)

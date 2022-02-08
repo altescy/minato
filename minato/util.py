@@ -100,12 +100,17 @@ def http_get(url: str, temp_file: IO[Any]) -> None:
         req.raise_for_status()
         content_length = req.headers.get("Content-Length")
         total = int(content_length) if content_length is not None else None
-        progress = tqdm(unit="B", total=total, desc="downloading")
-        for chunk in req.iter_content(chunk_size=1024):
-            if chunk:  # filter out keep-alive new chunks
-                progress.update(len(chunk))
-                temp_file.write(chunk)
-        progress.close()
+        with tqdm(
+            unit="iB",
+            unit_scale=True,
+            unit_divisor=1024,
+            total=total,
+            desc="downloading",
+        ) as progress:
+            for chunk in req.iter_content(chunk_size=1024):
+                if chunk:  # filter out keep-alive new chunks
+                    progress.update(len(chunk))
+                    temp_file.write(chunk)
 
 
 def _session_with_backoff() -> requests.Session:
