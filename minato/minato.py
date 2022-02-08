@@ -1,13 +1,15 @@
 import logging
-from contextlib import contextmanager
+from os import PathLike
 from pathlib import Path
-from typing import IO, Any, Iterator, Optional, Union
+from typing import IO, Any, BinaryIO, ContextManager, Optional, TextIO, Union, overload
 
 from minato.cache import Cache, CacheStatus
 from minato.config import Config
 from minato.exceptions import CacheNotFoundError, InvalidCacheStatus
 from minato.filesystems import delete, download, exists, get_version, open_file, upload
 from minato.util import (
+    OpenBinaryMode,
+    OpenTextMode,
     extract_archive_file,
     extract_path,
     is_archive_file,
@@ -31,10 +33,69 @@ class Minato:
     def cache(self) -> Cache:
         return self._cache
 
-    @contextmanager
+    @overload
     def open(
         self,
-        url_or_filename: Union[str, Path],
+        url_or_filename: Union[str, PathLike],
+        mode: OpenTextMode = ...,
+        buffering: int = ...,
+        encoding: Optional[str] = ...,
+        errors: Optional[str] = ...,
+        newline: Optional[str] = ...,
+        *,
+        extract: bool = ...,
+        auto_update: Optional[bool] = ...,
+        expire_days: Optional[int] = ...,
+        use_cache: bool = ...,
+        force_download: bool = ...,
+        force_extract: bool = ...,
+        retry: bool = ...,
+    ) -> ContextManager[TextIO]:
+        ...
+
+    @overload
+    def open(
+        self,
+        url_or_filename: Union[str, PathLike],
+        mode: OpenBinaryMode,
+        buffering: int = ...,
+        encoding: Optional[str] = ...,
+        errors: Optional[str] = ...,
+        newline: Optional[str] = ...,
+        *,
+        extract: bool = ...,
+        auto_update: Optional[bool] = ...,
+        expire_days: Optional[int] = ...,
+        use_cache: bool = ...,
+        force_download: bool = ...,
+        force_extract: bool = ...,
+        retry: bool = ...,
+    ) -> ContextManager[BinaryIO]:
+        ...
+
+    @overload
+    def open(
+        self,
+        url_or_filename: Union[str, PathLike],
+        mode: str,
+        buffering: int = ...,
+        encoding: Optional[str] = ...,
+        errors: Optional[str] = ...,
+        newline: Optional[str] = ...,
+        *,
+        extract: bool = ...,
+        auto_update: Optional[bool] = ...,
+        expire_days: Optional[int] = ...,
+        use_cache: bool = ...,
+        force_download: bool = ...,
+        force_extract: bool = ...,
+        retry: bool = ...,
+    ) -> ContextManager[IO[Any]]:
+        ...
+
+    def open(
+        self,
+        url_or_filename: Union[str, PathLike],
         mode: str = "r",
         buffering: int = -1,
         encoding: Optional[str] = None,
@@ -48,7 +109,7 @@ class Minato:
         force_download: bool = False,
         force_extract: bool = False,
         retry: bool = True,
-    ) -> Iterator[IO[Any]]:
+    ) -> ContextManager[IO[Any]]:
         if not ("a" in mode or "w" in mode or "x" in mode or "+" in mode) and use_cache:
             logger.info("Open cached file of %s.", url_or_filename)
             url_or_filename = self.cached_path(
@@ -61,12 +122,11 @@ class Minato:
                 retry=retry,
             )
 
-        with open_file(url_or_filename, mode) as fp:
-            yield fp
+        return open_file(url_or_filename, mode)
 
     def cached_path(
         self,
-        url_or_filename: Union[str, Path],
+        url_or_filename: Union[str, PathLike],
         extract: bool = False,
         auto_update: Optional[bool] = None,
         expire_days: Optional[int] = None,
@@ -207,7 +267,7 @@ class Minato:
             )
         return cached_file.local_path
 
-    def available_update(self, url_or_filename: Union[str]) -> bool:
+    def available_update(self, url_or_filename: Union[str, PathLike]) -> bool:
         if is_local(url_or_filename):
             return False
 
@@ -217,17 +277,17 @@ class Minato:
         return cached_file.version != current_version
 
     @staticmethod
-    def download(url: str, filename: Path) -> None:
+    def download(url: str, filename: Union[str, PathLike]) -> None:
         download(url, filename)
 
     @staticmethod
-    def upload(filename: Path, url: str) -> None:
+    def upload(filename: Union[str, PathLike], url: str) -> None:
         upload(filename, url)
 
     @staticmethod
-    def delete(url_or_filename: Union[str, Path]) -> None:
+    def delete(url_or_filename: Union[str, PathLike]) -> None:
         delete(url_or_filename)
 
     @staticmethod
-    def exists(url_or_filename: Union[str, Path]) -> bool:
+    def exists(url_or_filename: Union[str, PathLike]) -> bool:
         return exists(url_or_filename)

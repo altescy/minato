@@ -3,8 +3,9 @@ import os
 import shutil
 import tarfile
 import tempfile
+from os import PathLike
 from pathlib import Path
-from typing import IO, Any, Tuple, Union
+from typing import IO, Any, Literal, Tuple, Union
 from urllib.parse import urlparse
 from zipfile import ZipFile, is_zipfile
 
@@ -16,7 +17,116 @@ from urllib3.util.retry import Retry
 logger = logging.getLogger(__name__)
 
 
-def remove_file_or_directory(path: Union[str, Path]) -> None:
+OpenTextModeUpdating = Literal[
+    "r+",
+    "+r",
+    "rt+",
+    "r+t",
+    "+rt",
+    "tr+",
+    "t+r",
+    "+tr",
+    "w+",
+    "+w",
+    "wt+",
+    "w+t",
+    "+wt",
+    "tw+",
+    "t+w",
+    "+tw",
+    "a+",
+    "+a",
+    "at+",
+    "a+t",
+    "+at",
+    "ta+",
+    "t+a",
+    "+ta",
+    "x+",
+    "+x",
+    "xt+",
+    "x+t",
+    "+xt",
+    "tx+",
+    "t+x",
+    "+tx",
+]
+OpenTextModeWriting = Literal[
+    "w",
+    "wt",
+    "tw",
+    "a",
+    "at",
+    "ta",
+    "x",
+    "xt",
+    "tx",
+]
+OpenTextModeReading = Literal[
+    "r",
+    "rt",
+    "tr",
+    "U",
+    "rU",
+    "Ur",
+    "rtU",
+    "rUt",
+    "Urt",
+    "trU",
+    "tUr",
+    "Utr",
+]
+OpenTextMode = Union[OpenTextModeUpdating, OpenTextModeWriting, OpenTextModeReading]
+OpenBinaryModeUpdating = Literal[
+    "rb+",
+    "r+b",
+    "+rb",
+    "br+",
+    "b+r",
+    "+br",
+    "wb+",
+    "w+b",
+    "+wb",
+    "bw+",
+    "b+w",
+    "+bw",
+    "ab+",
+    "a+b",
+    "+ab",
+    "ba+",
+    "b+a",
+    "+ba",
+    "xb+",
+    "x+b",
+    "+xb",
+    "bx+",
+    "b+x",
+    "+bx",
+]
+OpenBinaryModeWriting = Literal[
+    "wb",
+    "bw",
+    "ab",
+    "ba",
+    "xb",
+    "bx",
+]
+OpenBinaryModeReading = Literal[
+    "rb",
+    "br",
+    "rbU",
+    "rUb",
+    "Urb",
+    "brU",
+    "bUr",
+    "Ubr",
+]
+OpenBinaryMode = Union[
+    OpenBinaryModeUpdating, OpenBinaryModeReading, OpenBinaryModeWriting
+]
+
+
+def remove_file_or_directory(path: Union[str, PathLike]) -> None:
     try:
         path = Path(path)
         if path.is_dir():
@@ -27,14 +137,15 @@ def remove_file_or_directory(path: Union[str, Path]) -> None:
         pass
 
 
-def is_archive_file(filename: Union[str, Path]) -> bool:
+def is_archive_file(filename: Union[str, PathLike]) -> bool:
     if not Path(filename).is_file():
         return False
     return is_zipfile(filename) or tarfile.is_tarfile(filename)
 
 
 def extract_archive_file(
-    source_path: Union[str, Path], target_path: Union[str, Path]
+    source_path: Union[str, PathLike],
+    target_path: Union[str, PathLike],
 ) -> None:
     with tempfile.TemporaryDirectory() as temp_dir:
         if is_zipfile(source_path):
@@ -46,12 +157,12 @@ def extract_archive_file(
         os.replace(temp_dir, target_path)
 
 
-def extract_path(filename: Union[str, Path]) -> str:
+def extract_path(filename: Union[str, PathLike]) -> str:
     parsed = urlparse(str(filename))
     return parsed.path
 
 
-def is_local(url_or_filename: Union[str, Path]) -> bool:
+def is_local(url_or_filename: Union[str, PathLike]) -> bool:
     if isinstance(url_or_filename, Path):
         return True
 
@@ -62,12 +173,13 @@ def is_local(url_or_filename: Union[str, Path]) -> bool:
     return False
 
 
-def get_parent_path_and_filename(path: Union[str, Path]) -> Tuple[str, str]:
+def get_parent_path_and_filename(path: Union[str, PathLike]) -> Tuple[str, str]:
     if isinstance(path, Path):
         parent = str(path.parent)
         name = str(path.name)
         return parent, name
 
+    path = str(path)
     parsed_url = urlparse(path)
     scheme = parsed_url.scheme
     netloc = parsed_url.netloc

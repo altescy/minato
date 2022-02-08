@@ -3,12 +3,24 @@ import os
 import re
 import tempfile
 from contextlib import contextmanager
+from os import PathLike
 from pathlib import Path
-from typing import IO, Any, Iterator, Optional, Union
+from typing import (
+    IO,
+    Any,
+    BinaryIO,
+    ContextManager,
+    Iterator,
+    Optional,
+    TextIO,
+    Union,
+    overload,
+)
 
 from tqdm import tqdm
 
 from minato.filesystems.filesystem import FileSystem
+from minato.util import OpenBinaryMode, OpenTextMode
 
 try:
     import google.cloud.storage as gcs
@@ -23,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 @FileSystem.register(["gs", "gcs"])
 class GCSFileSystem(FileSystem):
-    def __init__(self, url_or_filename: Union[str, Path]) -> None:
+    def __init__(self, url_or_filename: Union[str, PathLike]) -> None:
         if gcs is None:
             raise ModuleNotFoundError(
                 "GCSFileSystem is not available. Please make sure that "
@@ -65,11 +77,11 @@ class GCSFileSystem(FileSystem):
         blobs = list(bucket.list_blobs(prefix=self._key))
         return len(blobs) > 0
 
-    def download(self, path: Union[str, Path]) -> None:
+    def download(self, path: Union[str, PathLike]) -> None:
         if not self.exists():
             raise FileNotFoundError(self._url.raw)
 
-        if isinstance(path, str):
+        if not isinstance(path, Path):
             path = Path(path)
 
         client = self._client
@@ -98,7 +110,7 @@ class GCSFileSystem(FileSystem):
                 blob.download_to_filename(str(file_path))
                 progress.update(blob.size or 0)
 
-    def upload(self, path: Union[str, Path]) -> None:
+    def upload(self, path: Union[str, PathLike]) -> None:
         path = Path(path)
 
         if not path.exists():
@@ -165,7 +177,39 @@ class GCSFileSystem(FileSystem):
         ]
         return ".".join(sorted(hashes)) if hashes else None
 
-    @contextmanager
+    @overload
+    def open_file(
+        self,
+        mode: OpenTextMode = ...,
+        buffering: int = ...,
+        encoding: Optional[str] = ...,
+        errors: Optional[str] = ...,
+        newline: Optional[str] = ...,
+    ) -> ContextManager[TextIO]:
+        ...
+
+    @overload
+    def open_file(
+        self,
+        mode: OpenBinaryMode,
+        buffering: int = ...,
+        encoding: Optional[str] = ...,
+        errors: Optional[str] = ...,
+        newline: Optional[str] = ...,
+    ) -> ContextManager[BinaryIO]:
+        ...
+
+    @overload
+    def open_file(
+        self,
+        mode: str,
+        buffering: int = ...,
+        encoding: Optional[str] = ...,
+        errors: Optional[str] = ...,
+        newline: Optional[str] = ...,
+    ) -> ContextManager[IO[Any]]:
+        ...
+
     def open_file(
         self,
         mode: str = "r",
@@ -173,32 +217,42 @@ class GCSFileSystem(FileSystem):
         encoding: Optional[str] = None,
         errors: Optional[str] = None,
         newline: Optional[str] = None,
-    ) -> Iterator[IO[Any]]:
-        if "x" in mode and self.exists():
-            raise FileExistsError(self._url.raw)
+    ) -> ContextManager[IO[Any]]:
+        @contextmanager
+        def _open(
+            mode: str,
+            buffering: int,
+            encoding: Optional[str],
+            errors: Optional[str],
+            newline: Optional[str],
+        ) -> Iterator[IO[Any]]:
+            if "x" in mode and self.exists():
+                raise FileExistsError(self._url.raw)
 
-        local_file = tempfile.NamedTemporaryFile(delete=False)
-        try:
-            if "r" in mode or "a" in mode or "+" in mode:
-                if not self.exists():
-                    raise FileNotFoundError(self._url.raw)
-                self._download_fileobj(self._key, local_file)
+            local_file = tempfile.NamedTemporaryFile(delete=False)
+            try:
+                if "r" in mode or "a" in mode or "+" in mode:
+                    if not self.exists():
+                        raise FileNotFoundError(self._url.raw)
+                    self._download_fileobj(self._key, local_file)
 
-            local_file.close()
-            with open(
-                local_file.name,
-                mode=mode,
-                buffering=buffering,
-                encoding=encoding,
-                errors=errors,
-                newline=newline,
-            ) as fp:
-                yield fp
+                local_file.close()
+                with open(
+                    local_file.name,
+                    mode=mode,
+                    buffering=buffering,
+                    encoding=encoding,
+                    errors=errors,
+                    newline=newline,
+                ) as fp:
+                    yield fp
 
-            if "w" in mode or "a" in mode or "+" in mode or "x" in mode:
-                with open(local_file.name, "rb") as fp:
-                    self._upload_fileobj(fp, self._key)
+                if "w" in mode or "a" in mode or "+" in mode or "x" in mode:
+                    with open(local_file.name, "rb") as fp:
+                        self._upload_fileobj(fp, self._key)
 
-        finally:
-            local_file.close()
-            os.remove(local_file.name)
+            finally:
+                local_file.close()
+                os.remove(local_file.name)
+
+        return _open(mode, buffering, encoding, errors, newline)
