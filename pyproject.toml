@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minato"
-version = "0.7.0"
+version = "0.8.0"
 description = "Cache and file system for online resources"
 authors = ["Yasuhiro Yamaguchi <altescy@fastmail.com>"]
 license = "MIT License"
@@ -18,7 +18,6 @@ black = "^22.1.0"
 flake8 = "^4.0.1"
 isort = "^5.10.1"
 mypy = "^0.931"
-types-requests = "^2.27.8"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
@@ -26,6 +25,7 @@ python-language-server = "^0.36.2"
 pysen = "^0.10.1"
 moto = {version = "^2.0.9", extras = ["s3"]}
 boto3-stubs = {version = "^1.19.12", extras = ["s3"]}
+types-requests = "^2.27.8"
 
 [tool.poetry.extras]
 s3=["boto3"]
