@@ -1,5 +1,6 @@
 import shutil
 from contextlib import contextmanager
+from os import PathLike
 from pathlib import Path
 from typing import IO, Any, Iterator, Optional, Union
 
@@ -9,14 +10,14 @@ from minato.util import remove_file_or_directory
 
 @FileSystem.register(["file", "osfs", ""])
 class OSFileSystem(FileSystem):
-    def __init__(self, url_or_filename: Union[str, Path]) -> None:
+    def __init__(self, url_or_filename: Union[str, PathLike]) -> None:
         super().__init__(url_or_filename)
         self._path = Path(self._url.path)
 
     def exists(self) -> bool:
         return self._path.exists()
 
-    def download(self, path: Union[str, Path]) -> None:
+    def download(self, path: Union[str, PathLike]) -> None:
         shutil.copy(self._path, path)
 
     def delete(self) -> None:

@@ -3,6 +3,7 @@ import os
 import re
 import tempfile
 from contextlib import contextmanager
+from os import PathLike
 from pathlib import Path
 from typing import IO, Any, Iterator, Optional, Union
 
@@ -23,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 @FileSystem.register(["gs", "gcs"])
 class GCSFileSystem(FileSystem):
-    def __init__(self, url_or_filename: Union[str, Path]) -> None:
+    def __init__(self, url_or_filename: Union[str, PathLike]) -> None:
         if gcs is None:
             raise ModuleNotFoundError(
                 "GCSFileSystem is not available. Please make sure that "
@@ -65,11 +66,11 @@ class GCSFileSystem(FileSystem):
         blobs = list(bucket.list_blobs(prefix=self._key))
         return len(blobs) > 0
 
-    def download(self, path: Union[str, Path]) -> None:
+    def download(self, path: Union[str, PathLike]) -> None:
         if not self.exists():
             raise FileNotFoundError(self._url.raw)
 
-        if isinstance(path, str):
+        if not isinstance(path, Path):
             path = Path(path)
 
         client = self._client
@@ -98,7 +99,7 @@ class GCSFileSystem(FileSystem):
                 blob.download_to_filename(str(file_path))
                 progress.update(blob.size or 0)
 
-    def upload(self, path: Union[str, Path]) -> None:
+    def upload(self, path: Union[str, PathLike]) -> None:
         path = Path(path)
 
         if not path.exists():

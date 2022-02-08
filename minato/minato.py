@@ -1,5 +1,6 @@
 import logging
 from contextlib import contextmanager
+from os import PathLike
 from pathlib import Path
 from typing import IO, Any, Iterator, Optional, Union
 
@@ -34,7 +35,7 @@ class Minato:
     @contextmanager
     def open(
         self,
-        url_or_filename: Union[str, Path],
+        url_or_filename: Union[str, PathLike],
         mode: str = "r",
         buffering: int = -1,
         encoding: Optional[str] = None,
@@ -66,7 +67,7 @@ class Minato:
 
     def cached_path(
         self,
-        url_or_filename: Union[str, Path],
+        url_or_filename: Union[str, PathLike],
         extract: bool = False,
         auto_update: Optional[bool] = None,
         expire_days: Optional[int] = None,
@@ -207,7 +208,7 @@ class Minato:
             )
         return cached_file.local_path
 
-    def available_update(self, url_or_filename: Union[str]) -> bool:
+    def available_update(self, url_or_filename: Union[str, PathLike]) -> bool:
         if is_local(url_or_filename):
             return False
 
@@ -217,17 +218,17 @@ class Minato:
         return cached_file.version != current_version
 
     @staticmethod
-    def download(url: str, filename: Path) -> None:
+    def download(url: str, filename: Union[str, PathLike]) -> None:
         download(url, filename)
 
     @staticmethod
-    def upload(filename: Path, url: str) -> None:
+    def upload(filename: Union[str, PathLike], url: str) -> None:
         upload(filename, url)
 
     @staticmethod
-    def delete(url_or_filename: Union[str, Path]) -> None:
+    def delete(url_or_filename: Union[str, PathLike]) -> None:
         delete(url_or_filename)
 
     @staticmethod
-    def exists(url_or_filename: Union[str, Path]) -> bool:
+    def exists(url_or_filename: Union[str, PathLike]) -> bool:
         return exists(url_or_filename)

@@ -9,6 +9,7 @@ import os
 import uuid
 from contextlib import contextmanager
 from enum import Enum
+from os import PathLike
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Union
 
@@ -45,24 +46,24 @@ class CachedFile:
         self,
         uid: str,
         url: str,
-        local_path: Union[str, Path],
+        local_path: Union[str, PathLike],
         created_at: Union[str, datetime.datetime],
         updated_at: Union[str, datetime.datetime],
         expire_days: int = -1,
-        extraction_path: Optional[Union[str, Path]] = None,
+        extraction_path: Optional[Union[str, PathLike]] = None,
         status: Union[str, CacheStatus] = CacheStatus.PENDING,
         version: Optional[str] = None,
         auto_update: bool = True,
     ) -> None:
-        if isinstance(local_path, str):
+        if not isinstance(local_path, Path):
             local_path = Path(local_path)
         if isinstance(created_at, str):
             created_at = datetime.datetime.fromisoformat(created_at)
         if isinstance(updated_at, str):
             updated_at = datetime.datetime.fromisoformat(updated_at)
-        if isinstance(extraction_path, str):
-            extraction_path = Path(extraction_path)
         if extraction_path is not None:
+            if not isinstance(extraction_path, Path):
+                extraction_path = Path(extraction_path)
             extraction_path = extraction_path.absolute()
         if isinstance(status, str):
             status = CacheStatus(status)

@@ -4,6 +4,7 @@ import re
 import tempfile
 import threading
 from contextlib import contextmanager
+from os import PathLike
 from pathlib import Path
 from typing import IO, Any, Iterator, Optional, Union
 
@@ -22,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 @FileSystem.register(["s3"])
 class S3FileSystem(FileSystem):
-    def __init__(self, url_or_filename: Union[str, Path]) -> None:
+    def __init__(self, url_or_filename: Union[str, PathLike]) -> None:
         if boto3 is None:
             raise ModuleNotFoundError(
                 "S3FileSystem is not available. Please make sure that "
@@ -80,7 +81,7 @@ class S3FileSystem(FileSystem):
         objects = list(bucket.objects.filter(Prefix=self._key))
         return len(objects) > 0
 
-    def download(self, path: Union[str, Path]) -> None:
+    def download(self, path: Union[str, PathLike]) -> None:
         if not self.exists():
             raise FileNotFoundError(self._url.raw)
 
@@ -115,8 +116,8 @@ class S3FileSystem(FileSystem):
                 bucket.download_file(obj.key, str(file_path), Callback=progress.update)
                 progress.update(obj.size)
 
-    def upload(self, path: Union[str, Path]) -> None:
-        path = Path(path).absolute()
+    def upload(self, path: Union[str, PathLike]) -> None:
+        path = Path(str(path)).absolute()
 
         prefix = self._key
         if prefix.endswith("/"):

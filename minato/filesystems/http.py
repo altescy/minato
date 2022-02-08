@@ -1,7 +1,7 @@
 import os
 import tempfile
 from contextlib import contextmanager
-from pathlib import Path
+from os import PathLike
 from typing import IO, Any, Iterator, Optional, Union
 
 import requests
@@ -17,7 +17,7 @@ class HttpFileSystem(FileSystem):
         status_code = response.status_code
         return status_code == 200
 
-    def download(self, path: Union[str, Path]) -> None:
+    def download(self, path: Union[str, PathLike]) -> None:
         if not self.exists():
             raise FileNotFoundError(self._url.raw)
 

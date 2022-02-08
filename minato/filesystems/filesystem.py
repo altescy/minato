@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from contextlib import contextmanager
-from pathlib import Path
+from os import PathLike
 from typing import IO, Any, Callable, Dict, Iterator, List, Optional, Type, Union
 from urllib.parse import urlparse
 
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 @contextmanager
 def open_file(
-    url_or_filename: Union[str, Path],
+    url_or_filename: Union[str, PathLike],
     mode: str = "r",
     buffering: int = -1,
     encoding: Optional[str] = None,
@@ -33,35 +33,35 @@ def open_file(
         yield fp
 
 
-def exists(url_or_filename: Union[str, Path]) -> bool:
+def exists(url_or_filename: Union[str, PathLike]) -> bool:
     url = str(url_or_filename)
     filesystem = FileSystem.by_url(url)
     return filesystem.exists()
 
 
 def download(
-    url_or_filename: Union[str, Path],
-    download_path: Union[str, Path],
+    url_or_filename: Union[str, PathLike],
+    download_path: Union[str, PathLike],
 ) -> None:
     url = str(url_or_filename)
     filesystem = FileSystem.by_url(url)
     filesystem.download(download_path)
 
 
-def upload(source: Union[str, Path], target: Union[str, Path]) -> None:
+def upload(source: Union[str, PathLike], target: Union[str, PathLike]) -> None:
     target = str(target)
     filesystem = FileSystem.by_url(target)
     filesystem.upload(source)
 
 
-def delete(url_or_filename: Union[str, Path]) -> None:
+def delete(url_or_filename: Union[str, PathLike]) -> None:
     url = str(url_or_filename)
     filesystem = FileSystem.by_url(url)
     filesystem.delete()
 
 
 def get_version(
-    url_or_filename: Union[str, Path],
+    url_or_filename: Union[str, PathLike],
 ) -> Optional[str]:
     url = str(url_or_filename)
     filesystem = FileSystem.by_url(url)
@@ -93,16 +93,16 @@ class FileSystem:
         logger.info("Infer file system of %s from url: %s", subclass.__name__, url)
         return subclass(url)
 
-    def __init__(self, url_or_filename: Union[str, Path]) -> None:
+    def __init__(self, url_or_filename: Union[str, PathLike]) -> None:
         self._url = URL(str(url_or_filename))
 
     def exists(self) -> bool:
         raise NotImplementedError
 
-    def download(self, path: Union[str, Path]) -> None:
+    def download(self, path: Union[str, PathLike]) -> None:
         raise NotImplementedError
 
-    def upload(self, path: Union[str, Path]) -> None:
+    def upload(self, path: Union[str, PathLike]) -> None:
         raise NotImplementedError
 
     def delete(self) -> None:
