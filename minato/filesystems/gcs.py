@@ -84,14 +84,19 @@ class GCSFileSystem(FileSystem):
         logger.info(
             "%s file(s) (%sB) will be downloaded to %s.", len(blobs), total, path
         )
-        progress = tqdm(unit="B", total=total, desc="downloading")
-        for blob in blobs:
-            relpath = os.path.relpath(blob.name, self._key)
-            file_path = path / relpath
-            os.makedirs(file_path.parent, exist_ok=True)
-            blob.download_to_filename(str(file_path))
-            progress.update(blob.size or 0)
-        progress.close()
+        with tqdm(
+            unit="iB",
+            unit_scale=True,
+            unit_divisor=1024,
+            total=total,
+            desc="downloading from gcs",
+        ) as progress:
+            for blob in blobs:
+                relpath = os.path.relpath(blob.name, self._key)
+                file_path = path / relpath
+                os.makedirs(file_path.parent, exist_ok=True)
+                blob.download_to_filename(str(file_path))
+                progress.update(blob.size or 0)
 
     def upload(self, path: Union[str, Path]) -> None:
         path = Path(path)
@@ -118,7 +123,13 @@ class GCSFileSystem(FileSystem):
         client = self._client
         bucket = client.bucket(self._bucket_name)
 
-        with tqdm(unit="B", total=total, desc="uploading") as progress:
+        with tqdm(
+            unit="iB",
+            unit_scale=True,
+            unit_divisor=1024,
+            total=total,
+            desc="uploading from gcs",
+        ) as progress:
             for filename in filenames:
                 if filename != path:
                     relpath = os.path.relpath(filename, path)
