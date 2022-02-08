@@ -150,7 +150,7 @@ class S3FileSystem(FileSystem):
                     key = os.path.join(prefix, relpath)
                 else:
                     key = prefix
-                bucket.upload_file(str(filename), key)
+                bucket.upload_file(str(filename), key, Callback=progress.update)
                 progress.update(filename.stat().st_size)
 
     def delete(self) -> None:
