@@ -1,3 +1,4 @@
+from importlib.metadata import version
 from os import PathLike
 from pathlib import Path
 from typing import IO, Any, BinaryIO, ContextManager, Optional, TextIO, Union, overload
@@ -8,7 +9,7 @@ from minato.filesystems import FileSystem
 from minato.minato import Minato
 from minato.util import OpenBinaryMode, OpenTextMode
 
-__version__ = "0.7.0"
+__version__ = version("minato")
 __all__ = [
     "Cache",
     "Config",
