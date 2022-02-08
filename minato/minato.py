@@ -1,8 +1,7 @@
 import logging
-from contextlib import contextmanager
 from os import PathLike
 from pathlib import Path
-from typing import IO, Any, Iterator, Optional, Union
+from typing import IO, Any, ContextManager, Optional, Union
 
 from minato.cache import Cache, CacheStatus
 from minato.config import Config
@@ -32,7 +31,6 @@ class Minato:
     def cache(self) -> Cache:
         return self._cache
 
-    @contextmanager
     def open(
         self,
         url_or_filename: Union[str, PathLike],
@@ -49,7 +47,7 @@ class Minato:
         force_download: bool = False,
         force_extract: bool = False,
         retry: bool = True,
-    ) -> Iterator[IO[Any]]:
+    ) -> ContextManager[IO[Any]]:
         if not ("a" in mode or "w" in mode or "x" in mode or "+" in mode) and use_cache:
             logger.info("Open cached file of %s.", url_or_filename)
             url_or_filename = self.cached_path(
@@ -62,8 +60,7 @@ class Minato:
                 retry=retry,
             )
 
-        with open_file(url_or_filename, mode) as fp:
-            yield fp
+        return open_file(url_or_filename, mode)
 
     def cached_path(
         self,

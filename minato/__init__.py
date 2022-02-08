@@ -1,6 +1,5 @@
-from contextlib import contextmanager
 from pathlib import Path
-from typing import IO, Any, Iterator, Optional, Union
+from typing import IO, Any, ContextManager, Optional, Union
 
 from minato.cache import Cache
 from minato.config import Config
@@ -21,7 +20,6 @@ __all__ = [
 ]
 
 
-@contextmanager
 def open(
     url_or_filename: Union[str, Path],
     mode: str = "r",
@@ -38,12 +36,12 @@ def open(
     cache_root: Optional[Union[str, Path]] = None,
     expire_days: Optional[int] = None,
     retry: bool = True,
-) -> Iterator[IO[Any]]:
+) -> ContextManager[IO[Any]]:
     config = Config.load(
         cache_root=cache_root,
     )
 
-    with Minato(config).open(
+    return Minato(config).open(
         url_or_filename,
         mode=mode,
         buffering=buffering,
@@ -57,8 +55,7 @@ def open(
         force_extract=force_extract,
         expire_days=expire_days,
         retry=retry,
-    ) as fp:
-        yield fp
+    )
 
 
 def cached_path(

@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import logging
-from contextlib import contextmanager
 from os import PathLike
-from typing import IO, Any, Callable, Dict, Iterator, List, Optional, Type, Union
+from typing import IO, Any, Callable, ContextManager, Dict, List, Optional, Type, Union
 from urllib.parse import urlparse
 
 from minato.url import URL
@@ -11,7 +10,6 @@ from minato.url import URL
 logger = logging.getLogger(__name__)
 
 
-@contextmanager
 def open_file(
     url_or_filename: Union[str, PathLike],
     mode: str = "r",
@@ -19,18 +17,17 @@ def open_file(
     encoding: Optional[str] = None,
     errors: Optional[str] = None,
     newline: Optional[str] = None,
-) -> Iterator[IO[Any]]:
+) -> ContextManager[IO[Any]]:
 
     url = str(url_or_filename)
     filesystem = FileSystem.by_url(url)
-    with filesystem.open_file(
+    return filesystem.open_file(
         mode=mode,
         buffering=buffering,
         encoding=encoding,
         errors=errors,
         newline=newline,
-    ) as fp:
-        yield fp
+    )
 
 
 def exists(url_or_filename: Union[str, PathLike]) -> bool:
@@ -111,7 +108,6 @@ class FileSystem:
     def get_version(self) -> Optional[str]:
         raise NotImplementedError
 
-    @contextmanager
     def open_file(
         self,
         mode: str = "r",
@@ -119,5 +115,5 @@ class FileSystem:
         encoding: Optional[str] = None,
         errors: Optional[str] = None,
         newline: Optional[str] = None,
-    ) -> Iterator[IO[Any]]:
+    ) -> ContextManager[IO[Any]]:
         raise NotImplementedError
