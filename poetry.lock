@@ -1120,7 +1120,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "tomlkit"
-version = "0.9.1"
+version = "0.9.2"
 description = "Style preserving TOML library"
 category = "dev"
 optional = false
@@ -1146,7 +1146,7 @@ telegram = ["requests"]
 name = "types-requests"
 version = "2.27.8"
 description = "Typing stubs for requests"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -1157,7 +1157,7 @@ types-urllib3 = "<1.27"
 name = "types-urllib3"
 version = "1.26.9"
 description = "Typing stubs for urllib3"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -1233,7 +1233,7 @@ s3 = ["boto3"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "908995707125585c09c27febc1507a3938741e469ee60345c4c272fc0e79a578"
+content-hash = "b101e4c4e2cbfc8028da88998ef533a44a8f0a94191c66978a90eafb9d56c0de"
 
 [metadata.files]
 atomicwrites = [
@@ -1752,8 +1752,8 @@ tomli = [
     {file = "tomli-2.0.1.tar.gz", hash = "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"},
 ]
 tomlkit = [
-    {file = "tomlkit-0.9.1-py3-none-any.whl", hash = "sha256:01407892165b513969231085a33d4be2cb41f186d9fd072c975b6bd1435371b0"},
-    {file = "tomlkit-0.9.1.tar.gz", hash = "sha256:3bdbfffc3ae6c8628b5fb6ed7b459edb8476472eae15033b705bc7d1380b3e3d"},
+    {file = "tomlkit-0.9.2-py3-none-any.whl", hash = "sha256:daf4f9c5f2fbf6b861d6adfc51940b98dee36c13e1d88749a6dc9fb280fff304"},
+    {file = "tomlkit-0.9.2.tar.gz", hash = "sha256:ebd982d61446af95a1e082b103e250cb9e6d152eae2581d4a07d31a70b34ab0f"},
 ]
 tqdm = [
     {file = "tqdm-4.62.3-py2.py3-none-any.whl", hash = "sha256:8dd278a422499cd6b727e6ae4061c40b48fce8b76d1ccbf5d34fca9b7f925b0c"},
