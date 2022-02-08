@@ -18,7 +18,7 @@ google-cloud-storage = { version = "^1.39.0", optional = true }
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
 python-language-server = "^0.36.2"
-pysen = {version = "^0.9.1", extras = ["lint"]}
+pysen = {version = "^0.10.1", extras = ["lint"]}
 moto = {version = "^2.0.9", extras = ["s3"]}
 boto3-stubs = {version = "^1.19.12", extras = ["s3"]}
 
@@ -31,7 +31,7 @@ all=["boto3", "google-cloud-storage"]
 minato = "minato.__main__:run"
 
 [tool.pysen]
-version = "0.9"
+version = "0.10"
 
 [tool.pysen-cli]
 settings_dir = "."
