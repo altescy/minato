@@ -1,7 +1,7 @@
 Minato
 ======
 
-[![Actions Status](https://github.com/altescy/minato/workflows/CI/badge.svg)](https://github.com/altescy/minato/actions/workflows/main.yml)
+[![Actions Status](https://github.com/altescy/minato/workflows/CI/badge.svg)](https://github.com/altescy/minato/actions/workflows/ci.yml)
 [![Python version](https://img.shields.io/pypi/pyversions/minato)](https://github.com/altescy/minato)
 [![License](https://img.shields.io/github/license/altescy/minato)](https://github.com/altescy/minato/blob/master/LICENSE)
 [![pypi version](https://img.shields.io/pypi/v/minato)](https://pypi.org/project/minato/)
