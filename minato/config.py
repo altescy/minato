@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 from configparser import ConfigParser
+from os import PathLike
 from pathlib import Path
 from typing import List, Optional, Union
 
@@ -20,10 +21,10 @@ class Config:
     @classmethod
     def load(
         cls,
-        cache_root: Optional[Union[str, Path]] = None,
+        cache_root: Optional[Union[str, PathLike]] = None,
         expire_days: Optional[int] = None,
         auto_update: Optional[bool] = None,
-        files: Optional[List[Union[str, Path]]] = None,
+        files: Optional[List[Union[str, PathLike]]] = None,
     ) -> Config:
         if files is None:
             files = [ROOT_CONFIG_PATH, LOCAL_CONFIG_PATH]
@@ -39,7 +40,7 @@ class Config:
 
         return config
 
-    def read_files(self, files: List[Union[str, Path]]) -> None:
+    def read_files(self, files: List[Union[str, PathLike]]) -> None:
         parser = ConfigParser()
         parser.read([str(path) for path in files])
         self._update_from_configparser(parser)

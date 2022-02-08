@@ -99,10 +99,12 @@ class CachedFile:
 class Cache:
     def __init__(
         self,
-        root: Path,
+        root: Union[str, PathLike],
         default_expire_days: int = -1,
         default_auto_update: bool = True,
     ) -> None:
+        root = Path(root)
+
         if not root.exists():
             os.makedirs(root, exist_ok=True)
 
