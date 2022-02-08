@@ -2,12 +2,62 @@ from __future__ import annotations
 
 import logging
 from os import PathLike
-from typing import IO, Any, Callable, ContextManager, Dict, List, Optional, Type, Union
+from typing import (
+    IO,
+    Any,
+    BinaryIO,
+    Callable,
+    ContextManager,
+    Dict,
+    List,
+    Optional,
+    TextIO,
+    Type,
+    Union,
+    overload,
+)
 from urllib.parse import urlparse
 
 from minato.url import URL
+from minato.util import OpenBinaryMode, OpenTextMode
 
 logger = logging.getLogger(__name__)
+
+
+@overload
+def open_file(
+    url_or_filename: Union[str, PathLike],
+    mode: OpenTextMode = ...,
+    buffering: int = ...,
+    encoding: Optional[str] = ...,
+    errors: Optional[str] = ...,
+    newline: Optional[str] = ...,
+) -> ContextManager[TextIO]:
+    ...
+
+
+@overload
+def open_file(
+    url_or_filename: Union[str, PathLike],
+    mode: OpenBinaryMode,
+    buffering: int = ...,
+    encoding: Optional[str] = ...,
+    errors: Optional[str] = ...,
+    newline: Optional[str] = ...,
+) -> ContextManager[BinaryIO]:
+    ...
+
+
+@overload
+def open_file(
+    url_or_filename: Union[str, PathLike],
+    mode: str,
+    buffering: int = ...,
+    encoding: Optional[str] = ...,
+    errors: Optional[str] = ...,
+    newline: Optional[str] = ...,
+) -> ContextManager[IO[Any]]:
+    ...
 
 
 def open_file(
@@ -107,6 +157,39 @@ class FileSystem:
 
     def get_version(self) -> Optional[str]:
         raise NotImplementedError
+
+    @overload
+    def open_file(
+        self,
+        mode: OpenTextMode = ...,
+        buffering: int = ...,
+        encoding: Optional[str] = ...,
+        errors: Optional[str] = ...,
+        newline: Optional[str] = ...,
+    ) -> ContextManager[TextIO]:
+        ...
+
+    @overload
+    def open_file(
+        self,
+        mode: OpenBinaryMode,
+        buffering: int = ...,
+        encoding: Optional[str] = ...,
+        errors: Optional[str] = ...,
+        newline: Optional[str] = ...,
+    ) -> ContextManager[BinaryIO]:
+        ...
+
+    @overload
+    def open_file(
+        self,
+        mode: str,
+        buffering: int = ...,
+        encoding: Optional[str] = ...,
+        errors: Optional[str] = ...,
+        newline: Optional[str] = ...,
+    ) -> ContextManager[IO[Any]]:
+        ...
 
     def open_file(
         self,

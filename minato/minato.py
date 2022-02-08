@@ -1,13 +1,15 @@
 import logging
 from os import PathLike
 from pathlib import Path
-from typing import IO, Any, ContextManager, Optional, Union
+from typing import IO, Any, BinaryIO, ContextManager, Optional, TextIO, Union, overload
 
 from minato.cache import Cache, CacheStatus
 from minato.config import Config
 from minato.exceptions import CacheNotFoundError, InvalidCacheStatus
 from minato.filesystems import delete, download, exists, get_version, open_file, upload
 from minato.util import (
+    OpenBinaryMode,
+    OpenTextMode,
     extract_archive_file,
     extract_path,
     is_archive_file,
@@ -30,6 +32,66 @@ class Minato:
     @property
     def cache(self) -> Cache:
         return self._cache
+
+    @overload
+    def open(
+        self,
+        url_or_filename: Union[str, PathLike],
+        mode: OpenTextMode = ...,
+        buffering: int = ...,
+        encoding: Optional[str] = ...,
+        errors: Optional[str] = ...,
+        newline: Optional[str] = ...,
+        *,
+        extract: bool = ...,
+        auto_update: Optional[bool] = ...,
+        expire_days: Optional[int] = ...,
+        use_cache: bool = ...,
+        force_download: bool = ...,
+        force_extract: bool = ...,
+        retry: bool = ...,
+    ) -> ContextManager[TextIO]:
+        ...
+
+    @overload
+    def open(
+        self,
+        url_or_filename: Union[str, PathLike],
+        mode: OpenBinaryMode,
+        buffering: int = ...,
+        encoding: Optional[str] = ...,
+        errors: Optional[str] = ...,
+        newline: Optional[str] = ...,
+        *,
+        extract: bool = ...,
+        auto_update: Optional[bool] = ...,
+        expire_days: Optional[int] = ...,
+        use_cache: bool = ...,
+        force_download: bool = ...,
+        force_extract: bool = ...,
+        retry: bool = ...,
+    ) -> ContextManager[BinaryIO]:
+        ...
+
+    @overload
+    def open(
+        self,
+        url_or_filename: Union[str, PathLike],
+        mode: str,
+        buffering: int = ...,
+        encoding: Optional[str] = ...,
+        errors: Optional[str] = ...,
+        newline: Optional[str] = ...,
+        *,
+        extract: bool = ...,
+        auto_update: Optional[bool] = ...,
+        expire_days: Optional[int] = ...,
+        use_cache: bool = ...,
+        force_download: bool = ...,
+        force_extract: bool = ...,
+        retry: bool = ...,
+    ) -> ContextManager[IO[Any]]:
+        ...
 
     def open(
         self,

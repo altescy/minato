@@ -1,10 +1,11 @@
 from pathlib import Path
-from typing import IO, Any, ContextManager, Optional, Union
+from typing import IO, Any, BinaryIO, ContextManager, Optional, TextIO, Union, overload
 
 from minato.cache import Cache
 from minato.config import Config
 from minato.filesystems import FileSystem
 from minato.minato import Minato
+from minato.util import OpenBinaryMode, OpenTextMode
 
 __version__ = "0.7.0"
 __all__ = [
@@ -18,6 +19,69 @@ __all__ = [
     "open",
     "upload",
 ]
+
+
+@overload
+def open(
+    url_or_filename: Union[str, Path],
+    mode: OpenTextMode = ...,
+    buffering: int = ...,
+    encoding: Optional[str] = ...,
+    errors: Optional[str] = ...,
+    newline: Optional[str] = ...,
+    *,
+    extract: bool = ...,
+    auto_update: Optional[bool] = ...,
+    use_cache: bool = ...,
+    force_download: bool = ...,
+    force_extract: bool = ...,
+    cache_root: Optional[Union[str, Path]] = ...,
+    expire_days: Optional[int] = ...,
+    retry: bool = ...,
+) -> ContextManager[TextIO]:
+    ...
+
+
+@overload
+def open(
+    url_or_filename: Union[str, Path],
+    mode: OpenBinaryMode,
+    buffering: int = ...,
+    encoding: Optional[str] = ...,
+    errors: Optional[str] = ...,
+    newline: Optional[str] = ...,
+    *,
+    extract: bool = ...,
+    auto_update: Optional[bool] = ...,
+    use_cache: bool = ...,
+    force_download: bool = ...,
+    force_extract: bool = ...,
+    cache_root: Optional[Union[str, Path]] = ...,
+    expire_days: Optional[int] = ...,
+    retry: bool = ...,
+) -> ContextManager[BinaryIO]:
+    ...
+
+
+@overload
+def open(
+    url_or_filename: Union[str, Path],
+    mode: str,
+    buffering: int = ...,
+    encoding: Optional[str] = ...,
+    errors: Optional[str] = ...,
+    newline: Optional[str] = ...,
+    *,
+    extract: bool = ...,
+    auto_update: Optional[bool] = ...,
+    use_cache: bool = ...,
+    force_download: bool = ...,
+    force_extract: bool = ...,
+    cache_root: Optional[Union[str, Path]] = ...,
+    expire_days: Optional[int] = ...,
+    retry: bool = ...,
+) -> ContextManager[IO[Any]]:
+    ...
 
 
 def open(

@@ -6,11 +6,22 @@ import threading
 from contextlib import contextmanager
 from os import PathLike
 from pathlib import Path
-from typing import IO, Any, Iterator, Optional, Union
+from typing import (
+    IO,
+    Any,
+    BinaryIO,
+    ContextManager,
+    Iterator,
+    Optional,
+    TextIO,
+    Union,
+    overload,
+)
 
 from tqdm import tqdm
 
 from minato.filesystems.filesystem import FileSystem
+from minato.util import OpenBinaryMode, OpenTextMode
 
 try:
     import boto3
@@ -172,7 +183,39 @@ class S3FileSystem(FileSystem):
         etags = [str(obj.e_tag).strip('"') for obj in objects if obj.e_tag]
         return ".".join(sorted(etags)) if etags else None
 
-    @contextmanager
+    @overload
+    def open_file(
+        self,
+        mode: OpenTextMode = ...,
+        buffering: int = ...,
+        encoding: Optional[str] = ...,
+        errors: Optional[str] = ...,
+        newline: Optional[str] = ...,
+    ) -> ContextManager[TextIO]:
+        ...
+
+    @overload
+    def open_file(
+        self,
+        mode: OpenBinaryMode,
+        buffering: int = ...,
+        encoding: Optional[str] = ...,
+        errors: Optional[str] = ...,
+        newline: Optional[str] = ...,
+    ) -> ContextManager[BinaryIO]:
+        ...
+
+    @overload
+    def open_file(
+        self,
+        mode: str,
+        buffering: int = ...,
+        encoding: Optional[str] = ...,
+        errors: Optional[str] = ...,
+        newline: Optional[str] = ...,
+    ) -> ContextManager[IO[Any]]:
+        ...
+
     def open_file(
         self,
         mode: str = "r",
@@ -180,33 +223,43 @@ class S3FileSystem(FileSystem):
         encoding: Optional[str] = None,
         errors: Optional[str] = None,
         newline: Optional[str] = None,
-    ) -> Iterator[IO[Any]]:
-        if "x" in mode and self.exists():
-            raise FileExistsError(self._url.raw)
+    ) -> ContextManager[IO[Any]]:
+        @contextmanager
+        def _open(
+            mode: str,
+            buffering: int,
+            encoding: Optional[str],
+            errors: Optional[str],
+            newline: Optional[str],
+        ) -> Iterator[IO[Any]]:
+            if "x" in mode and self.exists():
+                raise FileExistsError(self._url.raw)
 
-        local_file = tempfile.NamedTemporaryFile(delete=False)
+            local_file = tempfile.NamedTemporaryFile(delete=False)
 
-        try:
-            if "r" in mode or "a" in mode or "+" in mode:
-                if not self.exists():
-                    raise FileNotFoundError(self._url.raw)
-                self._download_fileobj(self._key, local_file)
+            try:
+                if "r" in mode or "a" in mode or "+" in mode:
+                    if not self.exists():
+                        raise FileNotFoundError(self._url.raw)
+                    self._download_fileobj(self._key, local_file)
 
-            local_file.close()
+                local_file.close()
 
-            with open(
-                local_file.name,
-                mode=mode,
-                buffering=buffering,
-                encoding=encoding,
-                errors=errors,
-                newline=newline,
-            ) as fp:
-                yield fp
+                with open(
+                    local_file.name,
+                    mode=mode,
+                    buffering=buffering,
+                    encoding=encoding,
+                    errors=errors,
+                    newline=newline,
+                ) as fp:
+                    yield fp
 
-            if "w" in mode or "a" in mode or "+" in mode or "x" in mode:
-                with open(local_file.name, "rb") as fp:
-                    self._upload_fileobj(fp, self._key)
-        finally:
-            local_file.close()
-            os.remove(local_file.name)
+                if "w" in mode or "a" in mode or "+" in mode or "x" in mode:
+                    with open(local_file.name, "rb") as fp:
+                        self._upload_fileobj(fp, self._key)
+            finally:
+                local_file.close()
+                os.remove(local_file.name)
+
+        return _open(mode, buffering, encoding, errors, newline)
