@@ -125,7 +125,6 @@ class S3FileSystem(FileSystem):
                 file_path = path / relprefix
                 os.makedirs(file_path.parent, exist_ok=True)
                 bucket.download_file(obj.key, str(file_path), Callback=progress.update)
-                progress.update(obj.size)
 
     def upload(self, path: Union[str, PathLike]) -> None:
         path = Path(str(path)).absolute()
@@ -163,7 +162,6 @@ class S3FileSystem(FileSystem):
                 else:
                     key = prefix
                 bucket.upload_file(str(filename), key, Callback=progress.update)
-                progress.update(filename.stat().st_size)
 
     def delete(self) -> None:
         if not self.exists():
