@@ -6,6 +6,9 @@ PYTEST     := $(POETRY) run pytest
 PYSEN      := $(POETRY) run pysen
 PYTHONPATH := $(PWD)
 
+.PHONY: all
+all: format lint test
+
 .PHONY: test
 test:
 	PYTHONPATH=$(PYTHONPATH) $(PYTEST)
