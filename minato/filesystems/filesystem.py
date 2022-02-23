@@ -137,7 +137,7 @@ class FileSystem:
             schemes = ", ".join(FileSystem.registry.keys())
             raise KeyError(f"Invalid scheme: {scheme} (not in {schemes})")
         subclass = FileSystem.registry[scheme]
-        logger.info("Infer file system of %s from url: %s", subclass.__name__, url)
+        logger.debug("Infer file system of %s from url: %s", subclass.__name__, url)
         return subclass(url)
 
     def __init__(self, url_or_filename: Union[str, PathLike]) -> None:

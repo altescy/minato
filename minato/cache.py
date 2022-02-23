@@ -128,12 +128,12 @@ class Cache:
     def lock(self, item: CachedFile) -> Iterator[None]:
         lock = FileLock(self.get_lockfile_path(item.uid))
         try:
-            logger.info("Trying to acquire file lock of %s.", item.url)
+            logger.debug("Trying to acquire file lock of %s.", item.url)
             lock.acquire()
             yield
         finally:
             lock.release()
-            logger.info("File lock of %s was released.", item.url)
+            logger.debug("File lock of %s was released.", item.url)
 
     @staticmethod
     def _generate_uid(url: str) -> str:
@@ -180,7 +180,7 @@ class Cache:
         if self.exists(item):
             raise CacheAlreadyExists(item.url)
         self.save(item)
-        logger.info("New cached file of %s was added.", item.url)
+        logger.debug("New cached file of %s was added.", item.url)
         return item
 
     def update(self, item: CachedFile) -> None:
@@ -199,12 +199,12 @@ class Cache:
         return CachedFile(**params)
 
     def by_url(self, url: str) -> CachedFile:
-        logger.info("Try to find cached file of %s", url)
+        logger.debug("Try to find cached file of %s", url)
         hashval = hashlib.md5(url.encode()).hexdigest()
         for metadata_path in self._root.glob(f"{hashval}-*.json"):
             cached_file = self.load_cached_file(metadata_path)
             if cached_file.url == url:
-                logger.info("Find cached file of %s: %s", url, cached_file.local_path)
+                logger.debug("Find cached file of %s: %s", url, cached_file.local_path)
                 return cached_file
 
         logger.info(
