@@ -107,7 +107,7 @@ class S3FileSystem(FileSystem):
         ]
         total = sum(obj.size for obj in objects)
 
-        logger.info(
+        logger.debug(
             "%s file(s) (%sB) will be downloaded to %s.", len(objects), total, path
         )
 
