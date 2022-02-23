@@ -93,7 +93,7 @@ class GCSFileSystem(FileSystem):
         ]
         total = sum(blob.size for blob in blobs if blob.size)
 
-        logger.info(
+        logger.debug(
             "%s file(s) (%sB) will be downloaded to %s.", len(blobs), total, path
         )
         with tqdm(
@@ -128,7 +128,7 @@ class GCSFileSystem(FileSystem):
 
         total = sum(filename.stat().st_size for filename in filenames)
 
-        logger.info(
+        logger.debug(
             "%s file(s) (%sB) will be uploaded to %s", len(filenames), total, self._url
         )
 

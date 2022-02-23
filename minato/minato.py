@@ -111,7 +111,7 @@ class Minato:
         retry: bool = True,
     ) -> ContextManager[IO[Any]]:
         if not ("a" in mode or "w" in mode or "x" in mode or "+" in mode) and use_cache:
-            logger.info("Open cached file of %s.", url_or_filename)
+            logger.debug("Open cached file of %s.", url_or_filename)
             url_or_filename = self.cached_path(
                 url_or_filename,
                 extract=extract,
@@ -186,7 +186,7 @@ class Minato:
             if cached_file.auto_update and cached_file.version is not None:
                 current_version = get_version(cached_file.url)
                 if current_version != cached_file.version:
-                    logger.info(
+                    logger.debug(
                         "New version of data is available. It will be automatically updated."
                     )
                     force_download = True
@@ -206,7 +206,7 @@ class Minato:
                     cached_file.status = CacheStatus.DOWNLOADING
                     self._cache.update(cached_file)
 
-                    logger.info(
+                    logger.debug(
                         "Start downloading file(s) from %s to %s.",
                         cached_file.url,
                         cached_file.local_path,
@@ -229,7 +229,7 @@ class Minato:
                     cached_file.status = CacheStatus.EXTRACTING
                     self._cache.update(cached_file)
 
-                    logging.info(
+                    logging.debug(
                         "Extracting archive file from %s to %s.",
                         cached_file.local_path,
                         cached_file.extraction_path,

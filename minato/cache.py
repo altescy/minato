@@ -207,7 +207,7 @@ class Cache:
                 logger.debug("Find cached file of %s: %s", url, cached_file.local_path)
                 return cached_file
 
-        logger.info(
+        logger.debug(
             "There is no cached files with hashval of %s, "
             "so try to find a corresponding file from all files in %s",
             url,
@@ -229,7 +229,7 @@ class Cache:
 
         remove_file_or_directory(metadata_path)
         remove_file_or_directory(lockfile_path)
-        logger.info("A cached file of %s was successfully deleted.", item.url)
+        logger.debug("A cached file of %s was successfully deleted.", item.url)
 
     def is_expired(self, item: CachedFile) -> bool:
         if item.expire_days < 0:
