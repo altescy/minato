@@ -122,7 +122,7 @@ class Minato:
                 retry=retry,
             )
 
-        return open_file(url_or_filename, mode)
+        return open_file(url_or_filename, mode, buffering, encoding, errors, newline)
 
     def cached_path(
         self,
