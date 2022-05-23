@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 import re
@@ -6,17 +8,7 @@ import threading
 from contextlib import contextmanager
 from os import PathLike
 from pathlib import Path
-from typing import (
-    IO,
-    Any,
-    BinaryIO,
-    ContextManager,
-    Iterator,
-    Optional,
-    TextIO,
-    Union,
-    overload,
-)
+from typing import IO, Any, BinaryIO, ContextManager, Iterator, TextIO, overload
 
 from tqdm import tqdm
 
@@ -34,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 @FileSystem.register(["s3"])
 class S3FileSystem(FileSystem):
-    def __init__(self, url_or_filename: Union[str, PathLike]) -> None:
+    def __init__(self, url_or_filename: str | PathLike) -> None:
         if boto3 is None:
             raise ModuleNotFoundError(
                 "S3FileSystem is not available. Please make sure that "
@@ -92,7 +84,7 @@ class S3FileSystem(FileSystem):
         objects = list(bucket.objects.filter(Prefix=self._key))
         return len(objects) > 0
 
-    def download(self, path: Union[str, PathLike]) -> None:
+    def download(self, path: str | PathLike) -> None:
         if not self.exists():
             raise FileNotFoundError(self._url.raw)
 
@@ -126,7 +118,7 @@ class S3FileSystem(FileSystem):
                 os.makedirs(file_path.parent, exist_ok=True)
                 bucket.download_file(obj.key, str(file_path), Callback=progress.update)
 
-    def upload(self, path: Union[str, PathLike]) -> None:
+    def upload(self, path: str | PathLike) -> None:
         path = Path(str(path)).absolute()
 
         prefix = self._key
@@ -171,7 +163,7 @@ class S3FileSystem(FileSystem):
         bucket = resource.Bucket(self._bucket_name)
         bucket.objects.filter(Prefix=self._key).delete()
 
-    def get_version(self) -> Optional[str]:
+    def get_version(self) -> str | None:
         if not self.exists():
             raise FileNotFoundError(self._url.raw)
 
@@ -186,9 +178,9 @@ class S3FileSystem(FileSystem):
         self,
         mode: OpenTextMode = ...,
         buffering: int = ...,
-        encoding: Optional[str] = ...,
-        errors: Optional[str] = ...,
-        newline: Optional[str] = ...,
+        encoding: str | None = ...,
+        errors: str | None = ...,
+        newline: str | None = ...,
     ) -> ContextManager[TextIO]:
         ...
 
@@ -197,9 +189,9 @@ class S3FileSystem(FileSystem):
         self,
         mode: OpenBinaryMode,
         buffering: int = ...,
-        encoding: Optional[str] = ...,
-        errors: Optional[str] = ...,
-        newline: Optional[str] = ...,
+        encoding: str | None = ...,
+        errors: str | None = ...,
+        newline: str | None = ...,
     ) -> ContextManager[BinaryIO]:
         ...
 
@@ -208,9 +200,9 @@ class S3FileSystem(FileSystem):
         self,
         mode: str,
         buffering: int = ...,
-        encoding: Optional[str] = ...,
-        errors: Optional[str] = ...,
-        newline: Optional[str] = ...,
+        encoding: str | None = ...,
+        errors: str | None = ...,
+        newline: str | None = ...,
     ) -> ContextManager[IO[Any]]:
         ...
 
@@ -218,17 +210,17 @@ class S3FileSystem(FileSystem):
         self,
         mode: str = "r",
         buffering: int = -1,
-        encoding: Optional[str] = None,
-        errors: Optional[str] = None,
-        newline: Optional[str] = None,
+        encoding: str | None = None,
+        errors: str | None = None,
+        newline: str | None = None,
     ) -> ContextManager[IO[Any]]:
         @contextmanager
         def _open(
             mode: str,
             buffering: int,
-            encoding: Optional[str],
-            errors: Optional[str],
-            newline: Optional[str],
+            encoding: str | None,
+            errors: str | None,
+            newline: str | None,
         ) -> Iterator[IO[Any]]:
             if "x" in mode and self.exists():
                 raise FileExistsError(self._url.raw)

@@ -4,7 +4,6 @@ import dataclasses
 from configparser import ConfigParser
 from os import PathLike
 from pathlib import Path
-from typing import List, Optional, Union
 
 MINATO_ROOT = Path.home() / ".minato"
 DEFAULT_CACHE_ROOT = MINATO_ROOT / "cache"
@@ -21,10 +20,10 @@ class Config:
     @classmethod
     def load(
         cls,
-        cache_root: Optional[Union[str, PathLike]] = None,
-        expire_days: Optional[int] = None,
-        auto_update: Optional[bool] = None,
-        files: Optional[List[Union[str, PathLike]]] = None,
+        cache_root: str | PathLike | None = None,
+        expire_days: int | None = None,
+        auto_update: bool | None = None,
+        files: list[str | PathLike] | None = None,
     ) -> Config:
         if files is None:
             files = [ROOT_CONFIG_PATH, LOCAL_CONFIG_PATH]
@@ -40,7 +39,7 @@ class Config:
 
         return config
 
-    def read_files(self, files: List[Union[str, PathLike]]) -> None:
+    def read_files(self, files: list[str | PathLike]) -> None:
         parser = ConfigParser()
         parser.read([str(path) for path in files])
         self._update_from_configparser(parser)

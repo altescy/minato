@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import os
 import tempfile
+from collections.abc import Callable
 from io import StringIO
 from pathlib import Path
-from typing import Any, Callable, Literal, Optional
+from typing import Any, Literal, Optional
 
 import pytest
 from google.cloud.storage import Blob, Client

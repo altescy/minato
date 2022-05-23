@@ -3,13 +3,13 @@ from __future__ import annotations
 import fcntl
 from pathlib import Path
 from types import TracebackType
-from typing import IO, Any, Optional, Type, Union
+from typing import IO, Any, Type
 
 
 class FileLock:
-    def __init__(self, lockfile: Union[str, Path]) -> None:
+    def __init__(self, lockfile: str | Path) -> None:
         self._file_path = lockfile
-        self._lockfile: Optional[IO[Any]] = None
+        self._lockfile: IO[Any] | None = None
 
     def acquire(self) -> None:
         if self._lockfile is None:
@@ -28,9 +28,9 @@ class FileLock:
 
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
+        exc_type: Type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
     ) -> bool:
         self.release()
         return exc_type is None and exc_value is None and traceback is None

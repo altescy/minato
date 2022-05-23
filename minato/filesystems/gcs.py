@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 import re
@@ -5,17 +7,7 @@ import tempfile
 from contextlib import contextmanager
 from os import PathLike
 from pathlib import Path
-from typing import (
-    IO,
-    Any,
-    BinaryIO,
-    ContextManager,
-    Iterator,
-    Optional,
-    TextIO,
-    Union,
-    overload,
-)
+from typing import IO, Any, BinaryIO, ContextManager, Iterator, TextIO, overload
 
 from tqdm import tqdm
 
@@ -35,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 @FileSystem.register(["gs", "gcs"])
 class GCSFileSystem(FileSystem):
-    def __init__(self, url_or_filename: Union[str, PathLike]) -> None:
+    def __init__(self, url_or_filename: str | PathLike) -> None:
         if gcs is None:
             raise ModuleNotFoundError(
                 "GCSFileSystem is not available. Please make sure that "
@@ -77,7 +69,7 @@ class GCSFileSystem(FileSystem):
         blobs = list(bucket.list_blobs(prefix=self._key))
         return len(blobs) > 0
 
-    def download(self, path: Union[str, PathLike]) -> None:
+    def download(self, path: str | PathLike) -> None:
         if not self.exists():
             raise FileNotFoundError(self._url.raw)
 
@@ -110,7 +102,7 @@ class GCSFileSystem(FileSystem):
                 blob.download_to_filename(str(file_path))
                 progress.update(blob.size or 0)
 
-    def upload(self, path: Union[str, PathLike]) -> None:
+    def upload(self, path: str | PathLike) -> None:
         path = Path(path)
 
         if not path.exists():
@@ -163,7 +155,7 @@ class GCSFileSystem(FileSystem):
         for blob in blobs:
             blob.delete()
 
-    def get_version(self) -> Optional[str]:
+    def get_version(self) -> str | None:
         if not self.exists():
             raise FileNotFoundError(self._url.raw)
 
@@ -182,9 +174,9 @@ class GCSFileSystem(FileSystem):
         self,
         mode: OpenTextMode = ...,
         buffering: int = ...,
-        encoding: Optional[str] = ...,
-        errors: Optional[str] = ...,
-        newline: Optional[str] = ...,
+        encoding: str | None = ...,
+        errors: str | None = ...,
+        newline: str | None = ...,
     ) -> ContextManager[TextIO]:
         ...
 
@@ -193,9 +185,9 @@ class GCSFileSystem(FileSystem):
         self,
         mode: OpenBinaryMode,
         buffering: int = ...,
-        encoding: Optional[str] = ...,
-        errors: Optional[str] = ...,
-        newline: Optional[str] = ...,
+        encoding: str | None = ...,
+        errors: str | None = ...,
+        newline: str | None = ...,
     ) -> ContextManager[BinaryIO]:
         ...
 
@@ -204,9 +196,9 @@ class GCSFileSystem(FileSystem):
         self,
         mode: str,
         buffering: int = ...,
-        encoding: Optional[str] = ...,
-        errors: Optional[str] = ...,
-        newline: Optional[str] = ...,
+        encoding: str | None = ...,
+        errors: str | None = ...,
+        newline: str | None = ...,
     ) -> ContextManager[IO[Any]]:
         ...
 
@@ -214,17 +206,17 @@ class GCSFileSystem(FileSystem):
         self,
         mode: str = "r",
         buffering: int = -1,
-        encoding: Optional[str] = None,
-        errors: Optional[str] = None,
-        newline: Optional[str] = None,
+        encoding: str | None = None,
+        errors: str | None = None,
+        newline: str | None = None,
     ) -> ContextManager[IO[Any]]:
         @contextmanager
         def _open(
             mode: str,
             buffering: int,
-            encoding: Optional[str],
-            errors: Optional[str],
-            newline: Optional[str],
+            encoding: str | None,
+            errors: str | None,
+            newline: str | None,
         ) -> Iterator[IO[Any]]:
             if "x" in mode and self.exists():
                 raise FileExistsError(self._url.raw)
