@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 from importlib.metadata import version
 from os import PathLike
 from pathlib import Path
-from typing import IO, Any, BinaryIO, ContextManager, Optional, TextIO, Union, overload
+from typing import IO, Any, BinaryIO, ContextManager, TextIO, overload
 
 from minato.cache import Cache
 from minato.config import Config
@@ -25,20 +27,20 @@ __all__ = [
 
 @overload
 def open(
-    url_or_filename: Union[str, PathLike],
+    url_or_filename: str | PathLike,
     mode: OpenTextMode = ...,
     buffering: int = ...,
-    encoding: Optional[str] = ...,
-    errors: Optional[str] = ...,
-    newline: Optional[str] = ...,
+    encoding: str | None = ...,
+    errors: str | None = ...,
+    newline: str | None = ...,
     *,
     extract: bool = ...,
-    auto_update: Optional[bool] = ...,
+    auto_update: bool | None = ...,
     use_cache: bool = ...,
     force_download: bool = ...,
     force_extract: bool = ...,
-    cache_root: Optional[Union[str, PathLike]] = ...,
-    expire_days: Optional[int] = ...,
+    cache_root: str | PathLike | None = ...,
+    expire_days: int | None = ...,
     retry: bool = ...,
 ) -> ContextManager[TextIO]:
     ...
@@ -46,20 +48,20 @@ def open(
 
 @overload
 def open(
-    url_or_filename: Union[str, PathLike],
+    url_or_filename: str | PathLike,
     mode: OpenBinaryMode,
     buffering: int = ...,
-    encoding: Optional[str] = ...,
-    errors: Optional[str] = ...,
-    newline: Optional[str] = ...,
+    encoding: str | None = ...,
+    errors: str | None = ...,
+    newline: str | None = ...,
     *,
     extract: bool = ...,
-    auto_update: Optional[bool] = ...,
+    auto_update: bool | None = ...,
     use_cache: bool = ...,
     force_download: bool = ...,
     force_extract: bool = ...,
-    cache_root: Optional[Union[str, PathLike]] = ...,
-    expire_days: Optional[int] = ...,
+    cache_root: str | PathLike | None = ...,
+    expire_days: int | None = ...,
     retry: bool = ...,
 ) -> ContextManager[BinaryIO]:
     ...
@@ -67,40 +69,40 @@ def open(
 
 @overload
 def open(
-    url_or_filename: Union[str, PathLike],
+    url_or_filename: str | PathLike,
     mode: str,
     buffering: int = ...,
-    encoding: Optional[str] = ...,
-    errors: Optional[str] = ...,
-    newline: Optional[str] = ...,
+    encoding: str | None = ...,
+    errors: str | None = ...,
+    newline: str | None = ...,
     *,
     extract: bool = ...,
-    auto_update: Optional[bool] = ...,
+    auto_update: bool | None = ...,
     use_cache: bool = ...,
     force_download: bool = ...,
     force_extract: bool = ...,
-    cache_root: Optional[Union[str, PathLike]] = ...,
-    expire_days: Optional[int] = ...,
+    cache_root: str | PathLike | None = ...,
+    expire_days: int | None = ...,
     retry: bool = ...,
 ) -> ContextManager[IO[Any]]:
     ...
 
 
 def open(
-    url_or_filename: Union[str, PathLike],
+    url_or_filename: str | PathLike,
     mode: str = "r",
     buffering: int = -1,
-    encoding: Optional[str] = None,
-    errors: Optional[str] = None,
-    newline: Optional[str] = None,
+    encoding: str | None = None,
+    errors: str | None = None,
+    newline: str | None = None,
     *,
     extract: bool = False,
-    auto_update: Optional[bool] = None,
+    auto_update: bool | None = None,
     use_cache: bool = True,
     force_download: bool = False,
     force_extract: bool = False,
-    cache_root: Optional[Union[str, PathLike]] = None,
-    expire_days: Optional[int] = None,
+    cache_root: str | PathLike | None = None,
+    expire_days: int | None = None,
     retry: bool = True,
 ) -> ContextManager[IO[Any]]:
     config = Config.load(
@@ -125,14 +127,14 @@ def open(
 
 
 def cached_path(
-    url_or_filename: Union[str, PathLike],
+    url_or_filename: str | PathLike,
     extract: bool = False,
-    auto_update: Optional[bool] = None,
+    auto_update: bool | None = None,
     force_download: bool = False,
     force_extract: bool = False,
     retry: bool = True,
-    cache_root: Optional[Union[str, PathLike]] = None,
-    expire_days: Optional[int] = None,
+    cache_root: str | PathLike | None = None,
+    expire_days: int | None = None,
 ) -> Path:
     config = Config.load(
         cache_root=cache_root,
@@ -149,19 +151,19 @@ def cached_path(
     )
 
 
-def download(url: str, filename: Union[str, PathLike]) -> None:
+def download(url: str, filename: str | PathLike) -> None:
     filename = Path(filename)
     Minato.download(url, filename)
 
 
-def upload(filename: Union[str, PathLike], url: str) -> None:
+def upload(filename: str | PathLike, url: str) -> None:
     filename = Path(filename)
     Minato.upload(filename, url)
 
 
-def delete(url_or_filename: Union[str, PathLike]) -> None:
+def delete(url_or_filename: str | PathLike) -> None:
     Minato.delete(url_or_filename)
 
 
-def exists(url_or_filename: Union[str, PathLike]) -> bool:
+def exists(url_or_filename: str | PathLike) -> bool:
     return Minato.exists(url_or_filename)

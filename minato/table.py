@@ -1,17 +1,19 @@
+from __future__ import annotations
+
 import os
 import sys
-from typing import Any, Dict, List, Optional, TextIO, Union
+from typing import Any, TextIO
 
 
 class Table:
     MIN_COLUMN_WIDTH = 2
 
-    def __init__(self, columns: List[str], shrink: bool = True) -> None:
+    def __init__(self, columns: list[str], shrink: bool = True) -> None:
         self._columns = columns
-        self._items: List[Dict[str, Any]] = []
+        self._items: list[dict[str, Any]] = []
         self._shrink = shrink
 
-    def __getitem__(self, columns: List[str]) -> "Table":
+    def __getitem__(self, columns: list[str]) -> "Table":
         table = Table(columns=columns)
         for item in self._items:
             table.add(item)
@@ -30,8 +32,8 @@ class Table:
             return repr(value)[1:-1]
         return repr(value)
 
-    def _get_column_widths(self) -> Dict[str, int]:
-        column_widths: Dict[str, int] = {}
+    def _get_column_widths(self) -> dict[str, int]:
+        column_widths: dict[str, int] = {}
         for col in self.columns:
             column_values = [x[col] for x in self._items]
             column_value_strings = [
@@ -62,19 +64,19 @@ class Table:
         return column_widths
 
     @property
-    def columns(self) -> List[str]:
+    def columns(self) -> list[str]:
         return self._columns
 
-    def add(self, item: Dict[str, Any]) -> None:
+    def add(self, item: dict[str, Any]) -> None:
         self._items.append({col: item[col] for col in self.columns})
 
     def sort(self, column: str, desc: bool = False) -> None:
-        def _key(item: Dict[str, Any]) -> Any:
+        def _key(item: dict[str, Any]) -> Any:
             return item[column]
 
         self._items = sorted(self._items, key=_key, reverse=desc)
 
-    def filter(self, query: Union[str, Dict[str, str]]) -> "Table":
+    def filter(self, query: str | dict[str, str]) -> "Table":
         if isinstance(query, str):
             query = {col: query for col in self.columns}
         table = Table(columns=self.columns)
@@ -85,7 +87,7 @@ class Table:
                     break
         return table
 
-    def show(self, output: Optional[TextIO] = None) -> None:
+    def show(self, output: TextIO | None = None) -> None:
         if output is None:
             output = sys.stdout
 

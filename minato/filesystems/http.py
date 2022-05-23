@@ -1,18 +1,10 @@
+from __future__ import annotations
+
 import os
 import tempfile
 from contextlib import contextmanager
 from os import PathLike
-from typing import (
-    IO,
-    Any,
-    BinaryIO,
-    ContextManager,
-    Iterator,
-    Optional,
-    TextIO,
-    Union,
-    overload,
-)
+from typing import IO, Any, BinaryIO, ContextManager, Iterator, TextIO, overload
 
 import requests
 
@@ -27,7 +19,7 @@ class HttpFileSystem(FileSystem):
         status_code = response.status_code
         return status_code == 200
 
-    def download(self, path: Union[str, PathLike]) -> None:
+    def download(self, path: str | PathLike) -> None:
         if not self.exists():
             raise FileNotFoundError(self._url.raw)
 
@@ -37,7 +29,7 @@ class HttpFileSystem(FileSystem):
     def delete(self) -> None:
         raise OSError("HttpFileSystem cannot delete files or directories.")
 
-    def get_version(self) -> Optional[str]:
+    def get_version(self) -> str | None:
         if not self.exists():
             raise FileNotFoundError(self._url.raw)
 
@@ -56,9 +48,9 @@ class HttpFileSystem(FileSystem):
         self,
         mode: OpenTextMode = ...,
         buffering: int = ...,
-        encoding: Optional[str] = ...,
-        errors: Optional[str] = ...,
-        newline: Optional[str] = ...,
+        encoding: str | None = ...,
+        errors: str | None = ...,
+        newline: str | None = ...,
     ) -> ContextManager[TextIO]:
         ...
 
@@ -67,9 +59,9 @@ class HttpFileSystem(FileSystem):
         self,
         mode: OpenBinaryMode,
         buffering: int = ...,
-        encoding: Optional[str] = ...,
-        errors: Optional[str] = ...,
-        newline: Optional[str] = ...,
+        encoding: str | None = ...,
+        errors: str | None = ...,
+        newline: str | None = ...,
     ) -> ContextManager[BinaryIO]:
         ...
 
@@ -78,9 +70,9 @@ class HttpFileSystem(FileSystem):
         self,
         mode: str,
         buffering: int = ...,
-        encoding: Optional[str] = ...,
-        errors: Optional[str] = ...,
-        newline: Optional[str] = ...,
+        encoding: str | None = ...,
+        errors: str | None = ...,
+        newline: str | None = ...,
     ) -> ContextManager[IO[Any]]:
         ...
 
@@ -88,17 +80,17 @@ class HttpFileSystem(FileSystem):
         self,
         mode: str = "r",
         buffering: int = -1,
-        encoding: Optional[str] = None,
-        errors: Optional[str] = None,
-        newline: Optional[str] = None,
+        encoding: str | None = None,
+        errors: str | None = None,
+        newline: str | None = None,
     ) -> ContextManager[IO[Any]]:
         @contextmanager
         def _open(
             mode: str,
             buffering: int,
-            encoding: Optional[str],
-            errors: Optional[str],
-            newline: Optional[str],
+            encoding: str | None,
+            errors: str | None,
+            newline: str | None,
         ) -> Iterator[IO[Any]]:
             if not self.exists():
                 raise FileNotFoundError(self._url.raw)

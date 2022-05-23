@@ -1,17 +1,9 @@
+from __future__ import annotations
+
 import argparse
 import re
 from collections import defaultdict
-from typing import (
-    Callable,
-    ClassVar,
-    Dict,
-    NamedTuple,
-    Optional,
-    Type,
-    TypeVar,
-    Union,
-    cast,
-)
+from typing import Callable, ClassVar, Dict, NamedTuple, Optional, Type, TypeVar, cast
 
 Subclass = TypeVar("Subclass", bound="Subcommand")
 Registry = Dict[Type["Subcommand"], Dict[str, Type["Subcommand"]]]
@@ -19,9 +11,9 @@ Registry = Dict[Type["Subcommand"], Dict[str, Type["Subcommand"]]]
 
 class SubcommandInfo(NamedTuple):
     name: str
-    usage: Optional[str] = None
-    description: Optional[str] = None
-    epilog: Optional[str] = None
+    usage: str | None = None
+    description: str | None = None
+    epilog: str | None = None
 
 
 class Subcommand:
@@ -32,10 +24,10 @@ class Subcommand:
     @classmethod
     def register(
         cls,
-        name: Optional[str] = None,
-        usage: Optional[str] = None,
-        description: Optional[str] = None,
-        epilog: Optional[str] = None,
+        name: str | None = None,
+        usage: str | None = None,
+        description: str | None = None,
+        epilog: str | None = None,
         exist_ok: bool = False,
     ) -> Callable[[Type[Subclass]], Type[Subclass]]:
         registry = Subcommand._registry[cls]
@@ -73,12 +65,10 @@ class Subcommand:
 
     def __init__(
         self,
-        parser_or_subparsers: Union[
-            argparse.ArgumentParser,
-            argparse._SubParsersAction,
-            None,
-        ] = None,
-        subcommand_info: Optional[SubcommandInfo] = None,
+        parser_or_subparsers: argparse.ArgumentParser
+        | argparse._SubParsersAction
+        | None = None,
+        subcommand_info: SubcommandInfo | None = None,
     ) -> None:
         cls = type(self)
         info = subcommand_info or self.get_info()
@@ -104,7 +94,7 @@ class Subcommand:
             for subclass in registry.values():
                 subclass(subparsers)
 
-    def __call__(self, args: Optional[argparse.Namespace] = None) -> None:
+    def __call__(self, args: argparse.Namespace | None = None) -> None:
         if not args:
             args = self.parser.parse_args()
 

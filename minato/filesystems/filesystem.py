@@ -1,21 +1,9 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from os import PathLike
-from typing import (
-    IO,
-    Any,
-    BinaryIO,
-    Callable,
-    ContextManager,
-    Dict,
-    List,
-    Optional,
-    TextIO,
-    Type,
-    Union,
-    overload,
-)
+from typing import IO, Any, BinaryIO, ContextManager, TextIO, Type, overload
 from urllib.parse import urlparse
 
 from minato.url import URL
@@ -26,47 +14,47 @@ logger = logging.getLogger(__name__)
 
 @overload
 def open_file(
-    url_or_filename: Union[str, PathLike],
+    url_or_filename: str | PathLike,
     mode: OpenTextMode = ...,
     buffering: int = ...,
-    encoding: Optional[str] = ...,
-    errors: Optional[str] = ...,
-    newline: Optional[str] = ...,
+    encoding: str | None = ...,
+    errors: str | None = ...,
+    newline: str | None = ...,
 ) -> ContextManager[TextIO]:
     ...
 
 
 @overload
 def open_file(
-    url_or_filename: Union[str, PathLike],
+    url_or_filename: str | PathLike,
     mode: OpenBinaryMode,
     buffering: int = ...,
-    encoding: Optional[str] = ...,
-    errors: Optional[str] = ...,
-    newline: Optional[str] = ...,
+    encoding: str | None = ...,
+    errors: str | None = ...,
+    newline: str | None = ...,
 ) -> ContextManager[BinaryIO]:
     ...
 
 
 @overload
 def open_file(
-    url_or_filename: Union[str, PathLike],
+    url_or_filename: str | PathLike,
     mode: str,
     buffering: int = ...,
-    encoding: Optional[str] = ...,
-    errors: Optional[str] = ...,
-    newline: Optional[str] = ...,
+    encoding: str | None = ...,
+    errors: str | None = ...,
+    newline: str | None = ...,
 ) -> ContextManager[IO[Any]]:
     ...
 
 
 def open_file(
-    url_or_filename: Union[str, PathLike],
+    url_or_filename: str | PathLike,
     mode: str = "r",
     buffering: int = -1,
-    encoding: Optional[str] = None,
-    errors: Optional[str] = None,
-    newline: Optional[str] = None,
+    encoding: str | None = None,
+    errors: str | None = None,
+    newline: str | None = None,
 ) -> ContextManager[IO[Any]]:
 
     url = str(url_or_filename)
@@ -80,47 +68,47 @@ def open_file(
     )
 
 
-def exists(url_or_filename: Union[str, PathLike]) -> bool:
+def exists(url_or_filename: str | PathLike) -> bool:
     url = str(url_or_filename)
     filesystem = FileSystem.by_url(url)
     return filesystem.exists()
 
 
 def download(
-    url_or_filename: Union[str, PathLike],
-    download_path: Union[str, PathLike],
+    url_or_filename: str | PathLike,
+    download_path: str | PathLike,
 ) -> None:
     url = str(url_or_filename)
     filesystem = FileSystem.by_url(url)
     filesystem.download(download_path)
 
 
-def upload(source: Union[str, PathLike], target: Union[str, PathLike]) -> None:
+def upload(source: str | PathLike, target: str | PathLike) -> None:
     target = str(target)
     filesystem = FileSystem.by_url(target)
     filesystem.upload(source)
 
 
-def delete(url_or_filename: Union[str, PathLike]) -> None:
+def delete(url_or_filename: str | PathLike) -> None:
     url = str(url_or_filename)
     filesystem = FileSystem.by_url(url)
     filesystem.delete()
 
 
 def get_version(
-    url_or_filename: Union[str, PathLike],
-) -> Optional[str]:
+    url_or_filename: str | PathLike,
+) -> str | None:
     url = str(url_or_filename)
     filesystem = FileSystem.by_url(url)
     return filesystem.get_version()
 
 
 class FileSystem:
-    registry: Dict[str, Type["FileSystem"]] = {}
+    registry: dict[str, Type["FileSystem"]] = {}
 
     @classmethod
     def register(
-        cls, schemes: List[str]
+        cls, schemes: list[str]
     ) -> Callable[[Type[FileSystem]], Type[FileSystem]]:
         def decorator(subclass: Type[FileSystem]) -> Type[FileSystem]:
             for scheme in schemes:
@@ -140,22 +128,22 @@ class FileSystem:
         logger.debug("Infer file system of %s from url: %s", subclass.__name__, url)
         return subclass(url)
 
-    def __init__(self, url_or_filename: Union[str, PathLike]) -> None:
+    def __init__(self, url_or_filename: str | PathLike) -> None:
         self._url = URL(str(url_or_filename))
 
     def exists(self) -> bool:
         raise NotImplementedError
 
-    def download(self, path: Union[str, PathLike]) -> None:
+    def download(self, path: str | PathLike) -> None:
         raise NotImplementedError
 
-    def upload(self, path: Union[str, PathLike]) -> None:
+    def upload(self, path: str | PathLike) -> None:
         raise NotImplementedError
 
     def delete(self) -> None:
         raise NotImplementedError
 
-    def get_version(self) -> Optional[str]:
+    def get_version(self) -> str | None:
         raise NotImplementedError
 
     @overload
@@ -163,9 +151,9 @@ class FileSystem:
         self,
         mode: OpenTextMode = ...,
         buffering: int = ...,
-        encoding: Optional[str] = ...,
-        errors: Optional[str] = ...,
-        newline: Optional[str] = ...,
+        encoding: str | None = ...,
+        errors: str | None = ...,
+        newline: str | None = ...,
     ) -> ContextManager[TextIO]:
         ...
 
@@ -174,9 +162,9 @@ class FileSystem:
         self,
         mode: OpenBinaryMode,
         buffering: int = ...,
-        encoding: Optional[str] = ...,
-        errors: Optional[str] = ...,
-        newline: Optional[str] = ...,
+        encoding: str | None = ...,
+        errors: str | None = ...,
+        newline: str | None = ...,
     ) -> ContextManager[BinaryIO]:
         ...
 
@@ -185,9 +173,9 @@ class FileSystem:
         self,
         mode: str,
         buffering: int = ...,
-        encoding: Optional[str] = ...,
-        errors: Optional[str] = ...,
-        newline: Optional[str] = ...,
+        encoding: str | None = ...,
+        errors: str | None = ...,
+        newline: str | None = ...,
     ) -> ContextManager[IO[Any]]:
         ...
 
@@ -195,8 +183,8 @@ class FileSystem:
         self,
         mode: str = "r",
         buffering: int = -1,
-        encoding: Optional[str] = None,
-        errors: Optional[str] = None,
-        newline: Optional[str] = None,
+        encoding: str | None = None,
+        errors: str | None = None,
+        newline: str | None = None,
     ) -> ContextManager[IO[Any]]:
         raise NotImplementedError

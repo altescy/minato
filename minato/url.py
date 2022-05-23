@@ -1,4 +1,5 @@
-from typing import List, Optional
+from __future__ import annotations
+
 from urllib.parse import parse_qs, urlparse
 
 
@@ -25,25 +26,25 @@ class URL:
         return self._parse_result.scheme
 
     @property
-    def username(self) -> Optional[str]:
+    def username(self) -> str | None:
         return self._parse_result.username
 
     @property
-    def password(self) -> Optional[str]:
+    def password(self) -> str | None:
         return self._parse_result.password
 
     @property
-    def hostname(self) -> Optional[str]:
+    def hostname(self) -> str | None:
         return self._parse_result.hostname
 
     @property
-    def netloc(self) -> Optional[str]:
+    def netloc(self) -> str | None:
         return self._parse_result.netloc
 
-    def get_queries(self, key: str) -> Optional[List[str]]:
+    def get_queries(self, key: str) -> list[str] | None:
         return self._queries.get(key)
 
-    def get_query(self, key: str) -> Optional[str]:
+    def get_query(self, key: str) -> str | None:
         values = self.get_queries(key)
         if not values:
             return None

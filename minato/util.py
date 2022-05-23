@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 import shutil
@@ -5,7 +7,7 @@ import tarfile
 import tempfile
 from os import PathLike
 from pathlib import Path
-from typing import IO, Any, Literal, Tuple, Union
+from typing import IO, Any, Literal, Union
 from urllib.parse import urlparse
 from zipfile import ZipFile, is_zipfile
 
@@ -126,7 +128,7 @@ OpenBinaryMode = Union[
 ]
 
 
-def remove_file_or_directory(path: Union[str, PathLike]) -> None:
+def remove_file_or_directory(path: str | PathLike) -> None:
     try:
         path = Path(path)
         if path.is_dir():
@@ -137,15 +139,15 @@ def remove_file_or_directory(path: Union[str, PathLike]) -> None:
         pass
 
 
-def is_archive_file(filename: Union[str, PathLike]) -> bool:
+def is_archive_file(filename: str | PathLike) -> bool:
     if not Path(filename).is_file():
         return False
     return is_zipfile(filename) or tarfile.is_tarfile(filename)
 
 
 def extract_archive_file(
-    source_path: Union[str, PathLike],
-    target_path: Union[str, PathLike],
+    source_path: str | PathLike,
+    target_path: str | PathLike,
 ) -> None:
     with tempfile.TemporaryDirectory() as temp_dir:
         if is_zipfile(source_path):
@@ -157,12 +159,12 @@ def extract_archive_file(
         os.replace(temp_dir, target_path)
 
 
-def extract_path(filename: Union[str, PathLike]) -> str:
+def extract_path(filename: str | PathLike) -> str:
     parsed = urlparse(str(filename))
     return parsed.path
 
 
-def is_local(url_or_filename: Union[str, PathLike]) -> bool:
+def is_local(url_or_filename: str | PathLike) -> bool:
     if isinstance(url_or_filename, Path):
         return True
 
@@ -173,7 +175,7 @@ def is_local(url_or_filename: Union[str, PathLike]) -> bool:
     return False
 
 
-def get_parent_path_and_filename(path: Union[str, PathLike]) -> Tuple[str, str]:
+def get_parent_path_and_filename(path: str | PathLike) -> tuple[str, str]:
     if isinstance(path, Path):
         parent = str(path.parent)
         name = str(path.name)
@@ -198,7 +200,7 @@ def get_parent_path_and_filename(path: Union[str, PathLike]) -> Tuple[str, str]:
     return parent, name
 
 
-def sizeof_fmt(num: Union[int, float], suffix: str = "B") -> str:
+def sizeof_fmt(num: int | float, suffix: str = "B") -> str:
     for unit in ["", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"]:
         if abs(num) < 1024.0:
             return "%3.1f %s%s" % (num, unit, suffix)
