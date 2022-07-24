@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 import os
+import re
 import sys
-from typing import Any, TextIO
+import unicodedata
+from typing import Any, ClassVar, TextIO
+
+CSI = "\x1b"
+REGEX_ANSI_CSI = re.compile(rf"{CSI}\[[0-9]+[a-zA-Z]")
 
 
 class Table:
-    MIN_COLUMN_WIDTH = 2
+    MIN_COLUMN_WIDTH: ClassVar = 2
 
     def __init__(self, columns: list[str], shrink: bool = True) -> None:
         self._columns = columns
@@ -20,17 +25,41 @@ class Table:
         return table
 
     @staticmethod
-    def _get_padded_column_value(value: str, width: int) -> str:
-        width = max(width, Table.MIN_COLUMN_WIDTH)
-        if len(value) > width:
-            value = value[: width - 1] + "\u2026"
-        return f"{value:{width}}"
+    def _get_column_value_str(value: Any) -> str:
+        return str(value)
 
     @staticmethod
-    def _get_column_value_str(value: Any) -> str:
-        if isinstance(value, str):
-            return repr(value)[1:-1]
-        return repr(value)
+    def _remove_ansi_code(value: str) -> str:
+        value = re.sub(REGEX_ANSI_CSI, "", value)
+        return value
+
+    @staticmethod
+    def _is_fullwidth(character: str) -> int:
+        return unicodedata.east_asian_width(character) in "AFW"
+
+    def _get_str_width(self, value: str) -> int:
+        value = self._remove_ansi_code(value)
+        return sum(2 if self._is_fullwidth(c) else 1 for c in value)
+
+    def _get_padded_column_value(self, value: str, width: int) -> str:
+        width = max(width, Table.MIN_COLUMN_WIDTH)
+        value_width = self._get_str_width(value)
+        if value_width > width:
+            current_value = ""
+            current_width = 0
+            current_index = 0
+            while True:
+                character = value[current_index]
+                character_width = self._get_str_width(character)
+                if current_width + character_width < width:
+                    current_value += character
+                    current_width += character_width
+                    current_index += 1
+                else:
+                    break
+            value = current_value + "\u2026"
+            value_width = current_width + 1
+        return value + " " * max(0, width - value_width)
 
     def _get_column_widths(self) -> dict[str, int]:
         column_widths: dict[str, int] = {}
@@ -40,7 +69,9 @@ class Table:
                 self._get_column_value_str(x) for x in column_values
             ]
 
-            column_width = max(len(x) for x in column_value_strings + [col])
+            column_width = max(
+                self._get_str_width(x) for x in column_value_strings + [col]
+            )
 
             column_widths[col] = column_width
 
