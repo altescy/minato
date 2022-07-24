@@ -4,7 +4,7 @@ import os
 import re
 import sys
 import unicodedata
-from typing import Any, ClassVar, TextIO, Union
+from typing import Any, ClassVar, TextIO
 
 CSI = "\x1b"
 REGEX_ANSI_CSI = re.compile(rf"{CSI}\[[0-9]+[a-zA-Z]")
@@ -107,7 +107,7 @@ class Table:
 
         self._items = sorted(self._items, key=_key, reverse=desc)
 
-    def filter(self, query: Union[str, dict[str, str]]) -> "Table":
+    def filter(self, query: str | dict[str, str]) -> "Table":
         if isinstance(query, str):
             query = {col: query for col in self.columns}
         table = Table(columns=self.columns)
