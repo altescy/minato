@@ -53,7 +53,7 @@ class Table:
                 character_width = self._get_str_width(character)
                 if current_width + character_width < width:
                     current_value += character
-                    current_width += self._get_str_width(character)
+                    current_width += character_width
                     current_index += 1
                 else:
                     break
