@@ -26,6 +26,22 @@ def _default_sizeof_formatter(size: int | float) -> str:
         return f"{size:.2f}"
 
 
+class EMA:
+    def __init__(self, alpha: float = 0.1):
+        self._alpha = alpha
+        self._value = 0.0
+
+    @property
+    def value(self) -> float:
+        return self._value
+
+    def update(self, value: float) -> None:
+        self._value = self._alpha * value + (1.0 - self._alpha) * self._value
+
+    def reset(self) -> None:
+        self._value = 0.0
+
+
 class Progress(Generic[T]):
     def __init__(
         self,
@@ -53,6 +69,8 @@ class Progress(Generic[T]):
 
         self._iterations = 0
         self._start_time = time.time()
+        self._last_time = self._start_time
+        self._interval_ema = EMA(0.1)
 
     @staticmethod
     def _format_time(seconds: float) -> str:
@@ -89,7 +107,7 @@ class Progress(Generic[T]):
         contents: dict[str, Any] = {}
 
         elapsed_time = time.time() - self._start_time
-        average_iterations = self._iterations / elapsed_time if elapsed_time > 0.0 else 0.0
+        average_iterations = 1.0 / self._interval_ema.value if self._interval_ema.value > 0.0 else 0.0
 
         contents["desc"] = self._desc
         contents["unit"] = self._unit
@@ -122,7 +140,7 @@ class Progress(Generic[T]):
             postfix_template = " ".join(postfixes)
 
             template = (
-                template + "{percentage:5.1f}% |{bar}| {iterations:{total_width}}/{total} " + f"[{postfix_template}]"
+                template + "{percentage:5.1f}% |{bar}| {iterations:>{total_width}}/{total} " + f"[{postfix_template}]"
             )
 
             contents["total_width"] = total_width
@@ -139,7 +157,10 @@ class Progress(Generic[T]):
         self._output.flush()
 
     def update(self, iterations: int = 1) -> None:
+        current_time = time.time()
+        self._interval_ema.update(current_time - self._last_time)
         self._iterations += iterations
+        self._last_time = current_time
         self.show()
 
     def __iter__(self) -> Iterator[T]:
