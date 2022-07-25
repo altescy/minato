@@ -27,7 +27,7 @@ def _default_sizeof_formatter(size: int | float) -> str:
 
 
 class EMA:
-    def __init__(self, alpha: float = 0.1):
+    def __init__(self, alpha: float = 0.3):
         self._alpha = alpha
         self._value = 0.0
 
