@@ -65,13 +65,9 @@ class Table:
         column_widths: dict[str, int] = {}
         for col in self.columns:
             column_values = [x[col] for x in self._items]
-            column_value_strings = [
-                self._get_column_value_str(x) for x in column_values
-            ]
+            column_value_strings = [self._get_column_value_str(x) for x in column_values]
 
-            column_width = max(
-                self._get_str_width(x) for x in column_value_strings + [col]
-            )
+            column_width = max(self._get_str_width(x) for x in column_value_strings + [col])
 
             column_widths[col] = column_width
 
@@ -83,12 +79,8 @@ class Table:
 
         total_column_width = num_columns + sum(column_widths.values()) - 1
         previous_width = -1
-        while (
-            total_column_width > terminal_width and previous_width != total_column_width
-        ):
-            width, column = max(
-                (width, column) for column, width in column_widths.items()
-            )
+        while total_column_width > terminal_width and previous_width != total_column_width:
+            width, column = max((width, column) for column, width in column_widths.items())
             column_widths[column] = max(width - 1, Table.MIN_COLUMN_WIDTH)
             previous_width = total_column_width
             total_column_width = num_columns + sum(column_widths.values()) - 1
@@ -124,20 +116,12 @@ class Table:
 
         column_widths = self._get_column_widths()
 
-        output.write(
-            " ".join(
-                self._get_padded_column_value(col, column_widths[col])
-                for col in self.columns
-            )
-            + "\n"
-        )
+        output.write(" ".join(self._get_padded_column_value(col, column_widths[col]) for col in self.columns) + "\n")
         output.write(" ".join("=" * column_widths[col] for col in self.columns) + "\n")
         for item in self._items:
             output.write(
                 " ".join(
-                    self._get_padded_column_value(
-                        self._get_column_value_str(item[col]), column_widths[col]
-                    )
+                    self._get_padded_column_value(self._get_column_value_str(item[col]), column_widths[col])
                     for col in self.columns
                 )
                 + "\n"

@@ -9,9 +9,7 @@ else:
     level_name = os.environ.get("MINATO_LOG_LEVEL", "WARNING")
     LEVEL = logging._nameToLevel.get(level_name, logging.WARNING)
 
-logging.basicConfig(
-    format="%(asctime)s - %(levelname)s - %(name)s - %(message)s", level=LEVEL
-)
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(name)s - %(message)s", level=LEVEL)
 
 
 def run() -> None:

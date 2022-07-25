@@ -78,16 +78,10 @@ class GCSFileSystem(FileSystem):
 
         client = self._client
         bucket = client.bucket(self._bucket_name)
-        blobs = [
-            blob
-            for blob in bucket.list_blobs(prefix=self._key)
-            if not blob.name.endswith("/")
-        ]
+        blobs = [blob for blob in bucket.list_blobs(prefix=self._key) if not blob.name.endswith("/")]
         total = sum(blob.size for blob in blobs if blob.size)
 
-        logger.debug(
-            "%s file(s) (%sB) will be downloaded to %s.", len(blobs), total, path
-        )
+        logger.debug("%s file(s) (%sB) will be downloaded to %s.", len(blobs), total, path)
         with tqdm(
             unit="iB",
             unit_scale=True,
@@ -112,17 +106,11 @@ class GCSFileSystem(FileSystem):
         if prefix.endswith("/"):
             prefix = os.path.join(prefix, path.name)
 
-        filenames = (
-            [subpath for subpath in path.glob("**/*") if subpath.is_file()]
-            if path.is_dir()
-            else [path]
-        )
+        filenames = [subpath for subpath in path.glob("**/*") if subpath.is_file()] if path.is_dir() else [path]
 
         total = sum(filename.stat().st_size for filename in filenames)
 
-        logger.debug(
-            "%s file(s) (%sB) will be uploaded to %s", len(filenames), total, self._url
-        )
+        logger.debug("%s file(s) (%sB) will be uploaded to %s", len(filenames), total, self._url)
 
         client = self._client
         bucket = client.bucket(self._bucket_name)
@@ -162,11 +150,7 @@ class GCSFileSystem(FileSystem):
         client = self._client
         bucket = client.bucket(self._bucket_name)
         blobs = list(bucket.list_blobs(prefix=self._key))
-        hashes = [
-            str(blob.md5_hash)
-            for blob in blobs
-            if blob.md5_hash and not blob.name.endswith("/")
-        ]
+        hashes = [str(blob.md5_hash) for blob in blobs if blob.md5_hash and not blob.name.endswith("/")]
         return ".".join(sorted(hashes)) if hashes else None
 
     @overload

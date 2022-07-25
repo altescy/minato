@@ -123,9 +123,7 @@ OpenBinaryModeReading = Literal[
     "bUr",
     "Ubr",
 ]
-OpenBinaryMode = Union[
-    OpenBinaryModeUpdating, OpenBinaryModeReading, OpenBinaryModeWriting
-]
+OpenBinaryMode = Union[OpenBinaryModeUpdating, OpenBinaryModeReading, OpenBinaryModeWriting]
 
 
 def remove_file_or_directory(path: str | PathLike) -> None:
