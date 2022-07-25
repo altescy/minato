@@ -193,7 +193,7 @@ def get_parent_path_and_filename(path: str | PathLike) -> tuple[str, str]:
     return parent, name
 
 
-def sizeof_fmt(num: int | float, suffix: str = "B", dividor: int | float = 1024) -> str:
+def sizeof_fmt(num: int | float, suffix: str = "", dividor: int | float = 1024) -> str:
     for unit in ["", "K", "M", "G", "T", "P", "E", "Z"]:
         if abs(num) < dividor:
             return "%3.1f%s%s" % (num, unit, suffix)
