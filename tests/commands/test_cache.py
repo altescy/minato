@@ -7,9 +7,7 @@ from minato.config import Config
 
 
 def test_cache_command() -> None:
-    url = (
-        "https://raw.githubusercontent.com/altescy/minato/main/tests/fixtures/hello.txt"
-    )
+    url = "https://raw.githubusercontent.com/altescy/minato/main/tests/fixtures/hello.txt"
 
     with tempfile.TemporaryDirectory() as tempdir:
         config = Config(cache_root=Path(tempdir))
@@ -20,9 +18,7 @@ def test_cache_command() -> None:
         app(args)
 
         cached_files = [
-            x
-            for x in config.cache_root.glob("*")
-            if not x.name.endswith(".lock") and not x.name.endswith(".json")
+            x for x in config.cache_root.glob("*") if not x.name.endswith(".lock") and not x.name.endswith(".json")
         ]
         assert len(cached_files) == 1
 

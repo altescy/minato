@@ -40,8 +40,7 @@ class CacheCommand(Subcommand):
         self.parser.add_argument(
             "--not-retry",
             action="store_false",
-            help="do not retry to download the file even if "
-            "the previous download operation is failed",
+            help="do not retry to download the file even if " "the previous download operation is failed",
         )
         self.parser.add_argument(
             "--expire-days",

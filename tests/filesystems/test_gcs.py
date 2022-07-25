@@ -48,21 +48,15 @@ class TempGCS:
         return f"gs://{self.bucket_name}/{self.get_key(key)}"
 
 
-def check_google_application_credentials(
-    func: Callable[[], None]
-) -> Callable[[], None]:
+def check_google_application_credentials(func: Callable[[], None]) -> Callable[[], None]:
     def decorator() -> None:
         google_credentials = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
         if not google_credentials:
-            pytest.skip(
-                f"GOOGLE_APPLICATION_CREDENTIALS was not given, so {func.__name__} was skipped."
-            )
+            pytest.skip(f"GOOGLE_APPLICATION_CREDENTIALS was not given, so {func.__name__} was skipped.")
 
         test_gcs_bucket = os.environ.get("MINATO_GCS_BUCKET_TEST")
         if not test_gcs_bucket:
-            pytest.skip(
-                f"MINATO_GCS_BUCKET_TEST was not given, so {func.__name__} was skipped."
-            )
+            pytest.skip(f"MINATO_GCS_BUCKET_TEST was not given, so {func.__name__} was skipped.")
 
         func()
 

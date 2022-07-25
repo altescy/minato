@@ -29,8 +29,7 @@ class S3FileSystem(FileSystem):
     def __init__(self, url_or_filename: str | PathLike) -> None:
         if boto3 is None:
             raise ModuleNotFoundError(
-                "S3FileSystem is not available. Please make sure that "
-                "boto3 is successfully installed."
+                "S3FileSystem is not available. Please make sure that " "boto3 is successfully installed."
             )
 
         super().__init__(url_or_filename)
@@ -39,12 +38,8 @@ class S3FileSystem(FileSystem):
         self._bucket_name = self._url.netloc or ""
         self._key = re.sub(r"^/", "", self._url.path)
 
-        self._aws_access_key_id = self._url.username or os.environ.get(
-            "AWS_ACCESS_KEY_ID"
-        )
-        self._aws_secret_access_key = self._url.password or os.environ.get(
-            "AWS_SECRET_ACCESS_KEY"
-        )
+        self._aws_access_key_id = self._url.username or os.environ.get("AWS_ACCESS_KEY_ID")
+        self._aws_secret_access_key = self._url.password or os.environ.get("AWS_SECRET_ACCESS_KEY")
         self._endpoint_url = self._url.get_query("endpoint_url")
         self._region_name = self._url.get_query("region")
 
@@ -92,16 +87,10 @@ class S3FileSystem(FileSystem):
 
         resource = self._get_resource()  # type: ignore
         bucket = resource.Bucket(self._bucket_name)
-        objects = [
-            obj
-            for obj in bucket.objects.filter(Prefix=self._key)
-            if not obj.key.endswith("/")
-        ]
+        objects = [obj for obj in bucket.objects.filter(Prefix=self._key) if not obj.key.endswith("/")]
         total = sum(obj.size for obj in objects)
 
-        logger.debug(
-            "%s file(s) (%sB) will be downloaded to %s.", len(objects), total, path
-        )
+        logger.debug("%s file(s) (%sB) will be downloaded to %s.", len(objects), total, path)
 
         path = path / os.path.basename(self._key) if path.is_dir() else path
 
@@ -125,17 +114,11 @@ class S3FileSystem(FileSystem):
         if prefix.endswith("/"):
             prefix = os.path.join(prefix, path.name)
 
-        filenames = (
-            [subpath for subpath in path.glob("**/*") if subpath.is_file()]
-            if path.is_dir()
-            else [path]
-        )
+        filenames = [subpath for subpath in path.glob("**/*") if subpath.is_file()] if path.is_dir() else [path]
 
         total = sum(filename.stat().st_size for filename in filenames)
 
-        logger.info(
-            "%s file(s) (%sB) will be uploaded to %s", len(filenames), total, self._url
-        )
+        logger.info("%s file(s) (%sB) will be uploaded to %s", len(filenames), total, self._url)
 
         resource = self._get_resource()  # type: ignore
         bucket = resource.Bucket(self._bucket_name)

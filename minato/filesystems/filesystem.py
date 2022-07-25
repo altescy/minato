@@ -107,9 +107,7 @@ class FileSystem:
     registry: dict[str, Type["FileSystem"]] = {}
 
     @classmethod
-    def register(
-        cls, schemes: list[str]
-    ) -> Callable[[Type[FileSystem]], Type[FileSystem]]:
+    def register(cls, schemes: list[str]) -> Callable[[Type[FileSystem]], Type[FileSystem]]:
         def decorator(subclass: Type[FileSystem]) -> Type[FileSystem]:
             for scheme in schemes:
                 FileSystem.registry[scheme] = subclass

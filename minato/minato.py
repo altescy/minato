@@ -147,9 +147,7 @@ class Minato:
                 force_download=force_download,
             )
             if not archive_path.is_dir():
-                raise ValueError(
-                    f"{url_or_filename} uses the ! syntax, but this is not an archive file."
-                )
+                raise ValueError(f"{url_or_filename} uses the ! syntax, but this is not an archive file.")
 
             file_path = extract_path(file_path)
             local_path = archive_path / file_path
@@ -188,9 +186,7 @@ class Minato:
             if cached_file.auto_update and cached_file.version is not None:
                 current_version = get_version(cached_file.url)
                 if current_version != cached_file.version:
-                    logger.debug(
-                        "New version of data is available. It will be automatically updated."
-                    )
+                    logger.debug("New version of data is available. It will be automatically updated.")
                     force_download = True
 
             if retry and cached_file.status != CacheStatus.COMPLETED:
@@ -198,11 +194,7 @@ class Minato:
 
             try:
                 downloaded = False
-                if (
-                    not cached_file.local_path.exists()
-                    or self._cache.is_expired(cached_file)
-                    or force_download
-                ):
+                if not cached_file.local_path.exists() or self._cache.is_expired(cached_file) or force_download:
                     remove_file_or_directory(cached_file.local_path)
 
                     cached_file.status = CacheStatus.DOWNLOADING
@@ -223,9 +215,7 @@ class Minato:
                     or (downloaded and cached_file.extraction_path is not None)
                     or force_extract
                 ) and is_archive_file(cached_file.local_path):
-                    cached_file.extraction_path = Path(
-                        str(cached_file.local_path) + "-extracted"
-                    )
+                    cached_file.extraction_path = Path(str(cached_file.local_path) + "-extracted")
                     remove_file_or_directory(cached_file.extraction_path)
 
                     cached_file.status = CacheStatus.EXTRACTING
@@ -236,9 +226,7 @@ class Minato:
                         cached_file.local_path,
                         cached_file.extraction_path,
                     )
-                    extract_archive_file(
-                        cached_file.local_path, cached_file.extraction_path
-                    )
+                    extract_archive_file(cached_file.local_path, cached_file.extraction_path)
                     extracted = True
 
                 if downloaded or extracted:
@@ -256,17 +244,13 @@ class Minato:
             if not cached_file.extraction_path.exists():
                 raise FileNotFoundError(cached_file.extraction_path)
             if cached_file.status != CacheStatus.COMPLETED:
-                raise InvalidCacheStatus(
-                    f"Cached path status is not completed: status={cached_file.status}"
-                )
+                raise InvalidCacheStatus(f"Cached path status is not completed: status={cached_file.status}")
             return cached_file.extraction_path
 
         if not cached_file.local_path.exists():
             raise FileNotFoundError(cached_file.local_path)
         if cached_file.status != CacheStatus.COMPLETED:
-            raise InvalidCacheStatus(
-                f"Cached path status is not completed: status={cached_file.status}"
-            )
+            raise InvalidCacheStatus(f"Cached path status is not completed: status={cached_file.status}")
         return cached_file.local_path
 
     def available_update(self, url_or_filename: str | PathLike) -> bool:

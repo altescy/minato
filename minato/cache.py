@@ -87,9 +87,7 @@ class CachedFile:
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
             "expire_days": self.expire_days,
-            "extraction_path": str(self.extraction_path)
-            if self.extraction_path
-            else None,
+            "extraction_path": str(self.extraction_path) if self.extraction_path else None,
             "status": self.status.value,
             "version": self.version,
             "auto_update": self.auto_update,
@@ -109,9 +107,7 @@ class Cache:
             os.makedirs(root, exist_ok=True)
 
         if not root.is_dir():
-            raise ConfigurationError(
-                f"Given cache_directory path is not a directory: {root}"
-            )
+            raise ConfigurationError(f"Given cache_directory path is not a directory: {root}")
 
         self._root = root
         self._default_expire_days = default_expire_days
@@ -208,8 +204,7 @@ class Cache:
                 return cached_file
 
         logger.debug(
-            "There is no cached files with hashval of %s, "
-            "so try to find a corresponding file from all files in %s",
+            "There is no cached files with hashval of %s, " "so try to find a corresponding file from all files in %s",
             url,
             self._root,
         )
@@ -257,21 +252,13 @@ class Cache:
     ) -> List[CachedFile]:
         cached_files = self.all()
         for query in queries:
-            cached_files = [
-                x for x in cached_files if query in x.url or x.uid.startswith(query)
-            ]
+            cached_files = [x for x in cached_files if query in x.url or x.uid.startswith(query)]
         if expired is not None:
             cached_files = [x for x in cached_files if self.is_expired(x) == expired]
         if failed is not None:
-            cached_files = [
-                x for x in cached_files if (x.status == CacheStatus.FAILED) == failed
-            ]
+            cached_files = [x for x in cached_files if (x.status == CacheStatus.FAILED) == failed]
         if completed is not None:
-            cached_files = [
-                x
-                for x in cached_files
-                if (x.status == CacheStatus.COMPLETED) == completed
-            ]
+            cached_files = [x for x in cached_files if (x.status == CacheStatus.COMPLETED) == completed]
 
         unique_caches = {x.uid: x for x in cached_files}
         cached_files = sorted(unique_caches.values(), key=lambda x: x.created_at)

@@ -37,9 +37,7 @@ class HttpFileSystem(FileSystem):
             response = session.head(self._url.raw, allow_redirects=True)
         if response.status_code != 200:
             raise OSError(
-                "HEAD request failed for url {} with status code {}".format(
-                    self._url.raw, response.status_code
-                )
+                "HEAD request failed for url {} with status code {}".format(self._url.raw, response.status_code)
             )
         return response.headers.get("ETag")
 
