@@ -70,7 +70,7 @@ class Progress(Generic[T]):
         self._iterations = 0
         self._start_time = time.time()
         self._last_time = self._start_time
-        self._interval_ema = EMA(0.1)
+        self._interval_ema = EMA()
 
     @staticmethod
     def _format_time(seconds: float) -> str:
