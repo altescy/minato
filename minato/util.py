@@ -7,14 +7,9 @@ import tarfile
 import tempfile
 from os import PathLike
 from pathlib import Path
-from typing import IO, Any, Literal, Union
+from typing import Literal, Union
 from urllib.parse import urlparse
 from zipfile import ZipFile, is_zipfile
-
-import requests
-from requests.adapters import HTTPAdapter
-from tqdm import tqdm
-from urllib3.util.retry import Retry
 
 logger = logging.getLogger(__name__)
 
@@ -198,37 +193,9 @@ def get_parent_path_and_filename(path: str | PathLike) -> tuple[str, str]:
     return parent, name
 
 
-def sizeof_fmt(num: int | float, suffix: str = "B") -> str:
-    for unit in ["", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"]:
-        if abs(num) < 1024.0:
-            return "%3.1f %s%s" % (num, unit, suffix)
-        num /= 1024.0
-    return "%.1f %s%s" % (num, "Yi", suffix)
-
-
-def http_get(url: str, temp_file: IO[Any]) -> None:
-    with _session_with_backoff() as session:
-        req = session.get(url, stream=True)
-        req.raise_for_status()
-        content_length = req.headers.get("Content-Length")
-        total = int(content_length) if content_length is not None else None
-        with tqdm(
-            unit="iB",
-            unit_scale=True,
-            unit_divisor=1024,
-            total=total,
-            desc="downloading",
-        ) as progress:
-            for chunk in req.iter_content(chunk_size=1024):
-                if chunk:  # filter out keep-alive new chunks
-                    progress.update(len(chunk))
-                    temp_file.write(chunk)
-
-
-def _session_with_backoff() -> requests.Session:
-    session = requests.Session()
-    retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
-    session.mount("http://", HTTPAdapter(max_retries=retries))
-    session.mount("https://", HTTPAdapter(max_retries=retries))
-
-    return session
+def sizeof_fmt(num: int | float, suffix: str = "B", dividor: int | float = 1024) -> str:
+    for unit in ["", "K", "M", "G", "T", "P", "E", "Z"]:
+        if abs(num) < dividor:
+            return "%3.1f%s%s" % (num, unit, suffix)
+        num /= dividor
+    return "%.1f%s%s" % (num, "Yi", suffix)

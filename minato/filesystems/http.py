@@ -7,9 +7,12 @@ from os import PathLike
 from typing import IO, Any, BinaryIO, ContextManager, Iterator, TextIO, overload
 
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 from minato.filesystems.filesystem import FileSystem
-from minato.util import OpenBinaryMode, OpenTextMode, _session_with_backoff, http_get
+from minato.progress import Progress
+from minato.util import OpenBinaryMode, OpenTextMode, sizeof_fmt
 
 
 @FileSystem.register(["http", "https"])
@@ -24,7 +27,7 @@ class HttpFileSystem(FileSystem):
             raise FileNotFoundError(self._url.raw)
 
         with open(path, "w+b") as fp:
-            http_get(self._url.raw, fp)
+            HttpFileSystem.http_get(self._url.raw, fp)
 
     def delete(self) -> None:
         raise OSError("HttpFileSystem cannot delete files or directories.")
@@ -33,7 +36,7 @@ class HttpFileSystem(FileSystem):
         if not self.exists():
             raise FileNotFoundError(self._url.raw)
 
-        with _session_with_backoff() as session:
+        with HttpFileSystem._session_with_backoff() as session:
             response = session.head(self._url.raw, allow_redirects=True)
         if response.status_code != 200:
             raise OSError(
@@ -98,7 +101,7 @@ class HttpFileSystem(FileSystem):
 
             temp_file = tempfile.NamedTemporaryFile(delete=False)
             try:
-                http_get(self._url.raw, temp_file)
+                HttpFileSystem.http_get(self._url.raw, temp_file)
                 temp_file.close()
                 with open(
                     temp_file.name,
@@ -113,3 +116,30 @@ class HttpFileSystem(FileSystem):
                 os.remove(temp_file.name)
 
         return _open(mode, buffering, encoding, errors, newline)
+
+    @staticmethod
+    def http_get(url: str, temp_file: IO[Any]) -> None:
+        with HttpFileSystem._session_with_backoff() as session:
+            req = session.get(url, stream=True)
+            req.raise_for_status()
+            content_length = req.headers.get("Content-Length")
+            total = int(content_length) if content_length is not None else None
+            with Progress[int](
+                total,
+                unit="iB",
+                desc="downloading",
+                sizeof_formatter=sizeof_fmt,
+            ) as progress:
+                for chunk in req.iter_content(chunk_size=1024):
+                    if chunk:  # filter out keep-alive new chunks
+                        progress.update(len(chunk))
+                        temp_file.write(chunk)
+
+    @staticmethod
+    def _session_with_backoff() -> requests.Session:
+        session = requests.Session()
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        session.mount("http://", HTTPAdapter(max_retries=retries))
+        session.mount("https://", HTTPAdapter(max_retries=retries))
+
+        return session
