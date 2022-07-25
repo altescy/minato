@@ -10,10 +10,9 @@ from os import PathLike
 from pathlib import Path
 from typing import IO, Any, BinaryIO, ContextManager, Iterator, TextIO, overload
 
-from tqdm import tqdm
-
 from minato.filesystems.filesystem import FileSystem
-from minato.util import OpenBinaryMode, OpenTextMode
+from minato.progress import Progress
+from minato.util import OpenBinaryMode, OpenTextMode, sizeof_fmt
 
 try:
     import boto3
@@ -94,12 +93,11 @@ class S3FileSystem(FileSystem):
 
         path = path / os.path.basename(self._key) if path.is_dir() else path
 
-        with tqdm(
+        with Progress[int](
+            total,
             unit="iB",
-            unit_scale=True,
-            unit_divisor=1024,
-            total=total,
             desc="downloading from s3",
+            sizeof_formatter=sizeof_fmt,
         ) as progress:
             for obj in objects:
                 relprefix = os.path.relpath(obj.key, self._key)
@@ -123,12 +121,11 @@ class S3FileSystem(FileSystem):
         resource = self._get_resource()  # type: ignore
         bucket = resource.Bucket(self._bucket_name)
 
-        with tqdm(
+        with Progress[int](
+            total,
             unit="iB",
-            unit_scale=True,
-            unit_divisor=1024,
-            total=total,
             desc="uploading to s3",
+            sizeof_formatter=sizeof_fmt,
         ) as progress:
             for filename in filenames:
                 if filename != path:
