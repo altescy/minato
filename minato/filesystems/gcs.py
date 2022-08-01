@@ -9,10 +9,9 @@ from os import PathLike
 from pathlib import Path
 from typing import IO, Any, BinaryIO, ContextManager, Iterator, TextIO, overload
 
-from tqdm import tqdm
-
 from minato.filesystems.filesystem import FileSystem
-from minato.util import OpenBinaryMode, OpenTextMode
+from minato.progress import Progress
+from minato.util import OpenBinaryMode, OpenTextMode, sizeof_fmt
 
 try:
     import google.cloud.storage as gcs
@@ -82,12 +81,11 @@ class GCSFileSystem(FileSystem):
         total = sum(blob.size for blob in blobs if blob.size)
 
         logger.debug("%s file(s) (%sB) will be downloaded to %s.", len(blobs), total, path)
-        with tqdm(
+        with Progress[int](
+            total,
             unit="iB",
-            unit_scale=True,
-            unit_divisor=1024,
-            total=total,
             desc="downloading from gcs",
+            sizeof_formatter=sizeof_fmt,
         ) as progress:
             for blob in blobs:
                 relpath = os.path.relpath(blob.name, self._key)
@@ -115,12 +113,11 @@ class GCSFileSystem(FileSystem):
         client = self._client
         bucket = client.bucket(self._bucket_name)
 
-        with tqdm(
+        with Progress[int](
+            total,
             unit="iB",
-            unit_scale=True,
-            unit_divisor=1024,
-            total=total,
             desc="uploading from gcs",
+            sizeof_formatter=sizeof_fmt,
         ) as progress:
             for filename in filenames:
                 if filename != path:
