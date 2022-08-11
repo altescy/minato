@@ -9,7 +9,7 @@ from typing import Any, Callable, Generic, Iterable, Iterator, TextIO, TypeVar, 
 T = TypeVar("T")
 Self = TypeVar("Self", bound="Progress")
 
-DISABLE_PROGRESSBAR = os.environ.get("MINATO_DISABLE_PROGRESSBAR", "0").lower()
+DISABLE_PROGRESSBAR = os.environ.get("MINATO_DISABLE_PROGRESSBAR", "0").lower() in ("1", "true")
 
 
 def _dummy_iterator() -> Iterator[int]:
@@ -54,6 +54,7 @@ class Progress(Generic[T]):
         maxwidth: int | None = None,
         partchars: str = " ▏▎▍▌▋▊▉█",
         sizeof_formatter: Callable[[int | float], str] = _default_sizeof_formatter,
+        disable: bool = False,
     ) -> None:
         total_or_iterable = total_or_iterable or cast(Iterator[T], _dummy_iterator())
         self._iterable = (
@@ -66,6 +67,7 @@ class Progress(Generic[T]):
         self._maxwidth = maxwidth
         self._partchars = partchars
         self._sizeof_formatter = sizeof_formatter
+        self._disable = disable or DISABLE_PROGRESSBAR
 
         self._postfixes: dict[str, Any] = {}
 
@@ -105,6 +107,9 @@ class Progress(Generic[T]):
         self._postfixes = postfixes
 
     def show(self) -> None:
+        if self._disable:
+            return
+
         template = ""
         contents: dict[str, Any] = {}
 
@@ -166,9 +171,6 @@ class Progress(Generic[T]):
         self.show()
 
     def __iter__(self) -> Iterator[T]:
-        if DISABLE_PROGRESSBAR in ("1", "true"):
-            return self._iterable
-
         self._iterations = 0
         self._start_time = time.time()
 
