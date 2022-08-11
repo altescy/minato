@@ -1,7 +1,9 @@
 import argparse
+import sys
 from pathlib import Path
 
 from minato.commands.subcommand import Subcommand
+from minato.common import Selector
 from minato.config import Config
 from minato.minato import Minato
 
@@ -15,6 +17,8 @@ class CacheCommand(Subcommand):
         self.parser.add_argument(
             "url",
             type=str,
+            nargs="?",
+            default=None,
             help="specify file path or url",
         )
         self.parser.add_argument(
@@ -61,8 +65,18 @@ class CacheCommand(Subcommand):
         )
         minato = Minato(config)
 
+        if args.url:
+            url = args.url
+        else:
+            candidate_urls = [cached_file.url for cached_file in minato.cache.all()]
+            url = Selector(config.selector_command)(candidate_urls)
+
+        if not url:
+            print("URL NOT FOUND", file=sys.stderr)
+            sys.exit(1)
+
         cached_path = minato.cached_path(
-            args.url,
+            url,
             extract=args.extract,
             auto_update=args.auto_update,
             expire_days=args.expire_days,

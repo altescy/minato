@@ -16,6 +16,7 @@ class Config:
     cache_root: Path = DEFAULT_CACHE_ROOT
     expire_days: int = -1
     auto_update: bool = True
+    selector_command: str | None = None
 
     @classmethod
     def load(
@@ -53,3 +54,7 @@ class Config:
                 self.expire_days = parser.getint("cache", "expire_days")
             if "auto_update" in section:
                 self.auto_update = parser.getboolean("cache", "auto_update")
+        if parser.has_section("ui"):
+            section = parser["ui"]
+            if "selector_command" in section:
+                self.selector_command = section["selector_command"]

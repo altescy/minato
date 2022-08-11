@@ -3,9 +3,9 @@ import datetime
 from pathlib import Path
 
 from minato.commands.subcommand import Subcommand
+from minato.common import Table
 from minato.config import Config
 from minato.minato import Minato
-from minato.table import Table
 from minato.util import is_archive_file, sizeof_fmt
 
 

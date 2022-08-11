@@ -10,8 +10,8 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+from minato.common import Progress
 from minato.filesystems.filesystem import FileSystem
-from minato.progress import Progress
 from minato.util import OpenBinaryMode, OpenTextMode, sizeof_fmt
 
 
