@@ -2,6 +2,7 @@ import argparse
 from pathlib import Path
 
 from minato.commands.subcommand import Subcommand
+from minato.common import Selector
 from minato.config import Config
 from minato.minato import Minato
 
@@ -57,7 +58,9 @@ class RemoveCommand(Subcommand):
                 failed=args.failed,
             )
         else:
-            cached_files = []
+            candidtes = {cached_file.url: cached_file for cached_file in cache.all()}
+            selected_url = Selector(config.selector_command)(list(candidtes.keys()))
+            cached_files = [candidtes[selected_url]] if selected_url in candidtes else []
 
         num_caches = len(cached_files)
 

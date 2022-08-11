@@ -2,6 +2,7 @@ import argparse
 from pathlib import Path
 
 from minato.commands.subcommand import Subcommand
+from minato.common import Selector
 from minato.config import Config
 from minato.minato import Minato
 
@@ -77,9 +78,13 @@ class UpdateCommand(Subcommand):
         elif args.auto:
             cached_files = cache.all()
         else:
-            cached_files = []
+            candidates = {cached_file.url: cached_file for cached_file in cache.all()}
+            selected_url = Selector(config.selector_command)(list(candidates.keys()))
+            cached_files = [candidates[selected_url]] if selected_url in candidates else []
 
-        cached_files = [x for x in cached_files if minato.available_update(x.url)]
+        cached_files = [
+            x for x in cached_files if args.force_download or args.force_extract or minato.available_update(x.url)
+        ]
 
         num_caches = len(cached_files)
         if num_caches == 0:
