@@ -9,6 +9,8 @@ from typing import Any, Callable, Generic, Iterable, Iterator, TextIO, TypeVar, 
 T = TypeVar("T")
 Self = TypeVar("Self", bound="Progress")
 
+DISABLE_PROGRESSBAR = os.environ.get("MINATO_DISABLE_PROGRESSBAR", "0").lower()
+
 
 def _dummy_iterator() -> Iterator[int]:
     iterations = 0
@@ -164,6 +166,9 @@ class Progress(Generic[T]):
         self.show()
 
     def __iter__(self) -> Iterator[T]:
+        if DISABLE_PROGRESSBAR in ("1", "true"):
+            return self._iterable
+
         self._iterations = 0
         self._start_time = time.time()
 
