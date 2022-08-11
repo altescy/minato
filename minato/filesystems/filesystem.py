@@ -6,7 +6,7 @@ from os import PathLike
 from typing import IO, Any, BinaryIO, ContextManager, TextIO, Type, overload
 from urllib.parse import urlparse
 
-from minato.url import URL
+from minato.common import URL
 from minato.util import OpenBinaryMode, OpenTextMode
 
 logger = logging.getLogger(__name__)

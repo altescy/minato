@@ -13,8 +13,8 @@ from os import PathLike
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Optional, Union
 
+from minato.common import FileLock
 from minato.exceptions import CacheAlreadyExists, CacheNotFoundError, ConfigurationError
-from minato.filelock import FileLock
 from minato.util import remove_file_or_directory
 
 logger = logging.getLogger(__name__)
