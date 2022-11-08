@@ -163,7 +163,7 @@ class Minato:
                     raise FileNotFoundError(local_path)
                 return local_path
 
-        url = str(url_or_filename)
+        url = url_or_filename
         try:
             cached_file = self._cache.by_url(url)
         except CacheNotFoundError:
