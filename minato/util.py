@@ -5,6 +5,7 @@ import os
 import shutil
 import tarfile
 import tempfile
+from contextlib import suppress
 from os import PathLike
 from pathlib import Path
 from typing import Literal, Union
@@ -122,14 +123,12 @@ OpenBinaryMode = Union[OpenBinaryModeUpdating, OpenBinaryModeReading, OpenBinary
 
 
 def remove_file_or_directory(path: str | PathLike) -> None:
-    try:
+    with suppress(FileNotFoundError):
         path = Path(path)
         if path.is_dir():
             shutil.rmtree(path)
         else:
             os.remove(path)
-    except FileNotFoundError:
-        pass
 
 
 def is_archive_file(filename: str | PathLike) -> bool:
@@ -180,12 +179,12 @@ def get_parent_path_and_filename(path: str | PathLike) -> tuple[str, str]:
     netloc = parsed_url.netloc
     path = parsed_url.path
 
-    splitted = str(path).rsplit("/", 1)
+    splitted = path.rsplit("/", 1)
     if len(splitted) == 2:
         parent, name = splitted
     else:
         parent = ""
-        name = str(path)
+        name = path
 
     if scheme and netloc:
         parent = f"{scheme}://{netloc}/{parent}"
@@ -194,7 +193,7 @@ def get_parent_path_and_filename(path: str | PathLike) -> tuple[str, str]:
 
 
 def sizeof_fmt(num: int | float, suffix: str = "", dividor: int | float = 1024) -> str:
-    for unit in ["", "K", "M", "G", "T", "P", "E", "Z"]:
+    for unit in ("", "K", "M", "G", "T", "P", "E", "Z"):
         if abs(num) < dividor:
             return "%3.1f%s%s" % (num, unit, suffix)
         num /= dividor

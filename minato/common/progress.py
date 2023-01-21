@@ -24,8 +24,7 @@ def _default_sizeof_formatter(size: int | float) -> str:
         size = int(size)
     if isinstance(size, int):
         return str(size)
-    else:
-        return f"{size:.2f}"
+    return f"{size:.2f}"
 
 
 class EMA:
@@ -82,8 +81,7 @@ class Progress(Generic[T]):
         h, m = divmod(m, 60)
         if h > 0:
             return f"{int(h):d}:{int(m):02d}:{int(s):02d}"
-        else:
-            return f"{int(m):02d}:{int(s):02d}"
+        return f"{int(m):02d}:{int(s):02d}"
 
     def _get_maxwidth(self) -> int:
         try:
@@ -92,8 +90,7 @@ class Progress(Generic[T]):
             terminal_width = 80
         if self._maxwidth:
             return min(terminal_width, self._maxwidth)
-        else:
-            return terminal_width
+        return terminal_width
 
     def _get_bar(self, width: int, percentage: float) -> str:
         ratio = percentage / 100
