@@ -167,7 +167,7 @@ def test_upload_file(tmpdir: Path) -> None:
     conn.create_bucket(Bucket="my_bucket")
 
     filename = tmpdir / "foo.txt"
-    with open(filename, "w") as localfile:
+    with filename.open("w") as localfile:
         localfile.write("this is foo!")
 
     fs = S3FileSystem("s3://my_bucket/dir/foo.txt")
@@ -187,7 +187,7 @@ def test_upload_file_to_dir(tmpdir: Path) -> None:
     conn.create_bucket(Bucket="my_bucket")
 
     filename = tmpdir / "foo.txt"
-    with open(filename, "w") as localfile:
+    with filename.open("w") as localfile:
         localfile.write("this is foo!")
 
     dirfs = S3FileSystem("s3://my_bucket/dir/")

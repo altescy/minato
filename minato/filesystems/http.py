@@ -189,7 +189,6 @@ class HttpFileSystem(FileSystem):
         backoff_factor: int = 1,
         allow_redirects: bool = False,
     ) -> http.client.HTTPResponse:
-
         status_codes_to_retry = {502, 503, 504}
         status_codes_to_redirect = {300, 301, 302, 303, 307, 308}
 

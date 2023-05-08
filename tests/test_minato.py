@@ -200,7 +200,7 @@ def test_upload(tmpdir: Path) -> None:
     conn.create_bucket(Bucket="my_bucket")
 
     filename = tmpdir / "local.txt"
-    with open(filename, "w") as localfile:
+    with filename.open("w") as localfile:
         localfile.write("hello")
 
     url = "s3://my_bucket/remote.txt"

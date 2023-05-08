@@ -64,7 +64,6 @@ def open_file(
     *,
     decompress: bool = False,
 ) -> ContextManager[IO[Any]]:
-
     url = str(url_or_filename)
     filesystem = FileSystem.by_url(url)
     return filesystem.open_file(
