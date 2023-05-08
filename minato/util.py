@@ -213,7 +213,6 @@ def xopen(
     *,
     decompress: bool = False,
 ) -> IO[Any]:
-    fileobj: IO[Any]
     if not decompress:
         return open(file, mode, buffering, encoding, errors, newline=newline)
 
