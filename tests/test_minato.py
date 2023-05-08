@@ -99,6 +99,19 @@ def test_open_with_bz2_decompression() -> None:
     assert content == "this is bz2 file\n"
 
 
+def test_remote_compressed_file(tmp_path: Path) -> None:
+    with tempfile.TemporaryDirectory() as tempdir:
+        cache_root = Path(tempdir)
+        with minato.open(
+            "https://github.com/altescy/minato/raw/4b6f8bd1fc6e040008f0ceb69c5e7b4a8cd7c07c/tests/fixtures/compressed.txt.lzma",
+            "rt",
+            decompress=True,
+            cache_root=cache_root,
+        ) as fp:
+            content = fp.read()
+        assert content == "this is lzma file\n"
+
+
 @mock_s3
 def test_auto_update() -> None:
     conn = boto3.resource("s3", region_name="us-east-1")
