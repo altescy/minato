@@ -12,7 +12,7 @@ from typing import IO, Any, BinaryIO, ContextManager, Iterator, TextIO, overload
 
 from minato.common import Progress
 from minato.filesystems.filesystem import FileSystem
-from minato.util import OpenBinaryMode, OpenTextMode, sizeof_fmt
+from minato.util import OpenBinaryMode, OpenTextMode, sizeof_fmt, xopen
 
 try:
     import boto3
@@ -161,6 +161,8 @@ class S3FileSystem(FileSystem):
         encoding: str | None = ...,
         errors: str | None = ...,
         newline: str | None = ...,
+        *,
+        decompress: bool = ...,
     ) -> ContextManager[TextIO]:
         ...
 
@@ -172,6 +174,8 @@ class S3FileSystem(FileSystem):
         encoding: str | None = ...,
         errors: str | None = ...,
         newline: str | None = ...,
+        *,
+        decompress: bool = ...,
     ) -> ContextManager[BinaryIO]:
         ...
 
@@ -183,6 +187,8 @@ class S3FileSystem(FileSystem):
         encoding: str | None = ...,
         errors: str | None = ...,
         newline: str | None = ...,
+        *,
+        decompress: bool = ...,
     ) -> ContextManager[IO[Any]]:
         ...
 
@@ -193,6 +199,8 @@ class S3FileSystem(FileSystem):
         encoding: str | None = None,
         errors: str | None = None,
         newline: str | None = None,
+        *,
+        decompress: bool = False,
     ) -> ContextManager[IO[Any]]:
         @contextmanager
         def _open(
@@ -215,13 +223,14 @@ class S3FileSystem(FileSystem):
 
                 local_file.close()
 
-                with open(
+                with xopen(
                     local_file.name,
                     mode=mode,
                     buffering=buffering,
                     encoding=encoding,
                     errors=errors,
                     newline=newline,
+                    decompress=decompress,
                 ) as fp:
                     yield fp
 

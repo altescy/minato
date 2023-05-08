@@ -69,6 +69,36 @@ def test_cached_path_with_local_tar_file() -> None:
         assert content == "this file is foo.txt\n"
 
 
+def test_open_with_gzip_decompression() -> None:
+    with minato.open(
+        "tests/fixtures/compressed.txt.gz",
+        "rt",
+        decompress=True,
+    ) as fp:
+        content = fp.read()
+    assert content == "this is gzip file\n"
+
+
+def test_open_with_lzmash_decompression() -> None:
+    with minato.open(
+        "tests/fixtures/compressed.txt.lzma",
+        "rt",
+        decompress=True,
+    ) as fp:
+        content = fp.read()
+    assert content == "this is lzma file\n"
+
+
+def test_open_with_bz2_decompression() -> None:
+    with minato.open(
+        "tests/fixtures/compressed.txt.bz2",
+        "rt",
+        decompress=True,
+    ) as fp:
+        content = fp.read()
+    assert content == "this is bz2 file\n"
+
+
 @mock_s3
 def test_auto_update() -> None:
     conn = boto3.resource("s3", region_name="us-east-1")

@@ -46,6 +46,7 @@ class Minato:
         newline: str | None = ...,
         *,
         extract: bool = ...,
+        decompress: bool = ...,
         auto_update: bool | None = ...,
         expire_days: int | None = ...,
         use_cache: bool = ...,
@@ -66,6 +67,7 @@ class Minato:
         newline: str | None = ...,
         *,
         extract: bool = ...,
+        decompress: bool = ...,
         auto_update: bool | None = ...,
         expire_days: int | None = ...,
         use_cache: bool = ...,
@@ -86,6 +88,7 @@ class Minato:
         newline: str | None = ...,
         *,
         extract: bool = ...,
+        decompress: bool = ...,
         auto_update: bool | None = ...,
         expire_days: int | None = ...,
         use_cache: bool = ...,
@@ -105,6 +108,7 @@ class Minato:
         newline: str | None = None,
         *,
         extract: bool = False,
+        decompress: bool = False,
         auto_update: bool | None = None,
         expire_days: int | None = None,
         use_cache: bool = True,
@@ -124,7 +128,7 @@ class Minato:
                 retry=retry,
             )
 
-        return open_file(url_or_filename, mode, buffering, encoding, errors, newline)
+        return open_file(url_or_filename, mode, buffering, encoding, errors, newline, decompress=decompress)
 
     def cached_path(
         self,

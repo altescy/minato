@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import bz2
+import gzip
 import logging
+import lzma
 import os
 import shutil
 import tarfile
@@ -8,7 +11,7 @@ import tempfile
 from contextlib import suppress
 from os import PathLike
 from pathlib import Path
-from typing import Literal, Union
+from typing import IO, Any, Literal, Union, cast
 from urllib.parse import urlparse
 from zipfile import ZipFile, is_zipfile
 
@@ -198,3 +201,38 @@ def sizeof_fmt(num: int | float, suffix: str = "", dividor: int | float = 1024) 
             return "%3.1f%s%s" % (num, unit, suffix)
         num /= dividor
     return "%.1f%s%s" % (num, "Yi", suffix)
+
+
+def xopen(
+    file: str | PathLike,
+    mode: str = "r",
+    buffering: int = -1,
+    encoding: str | None = None,
+    errors: str | None = None,
+    newline: str | None = None,
+    *,
+    decompress: bool = False,
+) -> IO[Any]:
+    fileobj: IO[Any]
+    if not decompress:
+        return open(file, mode, buffering, encoding, errors, newline=newline)
+
+    with suppress(gzip.BadGzipFile):
+        fileobj = cast(IO[Any], gzip.open(file, mode, encoding=encoding, errors=errors, newline=newline))
+        fileobj.read(1)
+        fileobj.seek(0)
+        return fileobj
+
+    with suppress(lzma.LZMAError):
+        fileobj = cast(IO[Any], lzma.open(file, mode, encoding=encoding, errors=errors, newline=newline))
+        fileobj.read(1)
+        fileobj.seek(0)
+        return fileobj
+
+    with suppress(IOError):
+        fileobj = cast(IO[Any], bz2.open(file, mode, encoding=encoding, errors=errors, newline=newline))
+        fileobj.read(1)
+        fileobj.seek(0)
+        return fileobj
+
+    raise ValueError(f"Failed to open with decompress: {file}")
