@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import IO, Any, BinaryIO, ContextManager, Iterator, TextIO, overload
 
 from minato.filesystems.filesystem import FileSystem
-from minato.util import OpenBinaryMode, OpenTextMode, remove_file_or_directory
+from minato.util import OpenBinaryMode, OpenTextMode, remove_file_or_directory, xopen
 
 
 @FileSystem.register(["file", "osfs", ""])
@@ -38,6 +38,8 @@ class OSFileSystem(FileSystem):
         encoding: str | None = ...,
         errors: str | None = ...,
         newline: str | None = ...,
+        *,
+        decompress: bool = ...,
     ) -> ContextManager[TextIO]:
         ...
 
@@ -49,6 +51,8 @@ class OSFileSystem(FileSystem):
         encoding: str | None = ...,
         errors: str | None = ...,
         newline: str | None = ...,
+        *,
+        decompress: bool = ...,
     ) -> ContextManager[BinaryIO]:
         ...
 
@@ -60,6 +64,8 @@ class OSFileSystem(FileSystem):
         encoding: str | None = ...,
         errors: str | None = ...,
         newline: str | None = ...,
+        *,
+        decompress: bool = ...,
     ) -> ContextManager[IO[Any]]:
         ...
 
@@ -70,6 +76,8 @@ class OSFileSystem(FileSystem):
         encoding: str | None = None,
         errors: str | None = None,
         newline: str | None = None,
+        *,
+        decompress: bool = False,
     ) -> ContextManager[IO[Any]]:
         @contextmanager
         def _open(
@@ -78,14 +86,17 @@ class OSFileSystem(FileSystem):
             encoding: str | None,
             errors: str | None,
             newline: str | None,
+            decompress: bool,
         ) -> Iterator[IO[Any]]:
-            with self._path.open(
+            with xopen(
+                self._path,
                 mode=mode,
                 buffering=buffering,
                 encoding=encoding,
                 errors=errors,
                 newline=newline,
+                decompress=decompress,
             ) as fp:
                 yield fp
 
-        return _open(mode, buffering, encoding, errors, newline)
+        return _open(mode, buffering, encoding, errors, newline, decompress)

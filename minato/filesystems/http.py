@@ -11,7 +11,7 @@ from typing import IO, Any, BinaryIO, Callable, ContextManager, Iterator, TextIO
 
 from minato.common import Progress
 from minato.filesystems.filesystem import FileSystem
-from minato.util import OpenBinaryMode, OpenTextMode, sizeof_fmt
+from minato.util import OpenBinaryMode, OpenTextMode, sizeof_fmt, xopen
 
 
 @FileSystem.register(["http", "https"])
@@ -49,6 +49,8 @@ class HttpFileSystem(FileSystem):
         encoding: str | None = ...,
         errors: str | None = ...,
         newline: str | None = ...,
+        *,
+        decompress: bool = ...,
     ) -> ContextManager[TextIO]:
         ...
 
@@ -60,6 +62,8 @@ class HttpFileSystem(FileSystem):
         encoding: str | None = ...,
         errors: str | None = ...,
         newline: str | None = ...,
+        *,
+        decompress: bool = ...,
     ) -> ContextManager[BinaryIO]:
         ...
 
@@ -71,6 +75,8 @@ class HttpFileSystem(FileSystem):
         encoding: str | None = ...,
         errors: str | None = ...,
         newline: str | None = ...,
+        *,
+        decompress: bool = ...,
     ) -> ContextManager[IO[Any]]:
         ...
 
@@ -81,6 +87,8 @@ class HttpFileSystem(FileSystem):
         encoding: str | None = None,
         errors: str | None = None,
         newline: str | None = None,
+        *,
+        decompress: bool = False,
     ) -> ContextManager[IO[Any]]:
         @contextmanager
         def _open(
@@ -96,17 +104,20 @@ class HttpFileSystem(FileSystem):
             if "a" in mode or "w" in mode or "+" in mode or "x" in mode:
                 raise ValueError("HttpFileSystem is not writable.")
 
-            temp_file = tempfile.NamedTemporaryFile(delete=False)
+            suffix = "-" + (self._url.path.split("/")[-1] if self._url.path else "")
+            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+
             try:
                 HttpFileSystem.http_get(self._url.raw, temp_file, allow_redirects=True)
                 temp_file.close()
-                with open(
+                with xopen(
                     temp_file.name,
                     mode=mode,
                     encoding=encoding,
                     buffering=buffering,
                     errors=errors,
                     newline=newline,
+                    decompress=decompress,
                 ) as fp:
                     yield fp
             finally:

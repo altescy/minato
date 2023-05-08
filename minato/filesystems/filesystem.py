@@ -20,6 +20,8 @@ def open_file(
     encoding: str | None = ...,
     errors: str | None = ...,
     newline: str | None = ...,
+    *,
+    decompress: bool = ...,
 ) -> ContextManager[TextIO]:
     ...
 
@@ -32,6 +34,8 @@ def open_file(
     encoding: str | None = ...,
     errors: str | None = ...,
     newline: str | None = ...,
+    *,
+    decompress: bool = ...,
 ) -> ContextManager[BinaryIO]:
     ...
 
@@ -44,6 +48,8 @@ def open_file(
     encoding: str | None = ...,
     errors: str | None = ...,
     newline: str | None = ...,
+    *,
+    decompress: bool = ...,
 ) -> ContextManager[IO[Any]]:
     ...
 
@@ -55,6 +61,8 @@ def open_file(
     encoding: str | None = None,
     errors: str | None = None,
     newline: str | None = None,
+    *,
+    decompress: bool = False,
 ) -> ContextManager[IO[Any]]:
 
     url = str(url_or_filename)
@@ -65,6 +73,7 @@ def open_file(
         encoding=encoding,
         errors=errors,
         newline=newline,
+        decompress=decompress,
     )
 
 
@@ -152,6 +161,8 @@ class FileSystem:
         encoding: str | None = ...,
         errors: str | None = ...,
         newline: str | None = ...,
+        *,
+        decompress: bool = ...,
     ) -> ContextManager[TextIO]:
         ...
 
@@ -163,6 +174,8 @@ class FileSystem:
         encoding: str | None = ...,
         errors: str | None = ...,
         newline: str | None = ...,
+        *,
+        decompress: bool = ...,
     ) -> ContextManager[BinaryIO]:
         ...
 
@@ -174,6 +187,8 @@ class FileSystem:
         encoding: str | None = ...,
         errors: str | None = ...,
         newline: str | None = ...,
+        *,
+        decompress: bool = ...,
     ) -> ContextManager[IO[Any]]:
         ...
 
@@ -184,5 +199,7 @@ class FileSystem:
         encoding: str | None = None,
         errors: str | None = None,
         newline: str | None = None,
+        *,
+        decompress: bool = ...,
     ) -> ContextManager[IO[Any]]:
         raise NotImplementedError

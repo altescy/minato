@@ -11,7 +11,7 @@ from typing import IO, Any, BinaryIO, ContextManager, Iterator, TextIO, overload
 
 from minato.common import Progress
 from minato.filesystems.filesystem import FileSystem
-from minato.util import OpenBinaryMode, OpenTextMode, sizeof_fmt
+from minato.util import OpenBinaryMode, OpenTextMode, sizeof_fmt, xopen
 
 try:
     import google.cloud.storage as gcs
@@ -158,6 +158,8 @@ class GCSFileSystem(FileSystem):
         encoding: str | None = ...,
         errors: str | None = ...,
         newline: str | None = ...,
+        *,
+        decompress: bool = ...,
     ) -> ContextManager[TextIO]:
         ...
 
@@ -169,6 +171,8 @@ class GCSFileSystem(FileSystem):
         encoding: str | None = ...,
         errors: str | None = ...,
         newline: str | None = ...,
+        *,
+        decompress: bool = ...,
     ) -> ContextManager[BinaryIO]:
         ...
 
@@ -180,6 +184,8 @@ class GCSFileSystem(FileSystem):
         encoding: str | None = ...,
         errors: str | None = ...,
         newline: str | None = ...,
+        *,
+        decompress: bool = ...,
     ) -> ContextManager[IO[Any]]:
         ...
 
@@ -190,6 +196,8 @@ class GCSFileSystem(FileSystem):
         encoding: str | None = None,
         errors: str | None = None,
         newline: str | None = None,
+        *,
+        decompress: bool = False,
     ) -> ContextManager[IO[Any]]:
         @contextmanager
         def _open(
@@ -202,7 +210,9 @@ class GCSFileSystem(FileSystem):
             if "x" in mode and self.exists():
                 raise FileExistsError(self._url.raw)
 
-            local_file = tempfile.NamedTemporaryFile(delete=False)
+            suffix = "-" + (self._url.path.split("/")[-1] if self._url.path else "")
+            local_file = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+
             try:
                 if "r" in mode or "a" in mode or "+" in mode:
                     if not self.exists():
@@ -210,13 +220,14 @@ class GCSFileSystem(FileSystem):
                     self._download_fileobj(self._key, local_file)
 
                 local_file.close()
-                with open(
+                with xopen(
                     local_file.name,
                     mode=mode,
                     buffering=buffering,
                     encoding=encoding,
                     errors=errors,
                     newline=newline,
+                    decompress=decompress,
                 ) as fp:
                     yield fp
 
