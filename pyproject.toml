@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "minato"
-version = "0.10.0"
+version = "0.11.0"
 description = "A Unified File I/O Library for Python"
 authors = ["Yasuhiro Yamaguchi <altescy@fastmail.com>"]
 license = "MIT License"
