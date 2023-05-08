@@ -104,7 +104,9 @@ class HttpFileSystem(FileSystem):
             if "a" in mode or "w" in mode or "+" in mode or "x" in mode:
                 raise ValueError("HttpFileSystem is not writable.")
 
-            temp_file = tempfile.NamedTemporaryFile(delete=False)
+            suffix = "-" + (self._url.path.split("/")[-1] if self._url.path else "")
+            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+
             try:
                 HttpFileSystem.http_get(self._url.raw, temp_file, allow_redirects=True)
                 temp_file.close()

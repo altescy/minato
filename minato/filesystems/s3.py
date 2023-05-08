@@ -213,7 +213,8 @@ class S3FileSystem(FileSystem):
             if "x" in mode and self.exists():
                 raise FileExistsError(self._url.raw)
 
-            local_file = tempfile.NamedTemporaryFile(delete=False)
+            suffix = "-" + (self._url.path.split("/")[-1] if self._url.path else "")
+            local_file = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
 
             try:
                 if "r" in mode or "a" in mode or "+" in mode:
