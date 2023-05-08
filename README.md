@@ -28,7 +28,10 @@ The cache is automatically updated based on ETag headers, ensuring that you alwa
 Install Minato using pip:
 
 ```bash
-pip install minato[all]
+pip install minato       # minimal installation for only local/http(s) file I/O
+pip install minato[s3]   # for Amazon S3
+pip install minato[gcp]  # for Google Cloud Storage
+pip install minato[all]  # for all supported file I/O
 ```
 
 ## Usage
@@ -49,12 +52,21 @@ with minato.open(s3_path, "w") as f:
 Access cached online resources in local storage:
 
 ```python
-import minato
-
 # Cache a remote file and get its local path
 remote_path = "http://example.com/path/to/archive.zip!inner/path/to/file"
 local_filename = minato.cached_path(remote_path)
 ```
+
+Access files inside archives like zip by connecting the archive path and inner file path with an exclamation mark (`!`) like above.
+
+Automatically decompress files with gzip / lzma / bz2 compression:
+
+```python
+with minato.open("data.txt.gz", "rt", decompress=True) as f:
+    content = f.read()
+```
+
+In the example above, Minato will automatically detect the file format based on the file's content or filename and decompress the file accordingly.
 
 ### Cache Management
 
