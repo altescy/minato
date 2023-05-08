@@ -28,16 +28,18 @@ def _default_sizeof_formatter(size: int | float) -> str:
 
 
 class EMA:
-    def __init__(self, alpha: float = 0.3):
+    def __init__(
+        self,
+        alpha: float = 0.1,
+    ) -> None:
         self._alpha = alpha
         self._value = 0.0
 
-    @property
-    def value(self) -> float:
-        return self._value
-
     def update(self, value: float) -> None:
         self._value = self._alpha * value + (1.0 - self._alpha) * self._value
+
+    def get(self) -> float:
+        return self._value
 
     def reset(self) -> None:
         self._value = 0.0
@@ -52,6 +54,7 @@ class Progress(Generic[T]):
         output: TextIO = sys.stderr,
         maxwidth: int | None = None,
         partchars: str = " ▏▎▍▌▋▊▉█",
+        framerate: float = 10.0,
         sizeof_formatter: Callable[[int | float], str] = _default_sizeof_formatter,
         disable: bool = False,
     ) -> None:
@@ -65,6 +68,7 @@ class Progress(Generic[T]):
         self._output = output
         self._maxwidth = maxwidth
         self._partchars = partchars
+        self._framerate = framerate
         self._sizeof_formatter = sizeof_formatter
         self._disable = disable or DISABLE_PROGRESSBAR
 
@@ -73,6 +77,7 @@ class Progress(Generic[T]):
         self._iterations = 0
         self._start_time = time.time()
         self._last_time = self._start_time
+        self._last_time_rendered = self._start_time
         self._interval_ema = EMA()
 
     @staticmethod
@@ -107,11 +112,19 @@ class Progress(Generic[T]):
         if self._disable:
             return
 
+        current_time = time.time()
+
+        if self._iterations > 0:
+            framerate = 1.0 / (current_time - self._last_time_rendered + 1.0e-13)
+            if framerate > self._framerate:
+                return
+
         template = ""
         contents: dict[str, Any] = {}
 
-        elapsed_time = time.time() - self._start_time
-        average_iterations = 1.0 / self._interval_ema.value if self._interval_ema.value > 0.0 else 0.0
+        elapsed_time = current_time - self._start_time
+        interval_ema = self._interval_ema.get()
+        average_iterations = 1.0 / interval_ema if interval_ema > 0.0 else 0.0
 
         contents["desc"] = self._desc
         contents["unit"] = self._unit
@@ -135,7 +148,7 @@ class Progress(Generic[T]):
         else:
             total_width = len(self._sizeof_formatter(self._total))
             percentage = 100 * self._iterations / self._total
-            remaining_time = (self._total - self._iterations) / average_iterations if average_iterations > 0.0 else 0.0
+            remaining_time = (self._total - self._iterations) * interval_ema
 
             postfixes = [
                 "{elapsed_time}<{remaining_time}",
@@ -160,9 +173,11 @@ class Progress(Generic[T]):
         self._output.write(f"\x1b[?25l\x1b[2K\r{line}")
         self._output.flush()
 
+        self._last_time_rendered = current_time
+
     def update(self, iterations: int = 1) -> None:
         current_time = time.time()
-        self._interval_ema.update(current_time - self._last_time)
+        self._interval_ema.update((current_time - self._last_time) / iterations)
         self._iterations += iterations
         self._last_time = current_time
         self.show()
