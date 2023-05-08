@@ -1,49 +1,64 @@
-Minato
-======
+# ⚓ Minato
 
 [![Actions Status](https://github.com/altescy/minato/workflows/CI/badge.svg)](https://github.com/altescy/minato/actions/workflows/ci.yml)
 [![Python version](https://img.shields.io/pypi/pyversions/minato)](https://github.com/altescy/minato)
 [![License](https://img.shields.io/github/license/altescy/minato)](https://github.com/altescy/minato/blob/master/LICENSE)
 [![pypi version](https://img.shields.io/pypi/v/minato)](https://pypi.org/project/minato/)
 
-Cache & file system for online resources in Python
+A Unified File I/O Library for Python
 
+
+Minato is a Python library that provides a unified and simple interface to work with local and remote files, as well as compressed and archived files.
+With Minato, you can seamlessly read and write files from various sources like local filesystem, HTTP(S), Amazon S3, and Google Cloud Storage.
+It also supports reading and writing compressed files such as gzip, bz2, and lzma, as well as directly accessing files inside archives like zip and tar.
+
+One of Minato's key features is its built-in caching mechanism, which allows you to cache remote files locally, and manage the cache with a provided CLI.
+The cache is automatically updated based on ETag headers, ensuring that you always work with the latest version of the files.
 
 ## Features
 
-Minato enables you to:
-- Download & cache online recsources
-  - minato supports the following protocols: HTTP(S) / AWS S3 / Google Cloud Storage
-  - You can manage cached files via command line interface
-- Automatically update cached files based on ETag
-  - minato downloads new versions if available when you access cached files
-- Open online files super easily
-  - By using `minato.open`, you can read/write online resources like the built-in `open` method
+- Unified file I/O for local and remote files (HTTP(S), S3, GCP)
+- Support for reading and writing compressed files (gzip, bz2, lzma)
+- Direct access to files inside archives (zip, tar)
+- Local caching of remote files with cache management CLI
+- Automatic cache updates based on ETag headers
 
 ## Installation
 
-```
+Install Minato using pip:
+
+```bash
 pip install minato[all]
 ```
 
 ## Usage
 
-### Python
+### Quick Start
+
+Here's a simple example demonstrating how to read and write files on online storage:
 
 ```python
 import minato
 
-# Read / write files on online storage
-with minato.open("s3://your_bucket/path/to/file", "w") as f:
+# Write a file to an S3 bucket
+s3_path = "s3://your_bucket/path/to/file"
+with minato.open(s3_path, "w") as f:
     f.write("Create a new file on AWS S3!")
-
-# Cache & manage online resources in local storage
-local_filename = minato.cached_path("http://example.com/path/to/archive.zip!inner/path/to/file")
 ```
 
-### CLI
+Access cached online resources in local storage:
 
+```python
+import minato
+
+# Cache a remote file and get its local path
+remote_path = "http://example.com/path/to/archive.zip!inner/path/to/file"
+local_filename = minato.cached_path(remote_path)
 ```
+
+### Cache Management
+
+```bash
 ❯ poetry run minato --help
 usage: minato
 
