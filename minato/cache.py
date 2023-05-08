@@ -146,7 +146,7 @@ class Cache:
     def load_cached_file(self, metadata_path: Path) -> CachedFile:
         if not metadata_path.exists():
             raise CacheNotFoundError(f"Cache not found: {metadata_path}")
-        with open(metadata_path, "r") as fp:
+        with metadata_path.open("r") as fp:
             params = json.load(fp)
         return CachedFile(**params)
 
@@ -169,7 +169,7 @@ class Cache:
 
     def save(self, item: CachedFile) -> None:
         metadata_path = self.get_metadata_path(item.uid)
-        with open(metadata_path, "w") as fp:
+        with metadata_path.open("w") as fp:
             json.dump(item.to_dict(), fp)
 
     def add(self, item: CachedFile) -> CachedFile:
@@ -190,7 +190,7 @@ class Cache:
         metadata_path = self.get_metadata_path(uid)
         if not metadata_path.exists():
             raise CacheNotFoundError(f"Cache not found with uid={uid}")
-        with open(metadata_path, "r") as fp:
+        with metadata_path.open("r") as fp:
             params = json.load(fp)
         return CachedFile(**params)
 
@@ -236,7 +236,7 @@ class Cache:
     def all(self) -> List[CachedFile]:
         cached_files: List[CachedFile] = []
         for metafile_path in self._root.glob("*.json"):
-            with open(metafile_path, "r") as fp:
+            with metafile_path.open("r") as fp:
                 params = json.load(fp)
                 cached_file = CachedFile(**params)
             cached_files.append(cached_file)

@@ -131,7 +131,7 @@ def remove_file_or_directory(path: str | PathLike) -> None:
         if path.is_dir():
             shutil.rmtree(path)
         else:
-            os.remove(path)
+            path.unlink()
 
 
 def is_archive_file(filename: str | PathLike) -> bool:
