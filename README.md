@@ -30,7 +30,7 @@ Install Minato using pip:
 ```bash
 pip install minato       # minimal installation for only local/http(s) file I/O
 pip install minato[s3]   # for Amazon S3
-pip install minato[gcp]  # for Google Cloud Storage
+pip install minato[gcs]  # for Google Cloud Storage
 pip install minato[all]  # for all supported file I/O
 ```
 
