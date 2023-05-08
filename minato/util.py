@@ -217,22 +217,34 @@ def xopen(
     if not decompress:
         return open(file, mode, buffering, encoding, errors, newline=newline)
 
-    with suppress(gzip.BadGzipFile):
-        fileobj = cast(IO[Any], gzip.open(file, mode, encoding=encoding, errors=errors, newline=newline))
-        fileobj.read(1)
-        fileobj.seek(0)
-        return fileobj
+    if Path(file).exists():
+        with suppress(gzip.BadGzipFile):
+            with gzip.open(file, "r", encoding=encoding, errors=errors, newline=newline) as gzipfile:
+                gzipfile.read(1)
+                gzipfile.seek(0)
+            return cast(IO[Any], gzip.open(file, mode, encoding=encoding, errors=errors, newline=newline))
 
-    with suppress(lzma.LZMAError):
-        fileobj = cast(IO[Any], lzma.open(file, mode, encoding=encoding, errors=errors, newline=newline))
-        fileobj.read(1)
-        fileobj.seek(0)
-        return fileobj
+        with suppress(lzma.LZMAError):
+            with lzma.open(file, "r", encoding=encoding, errors=errors, newline=newline) as lzmafile:
+                lzmafile.read(1)
+                lzmafile.seek(0)
+            return cast(IO[Any], lzma.open(file, mode, encoding=encoding, errors=errors, newline=newline))
 
-    with suppress(IOError):
-        fileobj = cast(IO[Any], bz2.open(file, mode, encoding=encoding, errors=errors, newline=newline))
-        fileobj.read(1)
-        fileobj.seek(0)
-        return fileobj
+        with suppress(IOError):
+            with bz2.open(file, "r", encoding=encoding, errors=errors, newline=newline) as bz2file:
+                bz2file.read(1)
+                bz2file.seek(0)
+            return cast(IO[Any], bz2.open(file, mode, encoding=encoding, errors=errors, newline=newline))
 
-    raise ValueError(f"Failed to open with decompress: {file}")
+        raise ValueError(f"Failed to open with decompress: {file}")
+
+    if str(file).endswith(".gz"):
+        return cast(IO[Any], gzip.open(file, mode, encoding=encoding, errors=errors, newline=newline))
+
+    if str(file).endswith((".xz", ".lzma")):
+        return cast(IO[Any], lzma.open(file, mode, encoding=encoding, errors=errors, newline=newline))
+
+    if str(file).endswith(".bz2"):
+        return cast(IO[Any], bz2.open(file, mode, encoding=encoding, errors=errors, newline=newline))
+
+    raise ValueError(f"Unknown compression type for file: {file}")
