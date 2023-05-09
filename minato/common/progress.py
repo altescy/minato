@@ -30,7 +30,7 @@ def _default_sizeof_formatter(size: int | float) -> str:
 class EMA:
     def __init__(
         self,
-        alpha: float = 0.1,
+        alpha: float = 0.3,
     ) -> None:
         self._alpha = alpha
         self._value = 0.0
@@ -177,9 +177,9 @@ class Progress(Generic[T]):
 
     def update(self, iterations: int = 1) -> None:
         current_time = time.time()
-        self._interval_ema.update((current_time - self._last_time) / iterations)
         self._iterations += iterations
         self._last_time = current_time
+        self._interval_ema.update((current_time - self._start_time) / self._iterations)
         self.show()
 
     def __iter__(self) -> Iterator[T]:
