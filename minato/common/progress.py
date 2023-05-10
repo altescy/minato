@@ -198,5 +198,6 @@ class Progress(Generic[T]):
         return self
 
     def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        self.show()
         self._output.write("\x1b[?25h\n")
         self._output.flush()
