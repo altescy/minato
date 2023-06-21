@@ -28,7 +28,7 @@ class OSFileSystem(FileSystem):
         remove_file_or_directory(self._path)
 
     def get_version(self) -> str | None:
-        return None
+        return str(self._path.stat().st_mtime_ns)
 
     @overload
     def open_file(

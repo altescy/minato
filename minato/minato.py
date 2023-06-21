@@ -161,7 +161,7 @@ class Minato:
 
         if is_local(url_or_filename):
             url_or_filename = extract_path(url_or_filename)
-            if not extract and not is_archive_file(url_or_filename):
+            if not (extract and is_archive_file(url_or_filename)):
                 local_path = Path(url_or_filename)
                 if not local_path.exists():
                     raise FileNotFoundError(local_path)
