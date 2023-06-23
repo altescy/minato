@@ -9,7 +9,7 @@ A Unified File I/O Library for Python
 
 
 Minato is a Python library that provides a unified and simple interface to work with local and remote files, as well as compressed and archived files.
-With Minato, you can seamlessly read and write files from various sources like local filesystem, HTTP(S), Amazon S3, and Google Cloud Storage.
+With Minato, you can seamlessly read and write files from various sources like local filesystem, HTTP(S), Amazon S3, Google Cloud Storage, and Hugging Fase Hub.
 It also supports reading and writing compressed files such as gzip, bz2, and lzma, as well as directly accessing files inside archives like zip and tar.
 
 One of Minato's key features is its built-in caching mechanism, which allows you to cache remote files locally, and manage the cache with a provided CLI.
@@ -17,7 +17,7 @@ The cache is automatically updated based on ETag headers, ensuring that you alwa
 
 ## Features
 
-- Unified file I/O for local and remote files (HTTP(S), S3, GCP)
+- Unified file I/O for local and remote files (HTTP(S), S3, GCP, Hugging Face Hub)
 - Support for reading and writing compressed files (gzip, bz2, lzma)
 - Direct access to files inside archives (zip, tar)
 - Local caching of remote files with cache management CLI
@@ -28,10 +28,11 @@ The cache is automatically updated based on ETag headers, ensuring that you alwa
 Install Minato using pip:
 
 ```bash
-pip install minato       # minimal installation for only local/http(s) file I/O
-pip install minato[s3]   # for Amazon S3
-pip install minato[gcs]  # for Google Cloud Storage
-pip install minato[all]  # for all supported file I/O
+pip install minato                   # minimal installation for only local/http(s) file I/O
+pip install minato[s3]               # for Amazon S3
+pip install minato[gcs]              # for Google Cloud Storage
+pip install minato[huggingface-hub]  # for Hugging Face Hub
+pip install minato[all]              # for all supported file I/O
 ```
 
 ## Usage
