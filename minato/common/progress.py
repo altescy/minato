@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import sys
 import time
 from collections.abc import Sized
@@ -10,6 +11,7 @@ T = TypeVar("T")
 Self = TypeVar("Self", bound="Progress")
 
 DISABLE_PROGRESSBAR = os.environ.get("MINATO_DISABLE_PROGRESSBAR", "0").lower() in ("1", "true")
+ANSI_COLOR = re.compile(r"(\033|\x1b)\[[0-9;]*m")
 
 
 def _dummy_iterator() -> Iterator[int]:
@@ -25,6 +27,26 @@ def _default_sizeof_formatter(size: int | float) -> str:
     if isinstance(size, int):
         return str(size)
     return f"{size:.2f}"
+
+
+def _truncate_text(text: str, width: int) -> str:
+    if len(re.sub(ANSI_COLOR, "", text)) <= width:
+        return text
+
+    position = 0
+    visible_length = 0
+    truncated_text = ""
+    for match in re.finditer(ANSI_COLOR, text):
+        steps = min(match.start() - position, width - visible_length - 1)
+        truncated_text += text[position : position + steps]
+        truncated_text += text[match.start() : match.end()]
+        visible_length += steps
+        position = match.end()
+
+    if visible_length < width:
+        truncated_text += text[position : position + width - visible_length - 1]
+
+    return truncated_text + "…"
 
 
 class EMA:
@@ -53,8 +75,10 @@ class Progress(Generic[T]):
         unit: str = "it",
         output: TextIO = sys.stderr,
         maxwidth: int | None = None,
+        truncate: bool = True,
         partchars: str = " ▏▎▍▌▋▊▉█",
-        framerate: float = 10.0,
+        framerate: float = 16.0,
+        maxbarwidth: int | None = 40,
         sizeof_formatter: Callable[[int | float], str] = _default_sizeof_formatter,
         disable: bool = False,
     ) -> None:
@@ -67,8 +91,10 @@ class Progress(Generic[T]):
         self._unit = unit
         self._output = output
         self._maxwidth = maxwidth
+        self._truncate = truncate
         self._partchars = partchars
         self._framerate = framerate
+        self._maxbarwidth = maxbarwidth
         self._sizeof_formatter = sizeof_formatter
         self._disable = disable or DISABLE_PROGRESSBAR
 
@@ -98,8 +124,10 @@ class Progress(Generic[T]):
         return terminal_width
 
     def _get_bar(self, width: int, percentage: float) -> str:
-        ratio = percentage / 100
         width = max(1, width)
+        if self._maxbarwidth is not None:
+            width = min(width, self._maxbarwidth)
+        ratio = percentage / 100
         whole_width = int(ratio * width)
         part_width = int(len(self._partchars) * ((ratio * width) % 1))
         part_char = self._partchars[part_width]
@@ -170,6 +198,9 @@ class Progress(Generic[T]):
             contents["bar"] = self._get_bar(barwidth, percentage)
 
         line = template.format(**contents)
+        if self._truncate:
+            line = _truncate_text(line, self._get_maxwidth())
+
         self._output.write(f"\x1b[?25l\x1b[2K\r{line}")
         self._output.flush()
 
