@@ -11,7 +11,7 @@ from typing import IO, Any, BinaryIO, Callable, ContextManager, Iterator, TextIO
 
 from minato.common import Progress
 from minato.filesystems.filesystem import FileSystem
-from minato.util import OpenBinaryMode, OpenTextMode, sizeof_fmt, xopen
+from minato.util import DecompressOption, OpenBinaryMode, OpenTextMode, sizeof_fmt, xopen
 
 
 @FileSystem.register(["http", "https"])
@@ -50,7 +50,7 @@ class HttpFileSystem(FileSystem):
         errors: str | None = ...,
         newline: str | None = ...,
         *,
-        decompress: bool = ...,
+        decompress: DecompressOption = ...,
     ) -> ContextManager[TextIO]:
         ...
 
@@ -63,7 +63,7 @@ class HttpFileSystem(FileSystem):
         errors: str | None = ...,
         newline: str | None = ...,
         *,
-        decompress: bool = ...,
+        decompress: DecompressOption = ...,
     ) -> ContextManager[BinaryIO]:
         ...
 
@@ -76,7 +76,7 @@ class HttpFileSystem(FileSystem):
         errors: str | None = ...,
         newline: str | None = ...,
         *,
-        decompress: bool = ...,
+        decompress: DecompressOption = ...,
     ) -> ContextManager[IO[Any]]:
         ...
 
@@ -88,7 +88,7 @@ class HttpFileSystem(FileSystem):
         errors: str | None = None,
         newline: str | None = None,
         *,
-        decompress: bool = False,
+        decompress: DecompressOption = "none",
     ) -> ContextManager[IO[Any]]:
         @contextmanager
         def _open(
