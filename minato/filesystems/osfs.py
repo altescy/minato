@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import IO, Any, BinaryIO, ContextManager, Iterator, TextIO, overload
 
 from minato.filesystems.filesystem import FileSystem
-from minato.util import OpenBinaryMode, OpenTextMode, remove_file_or_directory, xopen
+from minato.util import DecompressOption, OpenBinaryMode, OpenTextMode, remove_file_or_directory, xopen
 
 
 @FileSystem.register(["file", "osfs", ""])
@@ -39,7 +39,7 @@ class OSFileSystem(FileSystem):
         errors: str | None = ...,
         newline: str | None = ...,
         *,
-        decompress: bool = ...,
+        decompress: DecompressOption = ...,
     ) -> ContextManager[TextIO]:
         ...
 
@@ -52,7 +52,7 @@ class OSFileSystem(FileSystem):
         errors: str | None = ...,
         newline: str | None = ...,
         *,
-        decompress: bool = ...,
+        decompress: DecompressOption = ...,
     ) -> ContextManager[BinaryIO]:
         ...
 
@@ -65,7 +65,7 @@ class OSFileSystem(FileSystem):
         errors: str | None = ...,
         newline: str | None = ...,
         *,
-        decompress: bool = ...,
+        decompress: DecompressOption = ...,
     ) -> ContextManager[IO[Any]]:
         ...
 
@@ -77,7 +77,7 @@ class OSFileSystem(FileSystem):
         errors: str | None = None,
         newline: str | None = None,
         *,
-        decompress: bool = False,
+        decompress: DecompressOption = "none",
     ) -> ContextManager[IO[Any]]:
         @contextmanager
         def _open(
@@ -86,7 +86,7 @@ class OSFileSystem(FileSystem):
             encoding: str | None,
             errors: str | None,
             newline: str | None,
-            decompress: bool,
+            decompress: DecompressOption,
         ) -> Iterator[IO[Any]]:
             with xopen(
                 self._path,

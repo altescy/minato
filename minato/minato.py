@@ -10,6 +10,7 @@ from minato.config import Config
 from minato.exceptions import CacheNotFoundError, InvalidCacheStatus
 from minato.filesystems import delete, download, exists, get_version, open_file, upload
 from minato.util import (
+    DecompressOption,
     OpenBinaryMode,
     OpenTextMode,
     extract_archive_file,
@@ -46,7 +47,7 @@ class Minato:
         newline: str | None = ...,
         *,
         extract: bool = ...,
-        decompress: bool = ...,
+        decompress: DecompressOption = ...,
         auto_update: bool | None = ...,
         expire_days: int | None = ...,
         use_cache: bool = ...,
@@ -67,7 +68,7 @@ class Minato:
         newline: str | None = ...,
         *,
         extract: bool = ...,
-        decompress: bool = ...,
+        decompress: DecompressOption = ...,
         auto_update: bool | None = ...,
         expire_days: int | None = ...,
         use_cache: bool = ...,
@@ -88,7 +89,7 @@ class Minato:
         newline: str | None = ...,
         *,
         extract: bool = ...,
-        decompress: bool = ...,
+        decompress: DecompressOption = ...,
         auto_update: bool | None = ...,
         expire_days: int | None = ...,
         use_cache: bool = ...,
@@ -108,7 +109,7 @@ class Minato:
         newline: str | None = None,
         *,
         extract: bool = False,
-        decompress: bool = False,
+        decompress: DecompressOption = "none",
         auto_update: bool | None = None,
         expire_days: int | None = None,
         use_cache: bool = True,

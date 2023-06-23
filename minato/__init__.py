@@ -9,7 +9,7 @@ from minato.cache import Cache
 from minato.config import Config
 from minato.filesystems import FileSystem
 from minato.minato import Minato
-from minato.util import OpenBinaryMode, OpenTextMode
+from minato.util import DecompressOption, OpenBinaryMode, OpenTextMode
 
 __version__ = version("minato")
 __all__ = [
@@ -35,7 +35,7 @@ def open(
     newline: str | None = ...,
     *,
     extract: bool = ...,
-    decompress: bool = ...,
+    decompress: DecompressOption = ...,
     auto_update: bool | None = ...,
     use_cache: bool = ...,
     force_download: bool = ...,
@@ -57,7 +57,7 @@ def open(
     newline: str | None = ...,
     *,
     extract: bool = ...,
-    decompress: bool = ...,
+    decompress: DecompressOption = ...,
     auto_update: bool | None = ...,
     use_cache: bool = ...,
     force_download: bool = ...,
@@ -79,7 +79,7 @@ def open(
     newline: str | None = ...,
     *,
     extract: bool = ...,
-    decompress: bool = ...,
+    decompress: DecompressOption = ...,
     auto_update: bool | None = ...,
     use_cache: bool = ...,
     force_download: bool = ...,
@@ -100,7 +100,7 @@ def open(
     newline: str | None = None,
     *,
     extract: bool = False,
-    decompress: bool = False,
+    decompress: DecompressOption = "none",
     auto_update: bool | None = None,
     use_cache: bool = True,
     force_download: bool = False,

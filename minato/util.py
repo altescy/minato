@@ -203,6 +203,9 @@ def sizeof_fmt(num: int | float, suffix: str = "", dividor: int | float = 1024) 
     return "%.1f%s%s" % (num, "Yi", suffix)
 
 
+DecompressOption = Literal["none", "force", "auto"]
+
+
 def xopen(
     file: str | PathLike,
     mode: str = "r",
@@ -211,9 +214,9 @@ def xopen(
     errors: str | None = None,
     newline: str | None = None,
     *,
-    decompress: bool = False,
+    decompress: DecompressOption = "auto",
 ) -> IO[Any]:
-    if not decompress:
+    if decompress == "none":
         return open(file, mode, buffering, encoding, errors, newline=newline)
 
     if Path(file).exists():
@@ -245,5 +248,8 @@ def xopen(
 
     if str(file).endswith(".bz2"):
         return cast(IO[Any], bz2.open(file, mode, encoding=encoding, errors=errors, newline=newline))
+
+    if decompress == "auto":
+        return open(file, mode, buffering, encoding, errors, newline=newline)
 
     raise ValueError(f"Unknown compression type for file: {file}")

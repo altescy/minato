@@ -7,7 +7,7 @@ from typing import IO, Any, BinaryIO, ContextManager, TextIO, Type, overload
 from urllib.parse import urlparse
 
 from minato.common import URL
-from minato.util import OpenBinaryMode, OpenTextMode
+from minato.util import DecompressOption, OpenBinaryMode, OpenTextMode
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ def open_file(
     errors: str | None = ...,
     newline: str | None = ...,
     *,
-    decompress: bool = ...,
+    decompress: DecompressOption = ...,
 ) -> ContextManager[TextIO]:
     ...
 
@@ -35,7 +35,7 @@ def open_file(
     errors: str | None = ...,
     newline: str | None = ...,
     *,
-    decompress: bool = ...,
+    decompress: DecompressOption = ...,
 ) -> ContextManager[BinaryIO]:
     ...
 
@@ -49,7 +49,7 @@ def open_file(
     errors: str | None = ...,
     newline: str | None = ...,
     *,
-    decompress: bool = ...,
+    decompress: DecompressOption = ...,
 ) -> ContextManager[IO[Any]]:
     ...
 
@@ -62,7 +62,7 @@ def open_file(
     errors: str | None = None,
     newline: str | None = None,
     *,
-    decompress: bool = False,
+    decompress: DecompressOption = "none",
 ) -> ContextManager[IO[Any]]:
     url = str(url_or_filename)
     filesystem = FileSystem.by_url(url)
@@ -161,7 +161,7 @@ class FileSystem:
         errors: str | None = ...,
         newline: str | None = ...,
         *,
-        decompress: bool = ...,
+        decompress: DecompressOption = ...,
     ) -> ContextManager[TextIO]:
         ...
 
@@ -174,7 +174,7 @@ class FileSystem:
         errors: str | None = ...,
         newline: str | None = ...,
         *,
-        decompress: bool = ...,
+        decompress: DecompressOption = ...,
     ) -> ContextManager[BinaryIO]:
         ...
 
@@ -187,7 +187,7 @@ class FileSystem:
         errors: str | None = ...,
         newline: str | None = ...,
         *,
-        decompress: bool = ...,
+        decompress: DecompressOption = ...,
     ) -> ContextManager[IO[Any]]:
         ...
 
@@ -199,6 +199,6 @@ class FileSystem:
         errors: str | None = None,
         newline: str | None = None,
         *,
-        decompress: bool = ...,
+        decompress: DecompressOption = "none",
     ) -> ContextManager[IO[Any]]:
         raise NotImplementedError
