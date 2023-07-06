@@ -14,7 +14,7 @@ from minato.util import DecompressOption, OpenBinaryMode, OpenTextMode, sizeof_f
 
 try:
     from huggingface_hub import HfFileSystem
-except ModuleNotFoundError:
+except ImportError:
     HfFileSystem = None
 
 
