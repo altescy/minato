@@ -142,7 +142,7 @@ class Progress(Generic[T]):
 
         current_time = time.time()
 
-        if self._iterations > 0 and self._iterations < (self._total or float("inf")):
+        if 0 < self._iterations < (self._total or float("inf")):
             framerate = 1.0 / (current_time - self._last_time_rendered + 1.0e-13)
             if framerate > self._framerate:
                 return
