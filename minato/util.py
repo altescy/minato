@@ -238,7 +238,8 @@ def xopen(
                 bz2file.seek(0)
             return cast(IO[Any], bz2.open(file, mode, encoding=encoding, errors=errors, newline=newline))
 
-        raise ValueError(f"Failed to open with decompress: {file}")
+        if decompress == "force":
+            raise ValueError(f"Failed to open with decompress: {file}")
 
     if str(file).endswith(".gz"):
         return cast(IO[Any], gzip.open(file, mode, encoding=encoding, errors=errors, newline=newline))
