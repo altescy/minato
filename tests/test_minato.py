@@ -8,7 +8,7 @@ import minato
 
 
 def test_version() -> None:
-    assert minato.__version__ == "0.12.1"
+    assert minato.__version__ == "0.12.2"
 
 
 def test_open() -> None:
