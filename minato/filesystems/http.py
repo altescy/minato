@@ -51,8 +51,7 @@ class HttpFileSystem(FileSystem):
         newline: str | None = ...,
         *,
         decompress: DecompressOption = ...,
-    ) -> ContextManager[TextIO]:
-        ...
+    ) -> ContextManager[TextIO]: ...
 
     @overload
     def open_file(
@@ -64,8 +63,7 @@ class HttpFileSystem(FileSystem):
         newline: str | None = ...,
         *,
         decompress: DecompressOption = ...,
-    ) -> ContextManager[BinaryIO]:
-        ...
+    ) -> ContextManager[BinaryIO]: ...
 
     @overload
     def open_file(
@@ -77,8 +75,7 @@ class HttpFileSystem(FileSystem):
         newline: str | None = ...,
         *,
         decompress: DecompressOption = ...,
-    ) -> ContextManager[IO[Any]]:
-        ...
+    ) -> ContextManager[IO[Any]]: ...
 
     def open_file(
         self,

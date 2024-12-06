@@ -43,8 +43,7 @@ def open(
     cache_root: str | PathLike | None = ...,
     expire_days: int | None = ...,
     retry: bool = ...,
-) -> ContextManager[TextIO]:
-    ...
+) -> ContextManager[TextIO]: ...
 
 
 @overload
@@ -65,8 +64,7 @@ def open(
     cache_root: str | PathLike | None = ...,
     expire_days: int | None = ...,
     retry: bool = ...,
-) -> ContextManager[BinaryIO]:
-    ...
+) -> ContextManager[BinaryIO]: ...
 
 
 @overload
@@ -87,8 +85,7 @@ def open(
     cache_root: str | PathLike | None = ...,
     expire_days: int | None = ...,
     retry: bool = ...,
-) -> ContextManager[IO[Any]]:
-    ...
+) -> ContextManager[IO[Any]]: ...
 
 
 def open(
