@@ -43,7 +43,7 @@ class HuggingfaceHubFileSystem(FileSystem):
 
         root = f"{self._url.netloc}/{self._url.path}"
         if self._hf.isdir(self._url.raw):
-            paths = self._hf.expand_path(f"{self._url.raw}/**")
+            paths = self._hf.expand_path(os.path.join(self._url.raw, "**"))
         else:
             paths = self._hf.expand_path(self._url.raw)
 
@@ -121,8 +121,7 @@ class HuggingfaceHubFileSystem(FileSystem):
         newline: str | None = ...,
         *,
         decompress: DecompressOption = ...,
-    ) -> ContextManager[TextIO]:
-        ...
+    ) -> ContextManager[TextIO]: ...
 
     @overload
     def open_file(
@@ -134,8 +133,7 @@ class HuggingfaceHubFileSystem(FileSystem):
         newline: str | None = ...,
         *,
         decompress: DecompressOption = ...,
-    ) -> ContextManager[BinaryIO]:
-        ...
+    ) -> ContextManager[BinaryIO]: ...
 
     @overload
     def open_file(
@@ -147,8 +145,7 @@ class HuggingfaceHubFileSystem(FileSystem):
         newline: str | None = ...,
         *,
         decompress: DecompressOption = ...,
-    ) -> ContextManager[IO[Any]]:
-        ...
+    ) -> ContextManager[IO[Any]]: ...
 
     def open_file(
         self,

@@ -54,8 +54,7 @@ class Minato:
         force_download: bool = ...,
         force_extract: bool = ...,
         retry: bool = ...,
-    ) -> ContextManager[TextIO]:
-        ...
+    ) -> ContextManager[TextIO]: ...
 
     @overload
     def open(
@@ -75,8 +74,7 @@ class Minato:
         force_download: bool = ...,
         force_extract: bool = ...,
         retry: bool = ...,
-    ) -> ContextManager[BinaryIO]:
-        ...
+    ) -> ContextManager[BinaryIO]: ...
 
     @overload
     def open(
@@ -96,8 +94,7 @@ class Minato:
         force_download: bool = ...,
         force_extract: bool = ...,
         retry: bool = ...,
-    ) -> ContextManager[IO[Any]]:
-        ...
+    ) -> ContextManager[IO[Any]]: ...
 
     def open(
         self,
